@@ -1,0 +1,15 @@
+@import "tailwindcss"; 
+
+/* 2. ATENÇÃO: Define que o dark mode será ativado pela classe 'dark' */
+@custom-variant dark (&:where(.dark, .dark *)); 
+
+/* (As diretivas @tailwind base, components, utilities podem ter sido removidas no v4, 
+   mas certifique-se que o @import "tailwindcss" está presente.) */
+
+/* Se você precisar aplicar transições suaves no tema, adicione-as aqui */
+:root {
+  /* Opcional: Adiciona transições suaves para cores */
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 300ms;
+  transition-timing-function: ease-out;
+}

@@ -1,0 +1,59 @@
+Tabela alunos:
+CREATE TABLE alunos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL);
+
+Tabela cursos:
+CREATE TABLE cursos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(255) NOT NULL,
+    descricao TEXT );
+
+Tabela inscricoes:
+*(Tabela intermediária para o relacionamento muitos-para-muitos):
+CREATE TABLE inscricoes (
+    aluno_id INT,
+    curso_id INT,
+    PRIMARY KEY(aluno_id, curso_id),
+    FOREIGN KEY (aluno_id) REFERENCES alunos(id),
+    FOREIGN KEY (curso_id) REFERENCES cursos(id));
+
+--
+
+INSERT INTO alunos (nome, email) VALUES
+('Ana Silva', 'ana.silva@email.com'),          -- ID 1
+('Bruno Costa', 'bruno.costa@email.com'),      -- ID 2
+('Carla Oliveira', 'carla.oliveira@email.com'),       -- ID 3
+('Daniel Pereira', 'daniel.pereira@email.com'),      -- ID 4
+('Elisa Santos', 'elisa.santos@email.com');         -- ID 5
+
+--
+
+INSERT INTO cursos (titulo, descricao) VALUES
+('Node.js com Express', 'Desenvolvimento de APIs robustas usando Node.js, Express e MySQL.'), -- ID 1
+('React do Zero ao Pro', 'Construção de interfaces de usuário modernas e escaláveis com React e Hooks.'),  -- ID 2
+('Modelagem de Dados MySQL', 'Focando em normalização, índices e otimização de consultas SQL.'),         -- ID 3
+('DevOps com Docker e Kubernetes', 'Introdução à conteinerização e orquestração de microsserviços.');    -- ID 4
+
+--
+
+INSERT INTO inscricoes (aluno_id, curso_id) VALUES
+(1, 1), -- Ana -> Node.js
+(1, 2), -- Ana -> React
+(2, 2), -- Bruno -> React
+(2, 3), -- Bruno -> MySQL
+(3, 1), -- Carla -> Node.js
+(3, 2), -- Carla -> React
+(3, 4), -- Carla -> DevOps
+(4, 3); -- Daniel -> MySQL
+
+--
+
+criar aluno: POST http://localhost:3000/alunos { "nome": "Cristiano Ronaldo", "email": "cristiano.ronaldo@exemplo.com" } 
+criar curso: POST http://localhost:3000/cursos { "titulo": "Cálculo de Backend", "descricao": "Aprenda a otimizar APIs complexas." } 
+listar alunos: GET	http://localhost:3000/alunos
+listar cursos: GET	http://localhost:3000/cursos
+inscrever aluno em curso: POST	http://localhost:3000/inscricoes { "aluno_id": 7, "curso_id": 1 }
+listar cursos de um aluno: GET http://localhost:3000/alunos/1/cursos
+listar alunos de um curso: GET	http://localhost:3000/cursos/2/alunos
