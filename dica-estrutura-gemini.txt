@@ -1,0 +1,48 @@
+ong-sem-fome/
+├── node_modules/
+├── src/
+│   ├── config/             
+│   │   ├── index.js          # Carregamento do Dotenv e acesso centralizado a configs (ex: config.get('PORT'))
+│   │   └── server.js         # Configurações do Express (middlewares, CORS, body-parser, etc.)
+│   │
+│   ├── database/
+│   │   ├── config/           # Configurações do Sequelize para DEV/TEST/PROD (config.js)
+│   │   ├── connection.js     # Inicialização da conexão Sequelize
+│   │   ├── models/           # Seus Models Sequelize (Beneficiary, Staff, Donation, Product, ...)
+│   │   ├── migrations/
+│   │   └── seeders/          # Scripts, incluindo o create-super-admin.js
+│   │
+│   ├── controllers/        
+│   │   ├── AuthController.js
+│   │   ├── StaffController.js
+│   │   ├── BeneficiaryController.js
+│   │   └── DonationController.js
+│   │
+│   ├── services/           # A LÓGICA DE NEGÓCIO PRINCIPAL
+│   │   ├── AuthService.js    # Login de Staff e Beneficiário
+│   │   ├── StaffService.js   # Lógica de criação/convite de Funcionário
+│   │   ├── BeneficiaryService.js
+│   │   ├── DonationService.js
+│   │   └── ProductService.js # Lógica de estoque e transações
+│   │
+│   ├── middlewares/        
+│   │   ├── auth.middleware.js      # Decodifica e verifica o JWT (injeta req.user)
+│   │   ├── permission.middleware.js# Verifica a role (checkPermission(['admin']))
+│   │   └── validation.middleware.js# (Opcional: Joi/Zod para validação de input)
+│   │
+│   ├── routes/             
+│   │   ├── index.js          # Agrega todas as rotas (usa /api/auth, /api/staff, /api/beneficiary)
+│   │   └── v1/               # Boas práticas de versionamento (opcional: v1, v2)
+│   │       ├── auth.routes.js    # /auth/beneficiary/login, /auth/staff/login
+│   │       ├── staff.routes.js   # Rotas protegidas para Staff (CRUD de Staff/Managers)
+│   │       └── beneficiary.routes.js # Rotas protegidas para Beneficiários
+│   │
+│   ├── utils/              # Funções de suporte (jwtGenerator, passwordHasher, formatters)
+│   │
+│   └── app.js              # Ponto de entrada do Express (importa configs, rotas e inicia)
+│
+├── .env.development        # Variáveis de ambiente de Desenvolvimento
+├── .env.test               # Variáveis de ambiente de Teste
+├── .gitignore              # **CRUCIAL: Garante que .env.production não seja comitado**
+├── package.json
+└── README.md
