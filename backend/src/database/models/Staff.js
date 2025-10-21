@@ -52,7 +52,7 @@ Staff.init(
   },
   {
     sequelize,
-    tableName: 'staff', // Nome da tabela que você usou na migration
+    tableName: 'staff', // nome da tabela usada na migration
     modelName: 'Staff',
     // ----------------------------------------------------
     // HOOK: Esta função é executada ANTES de salvar no DB
