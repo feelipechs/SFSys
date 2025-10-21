@@ -10,10 +10,6 @@ export async function up(queryInterface, Sequelize) {
       type: Sequelize.STRING(60),
       allowNull: false,
     },
-    password: {
-      type: Sequelize.STRING(60),
-      allowNull: false,
-    },
     unit_of_measurement: {
       type: Sequelize.STRING(10),
       allowNull: false,

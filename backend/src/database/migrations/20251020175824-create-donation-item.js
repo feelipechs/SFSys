@@ -1,38 +1,31 @@
 export async function up(queryInterface, Sequelize) {
-  await queryInterface.createTable('donation', {
+  await queryInterface.createTable('donation_item', {
     id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false,
     },
-    date_time: {
-      type: Sequelize.DATE,
+    quantity: {
+      type: Sequelize.DECIMAL(10, 2),
       allowNull: false,
     },
-    observation: {
-      type: Sequelize.TEXT,
+    validity: {
+      type: Sequelize.DATE,
     },
-    donor_id: {
+    donation_id: {
       type: Sequelize.INTEGER,
       allowNull: false,
-      references: { model: 'donor', key: 'id' },
+      references: { model: 'donation', key: 'id' },
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE',
     },
-    responsible_staff_id: {
+    product_id: {
       type: Sequelize.INTEGER,
-      allowNull: true,
-      references: { model: 'staff', key: 'id' },
+      allowNull: false,
+      references: { model: 'product', key: 'id' },
       onUpdate: 'CASCADE',
-      onDelete: 'SET NULL',
-    },
-    campaign_id: {
-      type: Sequelize.INTEGER,
-      allowNull: true,
-      references: { model: 'campaign', key: 'id' },
-      onUpdate: 'CASCADE',
-      onDelete: 'SET NULL',
+      onDelete: 'RESTRICT',
     },
     created_at: { type: Sequelize.DATE, allowNull: false },
     updated_at: { type: Sequelize.DATE, allowNull: false },
@@ -40,5 +33,5 @@ export async function up(queryInterface, Sequelize) {
 }
 
 export async function down(queryInterface) {
-  await queryInterface.dropTable('donation');
+  await queryInterface.dropTable('donation_item');
 }

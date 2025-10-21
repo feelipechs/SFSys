@@ -1,30 +1,46 @@
 import app from './config/server.js';
 import config from './config/index.js';
-import './database/connection.js'; // Importa para inicializar a conexão DB e Models
+import express from 'express';
+// ⚠️ IMPORTANTE: Importar a função de conexão e o objeto db
+import { connectDB, db } from './database/index.js';
 
 // Importa todas as rotas
 import authRoutes from './routes/auth.routes.js';
-import staffRoutes from './routes/staff.routes.js';
-import campaignRoutes from './routes/campaign.routes.js';
 // ... outras rotas
 
-// Middleware para tratamento de JSON
-app.use(express.json());
+// ------------------------------------------------------------------
+// Função Assíncrona para Inicializar (Async IIFE)
+// ------------------------------------------------------------------
+async function startServer() {
+  // 1. Conectar ao Banco de Dados (AGUARDA a conexão assíncrona)
+  await connectDB();
 
-// === Configuração de Rotas ===
-app.use('/api/auth', authRoutes);
-app.use('/api/staff', staffRoutes);
-app.use('/api/campaigns', campaignRoutes);
+  // 2. Middlewares e Configurações
+  app.use(express.json());
 
-// Rota de teste
-app.get('/', (req, res) => {
-  res.send(`Servidor ON! Ambiente: ${config.NODE_ENV}`);
-});
+  // === 3. Configuração de Rotas ===
+  app.use('/api/auth', authRoutes);
+  // ... use suas rotas aqui ...
 
-// Inicialização
-const PORT = config.PORT || 3000;
+  // Rota de teste
+  app.get('/', (req, res) => {
+    // Agora, você pode ter certeza que o DB está pronto
+    res.send(
+      `Servidor ON! Ambiente: ${config.NODE_ENV}. DB Status: Conectado.`,
+    );
+  });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-  console.log(`Ambiente: ${config.NODE_ENV}`);
-});
+  // 4. Inicialização
+  const PORT = config.PORT || 3000;
+
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+    console.log(`Ambiente: ${config.NODE_ENV}`);
+  });
+}
+
+// Chama a função principal para iniciar tudo
+startServer();
+
+// Você pode exportar o objeto db para uso global se precisar, mas é opcional
+// export const models = db;

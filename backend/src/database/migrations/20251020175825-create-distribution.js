@@ -19,7 +19,7 @@ export async function up(queryInterface, Sequelize) {
     },
     beneficiary_id: {
       type: Sequelize.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: { model: 'beneficiary', key: 'id' },
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
