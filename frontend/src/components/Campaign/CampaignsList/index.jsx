@@ -76,6 +76,7 @@ const CampaignsList = () => {
       <h1 className="text-4xl font-extrabold text-center mb-10 text-gray-900 dark:text-white">
         Campanhas em Destaque
       </h1>
+      <div></div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
         {campaignsData.map((campaign) => (

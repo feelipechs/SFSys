@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import SettingsNav from '../../components/Profile/SettingsNav';
 import ProfileSection from '../../components/Profile/ProfileSection';
 import SecuritySection from '../../components/Profile/SecuritySection';
-import ThemeSwitcher from '../../components/ThemeSwitcher';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
+import { ModeToggle } from '@/components/ModeToggle';
 // Importe GeneralSection se for usá-lo
 
 const Profile = () => {
@@ -48,7 +48,7 @@ const Profile = () => {
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
             Configurações do Usuário
           </h1>
-          <ThemeSwitcher />
+          <ModeToggle />
         </header>
         <Link to="/campanhas" className="flex text-dark dark:text-white mt-3">
           <ArrowLeftIcon className="size-6" />
