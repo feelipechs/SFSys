@@ -8,6 +8,8 @@ import Campaigns from './pages/Campaigns';
 import Help from './pages/Help';
 import Profile from './pages/Profile';
 import Management from './pages/Management';
+import Admin from './pages/Admin';
+import Teste from './pages/Campaigns/teste';
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
         <Route path="/ajuda" element={<Help />} />
         <Route path="/configuracoes/perfil" element={<Profile />} />
         <Route path="/admin/gerenciamento" element={<Management />} />
+        <Route path="/admin/dashboard" element={<Admin />} />
+        <Route path="/teste" element={<Teste />} />
       </Routes>
     </Router>
   );

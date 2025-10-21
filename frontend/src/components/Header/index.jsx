@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import ThemeSwitcher from '../ThemeSwitcher';
 import { Link } from 'react-router-dom';
 import { FaBars } from 'react-icons/fa';
 import { FaXmark } from 'react-icons/fa6';
+import { ModeToggle } from '../ModeToggle';
 
 const Header = () => {
   // 1. Estado para controlar a visibilidade do menu mobile
@@ -66,9 +66,9 @@ const Header = () => {
 
             {/* BOTÕES DE AÇÃO E THEMESWITCHER */}
             <div className="flex items-center gap-4">
-              {/* ThemeSwitcher (Visível: SM e MD para cima | Escondido: Mobile) */}
+              {/* ModeToggle (Visível: SM e MD para cima | Escondido: Mobile) */}
               <div className="hidden md:block">
-                <ThemeSwitcher />
+                <ModeToggle />
               </div>
 
               {/* Botões de Entrar/Cadastrar (Visível: MD para cima | Escondido: Mobile/Tablet) */}
@@ -79,13 +79,13 @@ const Header = () => {
                   to="/login"
                   className="rounded-md bg-teal-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm dark:hover:bg-teal-500"
                 >
-                  Entrar
+                  Beneficiário
                 </Link>
                 <Link
-                  to="/registrar"
+                  to="/login"
                   className="rounded-md bg-gray-100 px-5 py-2.5 text-sm font-medium text-teal-600 dark:bg-gray-800 dark:text-white dark:hover:text-white/75"
                 >
-                  Cadastrar
+                  Doador
                 </Link>
               </div>
 
@@ -152,7 +152,7 @@ const Header = () => {
               <span className="text-sm font-medium text-gray-700 dark:text-white mr-4">
                 Tema:
               </span>
-              <ThemeSwitcher />
+              <ModeToggle />
             </div>
 
             {/* Botões de Ação Mobile */}
@@ -161,14 +161,14 @@ const Header = () => {
               onClick={toggleMenu}
               className="block rounded-md bg-teal-600 px-5 py-2.5 text-sm font-medium text-white text-center shadow-sm dark:hover:bg-teal-500"
             >
-              Entrar
+              Beneficiário
             </Link>
             <Link
               to="/registrar"
               onClick={toggleMenu}
               className="block rounded-md bg-gray-100 px-5 py-2.5 text-sm font-medium text-teal-600 text-center dark:bg-gray-800 dark:text-white dark:hover:text-white/75"
             >
-              Cadastrar
+              Doador
             </Link>
           </div>
         </nav>

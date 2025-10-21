@@ -6,22 +6,22 @@ const socialLinks = [
   {
     name: 'Facebook',
     Icon: FaFacebook,
-    href: 'https://facebook.com/seuperfil',
+    href: 'https://facebook.com',
   },
   {
     name: 'Instagram',
     Icon: FaInstagram,
-    href: 'https://instagram.com/seuperfil',
+    href: 'https://instagram.com',
   },
   {
     name: 'Twitter',
     Icon: FaTwitter,
-    href: 'https://twitter.com/seuperfil',
+    href: 'https://twitter.com',
   },
   {
     name: 'GitHub',
     Icon: FaGithub,
-    href: 'https://github.com/seuperfil',
+    href: 'https://github.com',
   },
 ];
 const Footer = () => {

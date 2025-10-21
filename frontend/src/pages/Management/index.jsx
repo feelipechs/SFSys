@@ -8,9 +8,9 @@ import BeneficiariesTable from '../../components/Management/BeneficiariesTable';
 import DonorsTable from '../../components/Management/DonorsTable';
 import ProductsTable from '../../components/Management/ProductsTable';
 
-import ThemeSwitcher from '../../components/ThemeSwitcher';
 import { Link } from 'react-router-dom';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ModeToggle } from '@/components/ModeToggle';
 
 // 1. Objeto TABS completo
 const TABS = {
@@ -66,7 +66,7 @@ const Management = () => {
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
             Painel de Gerenciamento
           </h1>
-          <ThemeSwitcher />
+          <ModeToggle />
         </header>
         <Link
           to="/campanhas"
