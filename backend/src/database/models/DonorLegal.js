@@ -1,44 +1,55 @@
-import { Model, DataTypes } from 'sequelize';
-import sequelize from '../connection.js';
+import { DataTypes, Model } from 'sequelize';
 
 class DonorLegal extends Model {
+  // Método estático de inicialização: Recebe a conexão como parâmetro
+  static init(sequelize) {
+    super.init(
+      {
+        // CAMPO CHAVE PRIMÁRIA/ESTRANGEIRA (Não auto-increment)
+        donorId: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+          allowNull: false,
+          field: 'donor_id', // Mapeamento
+        },
+
+        // CAMPOS DE DADOS DA PESSOA JURÍDICA
+        tradeName: {
+          type: DataTypes.STRING(100),
+          allowNull: false,
+          field: 'trade_name', // Mapeamento
+        },
+        cnpj: {
+          type: DataTypes.STRING(18),
+          allowNull: false,
+          unique: true,
+        },
+        companyName: {
+          type: DataTypes.STRING(100),
+          allowNull: true, // Assumindo que pode ser nulo
+          field: 'company_name', // Mapeamento
+        },
+      },
+      {
+        sequelize, // Usa a conexão passada no init
+        tableName: 'donor_legal',
+        modelName: 'DonorLegal',
+        timestamps: true, // Assumindo created_at e updated_at
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
+        underscored: true,
+        // A opção 'id: false' é removida, pois 'donorId' já está definido como PK
+      },
+    );
+  }
+
   static associate(models) {
-    // 1. O registro de PJ PERTENCE AO registro Mãe (Donor)
-    // A FK é 'donor_id', que também é a PK/FK nesta tabela
+    // O registro de PJ PERTENCE AO registro Mãe (Donor)
     this.belongsTo(models.Donor, {
       foreignKey: 'donor_id',
-      as: 'donor', // Nome do alias para buscar o registro mãe
+      as: 'donor',
     });
   }
 }
-
-DonorLegal.init(
-  {
-    donor_id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      allowNull: false,
-    },
-    trade_name: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
-    cnpj: {
-      type: DataTypes.STRING(18),
-      allowNull: false,
-      unique: true,
-    },
-    company_name: {
-      type: DataTypes.STRING(100),
-    },
-    // created_at e updated_at são incluídos automaticamente
-  },
-  {
-    sequelize,
-    tableName: 'donor_legal',
-    modelName: 'DonorLegal',
-    id: false,
-  },
-);
 
 export default DonorLegal;

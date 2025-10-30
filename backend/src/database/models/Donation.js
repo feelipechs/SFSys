@@ -1,7 +1,55 @@
-import { Model, DataTypes } from 'sequelize';
-import sequelize from '../connection.js';
+import { DataTypes, Model } from 'sequelize';
 
 class Donation extends Model {
+  // Método estático de inicialização: Recebe a conexão como parâmetro
+  static init(sequelize) {
+    super.init(
+      {
+        id: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+          autoIncrement: true,
+          allowNull: false,
+        },
+        // Mapeamento snake_case para camelCase
+        dateTime: {
+          type: DataTypes.DATE,
+          allowNull: false,
+          field: 'date_time',
+        },
+        observation: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+        },
+        // Foreign Keys (Mapeamento explícito para camelCase)
+        donorId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          field: 'donor_id',
+        },
+        responsibleStaffId: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+          field: 'responsible_staff_id',
+        },
+        campaignId: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+          field: 'campaign_id',
+        },
+      },
+      {
+        sequelize, // Usa a conexão passada no init
+        tableName: 'donation',
+        modelName: 'Donation',
+        timestamps: true, // Se sua migration incluir created_at/updated_at
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
+        underscored: true,
+      },
+    );
+  }
+
   static associate(models) {
     // 1. A Doação pertence a um Doador (FK: donor_id)
     this.belongsTo(models.Donor, { foreignKey: 'donor_id', as: 'donor' });
@@ -25,41 +73,5 @@ class Donation extends Model {
     });
   }
 }
-
-Donation.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-      allowNull: false,
-    },
-    date_time: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    observation: {
-      type: DataTypes.TEXT,
-    },
-    donor_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    responsible_staff_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    campaign_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    // created_at e updated_at são incluídos automaticamente
-  },
-  {
-    sequelize,
-    tableName: 'donation', // nome da tabela usada na migration
-    modelName: 'Donation',
-  },
-);
 
 export default Donation;

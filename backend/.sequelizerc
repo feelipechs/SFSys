@@ -1,7 +1,6 @@
 const path = require('path');
 
 module.exports = {
-  // ATUALIZE AQUI: mude a extensão para .cjs
   config: path.resolve('src', 'database', 'config', 'config.cjs'),
   'models-path': path.resolve('src', 'database', 'models'),
   'migrations-path': path.resolve('src', 'database', 'migrations'),

@@ -1,0 +1,26 @@
+backend/
+├── node_modules/
+├── src/
+│   ├── database/
+│   │   ├── config/          # <--- MANTIDO: Configs do Sequelize CLI (DEV/TEST/PROD)
+│   │   │   └── config.js
+│   │   ├── migrations/      # <--- MANTIDO: Arquivos para gerenciar o esquema
+│   │   ├── models/          # <--- MANTIDO: Definições dos Models do Sequelize
+│   │   └── seeders/         # <--- MANTIDO: Dados iniciais
+│   │   └── index.js         # NOVO: Ponto de entrada da Conexão e Associações
+│   │
+│   ├── controllers/         # NOVO: Lógica de Requisição/Resposta
+│   │   └── DoadorController.js
+│   │
+│   ├── services/            # NOVO: Lógica de Negócio (Onde vai a complexidade)
+│   │   └── DoadorService.js
+│   │
+│   ├── routes/              # NOVO: Mapeamento de rotas
+│   │   └── doador.routes.js
+│   │   └── index.js         # NOVO: Agregador de rotas simples
+│   │
+│   └── server.js            # NOVO: Ponto de Entrada, Express e Início do Servidor
+│
+├── .env.development.local   # NOVO: Variáveis de ambiente de DEV
+├── package.json
+└── .sequelizerc             # MANTIDO: Configuração para o CLI

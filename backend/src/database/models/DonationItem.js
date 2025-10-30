@@ -1,47 +1,53 @@
-import { Model, DataTypes } from 'sequelize';
-import sequelize from '../connection.js';
+import { DataTypes, Model } from 'sequelize';
 
 class DonationItem extends Model {
+  // Método estático de inicialização: Recebe a conexão como parâmetro
+  static init(sequelize) {
+    super.init(
+      {
+        id: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+          autoIncrement: true,
+          allowNull: false,
+        },
+        // Foreign Keys (Mapeamento explícito para camelCase)
+        donationId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          field: 'donation_id', // Mapeamento
+        },
+        productId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          field: 'product_id', // Mapeamento
+        },
+        // Campo de Conteúdo
+        quantity: {
+          type: DataTypes.DECIMAL(10, 2),
+          allowNull: false,
+        },
+      },
+      {
+        sequelize, // Usa a conexão passada no init
+        tableName: 'donation_item',
+        modelName: 'DonationItem',
+        timestamps: false, // Assumindo que não há created_at/updated_at nesta tabela
+        underscored: true,
+      },
+    );
+  }
+
   static associate(models) {
-    // 1. O Item pertence a UMA Doação (FK: donation_id)
+    // 1. O Item pertence a UMA Doação
     this.belongsTo(models.Donation, {
       foreignKey: 'donation_id',
       as: 'donation',
     });
 
-    // 2. O Item refere-se a UM Produto (FK: product_id)
+    // 2. O Item refere-se a UM Produto
     this.belongsTo(models.Product, { foreignKey: 'product_id', as: 'product' });
   }
 }
-
-DonationItem.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-      allowNull: false,
-    },
-    // Chaves Estrangeiras
-    donation_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    product_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    // Campo de Conteúdo
-    quantity: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'donation_item', // nome da tabela usada na migration
-    modelName: 'DonationItem',
-  },
-);
 
 export default DonationItem;

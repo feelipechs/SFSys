@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 
-export async function up(queryInterface, Sequelize) {
-  // A senha para teste é 'Staff@123'
+export async function up(queryInterface) {
+  // senha teste
   const hashedPassword = await bcrypt.hash('Staff@123', 10);
 
   await queryInterface.bulkInsert(
