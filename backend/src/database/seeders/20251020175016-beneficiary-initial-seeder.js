@@ -1,15 +1,8 @@
-import bcrypt from 'bcryptjs';
-
-export async function up(queryInterface, Sequelize) {
-  // A senha para teste é 'Cliente@123'
-  const hashedPassword = await bcrypt.hash('Cliente@123', 10);
-
+export async function up(queryInterface) {
   await queryInterface.bulkInsert(
     'beneficiary',
     [
       {
-        email: 'cliente@teste.com',
-        password: hashedPassword,
         responsible_name: 'Maria Teste',
         registration_date: new Date(),
         address: 'Rua de Teste, 10',
@@ -17,15 +10,19 @@ export async function up(queryInterface, Sequelize) {
         created_at: new Date(),
         updated_at: new Date(),
       },
+      // Adicione mais beneficiários de teste se necessário
     ],
     {},
   );
 }
 
 export async function down(queryInterface) {
+  // O rollback agora deve usar um campo que seja razoavelmente único, como o nome
+  // Mas, como 'responsible_name' pode não ser único, o ideal seria deletar
+  // com base no ID se fosse conhecido. Usaremos o nome por simplicidade.
   await queryInterface.bulkDelete(
     'beneficiary',
-    { email: 'cliente@teste.com' },
+    { responsible_name: 'Maria Teste' }, // USAR CAMPO QUE SEJA ÚNICO
     {},
   );
 }

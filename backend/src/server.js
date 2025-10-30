@@ -1,46 +1,43 @@
-import app from './config/server.js';
-import config from './config/index.js';
+import path from 'path';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url'; // Utilitário para simular __dirname
 import express from 'express';
-// ⚠️ IMPORTANTE: Importar a função de conexão e o objeto db
-import { connectDB, db } from './database/index.js';
+import routes from './routes/index.js'; // Note o .js na importação
+import { connectDB } from './database/index.js'; // Note o .js na importação
 
-// Importa todas as rotas
-import authRoutes from './routes/auth.routes.js';
-// ... outras rotas
+// --- Funções Auxiliares para ES Modules ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// ----------------------------------------
 
-// ------------------------------------------------------------------
-// Função Assíncrona para Inicializar (Async IIFE)
-// ------------------------------------------------------------------
+// --- Carregamento Inteligente do .env ---
+const nodeEnv = process.env.NODE_ENV || 'development';
+const envFile = `.env.${nodeEnv}${nodeEnv === 'development' ? '.local' : ''}`;
+const envPath = path.resolve(__dirname, '..', envFile);
+dotenv.config({ path: envPath });
+
+// --- Express Setup ---
+const app = express();
+
+app.use(express.json()); // Middleware essencial para ler body JSON
+app.use(routes); // Carrega todas as rotas
+
+const PORT = process.env.PORT || 3000;
+
+// --- Início do Servidor ---
 async function startServer() {
-  // 1. Conectar ao Banco de Dados (AGUARDA a conexão assíncrona)
-  await connectDB();
+  try {
+    console.log('🔗 Tentando conectar ao Banco de Dados...');
+    await connectDB(); // Garante a conexão antes de subir o servidor
 
-  // 2. Middlewares e Configurações
-  app.use(express.json());
-
-  // === 3. Configuração de Rotas ===
-  app.use('/api/auth', authRoutes);
-  // ... use suas rotas aqui ...
-
-  // Rota de teste
-  app.get('/', (req, res) => {
-    // Agora, você pode ter certeza que o DB está pronto
-    res.send(
-      `Servidor ON! Ambiente: ${config.NODE_ENV}. DB Status: Conectado.`,
-    );
-  });
-
-  // 4. Inicialização
-  const PORT = config.PORT || 3000;
-
-  app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-    console.log(`Ambiente: ${config.NODE_ENV}`);
-  });
+    app.listen(PORT, () => {
+      console.log(`Servidor rodando em http://localhost:${PORT}`);
+      console.log(`Ambiente: ${nodeEnv}`);
+    });
+  } catch (error) {
+    console.error('Falha Crítica ao Iniciar o Servidor:', error.message);
+    process.exit(1);
+  }
 }
 
-// Chama a função principal para iniciar tudo
 startServer();
-
-// Você pode exportar o objeto db para uso global se precisar, mas é opcional
-// export const models = db;

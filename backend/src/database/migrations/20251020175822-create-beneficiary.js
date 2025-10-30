@@ -6,17 +6,6 @@ export async function up(queryInterface, Sequelize) {
       autoIncrement: true,
       allowNull: false,
     },
-    // CAMPOS DE LOGIN
-    email: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    password: {
-      type: Sequelize.STRING(60),
-      allowNull: false,
-    },
-    // CAMPOS DO DIAGRAMA
     responsible_name: {
       type: Sequelize.STRING(80),
       allowNull: false,

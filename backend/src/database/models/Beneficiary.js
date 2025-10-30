@@ -1,78 +1,53 @@
-import { Model, DataTypes } from 'sequelize';
-import bcrypt from 'bcryptjs';
-import sequelize from '../connection.js';
+import { DataTypes, Model } from 'sequelize';
 
 class Beneficiary extends Model {
-  async comparePassword(candidatePassword) {
-    return bcrypt.compare(candidatePassword, this.password);
+  static init(sequelize) {
+    super.init(
+      {
+        id: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+          autoIncrement: true,
+          allowNull: false,
+        },
+        responsibleName: {
+          type: DataTypes.STRING(80),
+          allowNull: false,
+          field: 'responsible_name',
+        },
+        registrationDate: {
+          type: DataTypes.DATE,
+          allowNull: false,
+          field: 'registration_date',
+        },
+        address: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        familyMembersCount: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          field: 'family_members_count',
+        },
+      },
+      {
+        sequelize,
+        tableName: 'beneficiary',
+        modelName: 'Beneficiary',
+        timestamps: true,
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
+        underscored: true,
+      },
+    );
   }
 
   static associate(models) {
-    this.hasMany(models.Distribution, { foreignKey: 'beneficiary_id' });
+    this.hasMany(models.Distribution, {
+      foreignKey: 'beneficiary_id',
+      as: 'distributions',
+    });
   }
 }
-
-Beneficiary.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-      allowNull: false,
-    },
-    // CAMPOS DE LOGIN
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    password: {
-      type: DataTypes.STRING(60),
-      allowNull: false,
-    },
-    // CAMPOS DO DIAGRAMA
-    responsible_name: {
-      type: DataTypes.STRING(80),
-      allowNull: false,
-    },
-    registration_date: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    address: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    family_members_count: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    // created_at e updated_at são incluídos automaticamente
-  },
-  {
-    sequelize,
-    tableName: 'beneficiary', // nome da tabela usada na migration
-    modelName: 'Beneficiary',
-    // ----------------------------------------------------
-    // HOOK: Esta função é executada ANTES de salvar no DB
-    // ----------------------------------------------------
-    hooks: {
-      beforeCreate: async (beneficiary) => {
-        // Criptografa a senha antes de salvar
-        if (beneficiary.password) {
-          const salt = await bcrypt.genSalt(10);
-          beneficiary.password = await bcrypt.hash(beneficiary.password, salt);
-        }
-      },
-      beforeUpdate: async (beneficiary) => {
-        // Criptografa a senha se ela foi modificada
-        if (beneficiary.changed('password')) {
-          const salt = await bcrypt.genSalt(10);
-          beneficiary.password = await bcrypt.hash(beneficiary.password, salt);
-        }
-      },
-    },
-  },
-);
 
 export default Beneficiary;

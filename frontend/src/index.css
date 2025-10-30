@@ -1,18 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css"; 
 
-/* 2. ATENÇÃO: Define que o dark mode será ativado pela classe 'dark' */
-@custom-variant dark (&:where(.dark, .dark *)); 
+@custom-variant dark (&:is(.dark *));
 
-/* (As diretivas @tailwind base, components, utilities podem ter sido removidas no v4, 
-   mas certifique-se que o @import "tailwindcss" está presente.) */
-
-/* Se você precisar aplicar transições suaves no tema, adicione-as aqui */
 :root {
-  /* Opcional: Adiciona transições suaves para cores */
-  transition-property: background-color, border-color, color, fill, stroke;
-  transition-duration: 300ms;
-  transition-timing-function: ease-out;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
