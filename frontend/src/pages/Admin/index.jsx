@@ -7,7 +7,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 import data from './data.json';
 
-const Admin = () => {
+const AdminPage = () => {
   return (
     <SidebarProvider
       style={{
@@ -34,4 +34,4 @@ const Admin = () => {
   );
 };
 
-export default Admin;
+export default AdminPage;

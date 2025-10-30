@@ -4,10 +4,10 @@ import { GoArrowUpRight } from 'react-icons/go';
 
 const Content = () => {
   return (
-    <section className="bg-white lg:grid lg:h-screen lg:place-content-center dark:bg-gray-900">
+    <section className="lg:grid lg:h-screen lg:place-content-center">
       <div className="mx-auto w-screen max-w-screen-xl px-4 py-16 sm:px-6 sm:py-24 md:grid md:grid-cols-2 md:items-center md:gap-4 lg:px-8 lg:py-32">
         <div className="max-w-prose text-left">
-          <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl dark:text-white">
+          <h1 className="text-4xl font-bold sm:text-5xl">
             Garanta o alimento na mesa e reacenda a
             <strong className="text-indigo-600"> esperança </strong>
             de quem mais precisa.
@@ -34,7 +34,7 @@ const Content = () => {
             </Link>
 
             <Link
-              to="/ajuda"
+              to="/sobre"
               className="group relative inline-flex items-center rounded border border-gray-200 px-5 py-3 font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
             >
               <span className="flex items-center space-x-2">
@@ -52,7 +52,7 @@ const Content = () => {
           </div>
         </div>
 
-        <img src="/images/imagem.png" alt="boneco" />
+        <img src="/images/imagem.png" alt="Imagem sobre doação" />
       </div>
     </section>
   );

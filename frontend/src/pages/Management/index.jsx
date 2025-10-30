@@ -34,7 +34,7 @@ const TAB_CONFIG = [
   { name: 'Campanhas', value: TABS.CAMPANHAS, component: <CampaignsTable /> },
 ];
 
-const Management = () => {
+const ManagementPage = () => {
   // 2. Estado simples para a aba ativa
   const [activeTab, setActiveTab] = useState(TABS.BENEFICIARIOS);
 
@@ -98,4 +98,4 @@ const Management = () => {
   );
 };
 
-export default Management;
+export default ManagementPage;

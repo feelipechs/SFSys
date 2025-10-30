@@ -1,15 +1,16 @@
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
-import MonetaryDonationsList from '../../components/MonetaryDonations/MonetaryDonationsList';
+// import MonetaryDonationsList from '../../components/MonetaryDonations/MonetaryDonationsList';
+import MonetaryDonations from '@/components/MonetaryDonations';
 
-const MonetaryDonations = () => {
+const MonetaryDonationsPage = () => {
   return (
     <>
       <Header />
-      <MonetaryDonationsList />
+      <MonetaryDonations />
       <Footer />
     </>
   );
 };
 
-export default MonetaryDonations;
+export default MonetaryDonationsPage;
