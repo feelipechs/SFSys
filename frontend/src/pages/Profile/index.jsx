@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { ModeToggle } from '@/components/ModeToggle';
 // Importe GeneralSection se for usá-lo
 
-const Profile = () => {
+const ProfilePage = () => {
   // Estado que a Page gerencia para a navegação
   const [activeSection, setActiveSection] = useState('Perfil');
 
@@ -41,7 +41,7 @@ const Profile = () => {
 
   return (
     // Layout Principal da Página
-    <div className="min-h-screen p-4 sm:p-8 bg-white dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen p-4 sm:p-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <header className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
@@ -69,4 +69,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default ProfilePage;

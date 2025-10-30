@@ -1,10 +1,11 @@
-import Footer from '../../components/Footer';
-import Header from '../../components/Header';
-import Content from '../../components/Content';
+import Footer from '@/components/Footer';
+import Header from '@/components/Header';
+import Content from '@/components/Content';
 
-const Home = () => {
+const HomePage = () => {
   return (
     <>
+      {/* <Navbar navigationData={navigationData} /> */}
       <Header />
       <Content />
       <Footer />
@@ -12,4 +13,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default HomePage;

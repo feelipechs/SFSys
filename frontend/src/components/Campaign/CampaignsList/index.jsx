@@ -1,4 +1,5 @@
 import CampaignCard from '../CampaignCard';
+import CampaignFilter from '../CampaignFilter';
 
 const campaignsData = [
   {
@@ -7,7 +8,7 @@ const campaignsData = [
     description:
       'Nossa meta é arrecadar 5 toneladas de alimentos não-perecíveis para distribuir em comunidades vulneráveis. Toda ajuda conta!',
     imageUrl: '/images/1.png', //  // proporção de imagem recomendada: 16:9
-    linkDetails: '/campanha/alimentos',
+    linkDetails: '/campanhas/id-campanha',
   },
   {
     id: 2,
@@ -15,7 +16,7 @@ const campaignsData = [
     description:
       'Nossa meta é arrecadar 5 toneladas de alimentos não-perecíveis para distribuir em comunidades vulneráveis. Toda ajuda conta!',
     imageUrl: '/images/1.png',
-    linkDetails: '/campanha/alimentos',
+    linkDetails: '/campanhas/id-campanha',
   },
   {
     id: 3,
@@ -23,7 +24,7 @@ const campaignsData = [
     description:
       'Nossa meta é arrecadar 5 toneladas de alimentos não-perecíveis para distribuir em comunidades vulneráveis. Toda ajuda conta!',
     imageUrl: '/images/1.png',
-    linkDetails: '/campanha/alimentos',
+    linkDetails: '/campanhas/id-campanha',
   },
   {
     id: 4,
@@ -31,7 +32,7 @@ const campaignsData = [
     description:
       'Nossa meta é arrecadar 5 toneladas de alimentos não-perecíveis para distribuir em comunidades vulneráveis. Toda ajuda conta!',
     imageUrl: '/images/1.png',
-    linkDetails: '/campanha/alimentos',
+    linkDetails: '/campanhas/id-campanha',
   },
   {
     id: 5,
@@ -39,7 +40,7 @@ const campaignsData = [
     description:
       'Nossa meta é arrecadar 5 toneladas de alimentos não-perecíveis para distribuir em comunidades vulneráveis. Toda ajuda conta!',
     imageUrl: '/images/1.png',
-    linkDetails: '/campanha/alimentos',
+    linkDetails: '/campanhas/id-campanha',
   },
   {
     id: 6,
@@ -47,7 +48,7 @@ const campaignsData = [
     description:
       'Nossa meta é arrecadar 5 toneladas de alimentos não-perecíveis para distribuir em comunidades vulneráveis. Toda ajuda conta!',
     imageUrl: '/images/1.png',
-    linkDetails: '/campanha/alimentos',
+    linkDetails: '/campanhas/id-campanha',
   },
   {
     id: 7,
@@ -55,7 +56,7 @@ const campaignsData = [
     description:
       'Nossa meta é arrecadar 5 toneladas de alimentos não-perecíveis para distribuir em comunidades vulneráveis. Toda ajuda conta!',
     imageUrl: '/images/1.png',
-    linkDetails: '/campanha/alimentos',
+    linkDetails: '/campanhas/id-campanha',
   },
   {
     id: 8,
@@ -63,21 +64,18 @@ const campaignsData = [
     description:
       'Nossa meta é arrecadar 5 toneladas de alimentos não-perecíveis para distribuir em comunidades vulneráveis. Toda ajuda conta!',
     imageUrl: '/images/1.png',
-    linkDetails: '/campanha/alimentos',
+    linkDetails: '/campanhas/id-campanha',
   },
 
-  // Adicione mais campanhas aqui
+  // adicione mais campanhas aqui
 ];
 
 const CampaignsList = () => {
   return (
-    // Mantendo o padding no container externo para o espaçamento geral da tela
-    <div className="h-full p-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
-      <h1 className="text-4xl font-extrabold text-center mb-10 text-gray-900 dark:text-white">
-        Campanhas em Destaque
-      </h1>
-      <div></div>
-
+    <div className="h-full p-4 sm:px-6 lg:px-8">
+      <h1>Filtros e Pesquisa</h1>
+      <span className="sr-only">Filtros e Pesquisa</span>
+      <CampaignFilter />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
         {campaignsData.map((campaign) => (
           <CampaignCard
