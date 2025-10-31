@@ -1,13 +1,13 @@
 import { DataTypes, Model } from 'sequelize';
-import bcrypt from 'bcryptjs'; // Mantido para a lógica de autenticação
+import bcrypt from 'bcryptjs';
 
 class Staff extends Model {
-  // Método para comparação de senha (usado no login)
+  // método para comparação de senha (usado no login)
   async comparePassword(candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
   }
 
-  // Método estático de inicialização (padrão moderno)
+  // método estático de inicialização (padrão moderno)
   static init(sequelize) {
     super.init(
       {
@@ -37,7 +37,7 @@ class Staff extends Model {
         },
       },
       {
-        sequelize, // Conexão passada pelo database/index.js
+        sequelize, // conexão passada pelo database/index.js
         tableName: 'staff',
         modelName: 'Staff',
         timestamps: true,
@@ -45,7 +45,7 @@ class Staff extends Model {
         updatedAt: 'updated_at',
         underscored: true,
 
-        // HOOKS: Mantidos para criptografar a senha
+        // criptografar senha
         hooks: {
           beforeCreate: async (staff) => {
             if (staff.password) {

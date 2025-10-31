@@ -14,7 +14,7 @@ class BeneficiaryController {
   }
 
   // GET /api/beneficiary
-  static async index(req, res) {
+  static async findAll(req, res) {
     try {
       const beneficiaries = await BeneficiaryService.findAll();
       return res.status(200).json(beneficiaries);
@@ -25,7 +25,7 @@ class BeneficiaryController {
   }
 
   // GET /api/beneficiary/:id
-  static async show(req, res) {
+  static async findById(req, res) {
     try {
       const { id } = req.params;
       const beneficiary = await BeneficiaryService.findById(id);

@@ -10,10 +10,10 @@ const router = Router();
 router.post('/', BeneficiaryController.create);
 
 // Rota para listar todos os beneficiários (GET /api/beneficiary)
-router.get('/', BeneficiaryController.index);
+router.get('/', BeneficiaryController.findAll);
 
 // Rota para buscar um beneficiário por ID (GET /api/beneficiary/:id)
-router.get('/:id', BeneficiaryController.show);
+router.get('/:id', BeneficiaryController.findById);
 
 // Rota para atualizar um beneficiário (PUT /api/beneficiary/:id)
 router.put('/:id', BeneficiaryController.update);

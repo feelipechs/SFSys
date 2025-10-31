@@ -70,7 +70,7 @@ class BeneficiaryService {
   }
 
   // Método para deletar um beneficiário
-  static async destroy(id) {
+  static async delete(id) {
     const beneficiary = await this.findById(id); // Reusa o findById para checar se existe
 
     await beneficiary.destroy();
