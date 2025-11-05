@@ -1,3 +1,39 @@
+usuario:
+{
+    "login": "admin",
+    "password": "123",
+    "name": "Administrador",
+    "role": "admin"
+}
+
+campanha:
+{
+    "name": "campanha 1",
+    "startDate": "2025-11-01",
+    "endDate": "2025-11-30"
+}
+
+produto:
+{
+    "name": "arroz",
+    "unitOfMeasurement": "kg",
+    "currentStock": 10
+}
+
+beneficiário:
+{
+    "responsibleName": "Bruno Rodrigues Novo",
+    "address": "Rua das Flores, 200 Novo",
+    "familyMembersCount": 4
+}
+
+distribuição:
+{
+    "dateTime": "2025-11-05",
+    "quantityBaskets": 10,
+    "beneficiaryId": 1
+}
+
 doador pf:
 {
     "type": "individual",
@@ -21,4 +57,13 @@ doador pj:
         "tradeName": "BetaTech",
         "companyName": "Beta Serviços Ltda"
     }
+}
+
+doação:
+{
+    "dateTime": "2025-11-05",
+    "observation": "Doação de teste Atualizada",
+    "donorId": 1, 
+    "responsibleUserId": 1, 
+    "campaignId": 1
 }
