@@ -32,7 +32,7 @@ export async function up(queryInterface, Sequelize) {
     updated_at: { type: Sequelize.DATE, allowNull: false },
   });
 
-  // 🟢 Dica: Adiciona uma restrição de unicidade composta
+  // adiciona uma restrição de unicidade composta
   // Garante que um produto não seja listado duas vezes na mesma distribuição.
   await queryInterface.addConstraint('distribution_item', {
     fields: ['distribution_id', 'product_id'],

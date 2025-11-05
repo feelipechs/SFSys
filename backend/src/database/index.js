@@ -10,7 +10,7 @@ import Donor from './models/Donor.js';
 import DonorIndividual from './models/DonorIndividual.js';
 import DonorLegal from './models/DonorLegal.js';
 import Product from './models/Product.js';
-import Staff from './models/Staff.js';
+import User from './models/User.js';
 // Importe todos os seus Models aqui, lembrando do .js!
 
 const environment = process.env.NODE_ENV || 'development';
@@ -31,7 +31,7 @@ const models = [
   DonorIndividual, // Adicionado
   DonorLegal, // Adicionado
   Product, // Adicionado
-  Staff, // Adicionado
+  User, // Adicionado
 ];
 
 // O Doador está comentado no seu código original (/*, Doador */), se for o `Donor`

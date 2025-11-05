@@ -27,10 +27,10 @@ class Donation extends Model {
           allowNull: false,
           field: 'donor_id',
         },
-        responsibleStaffId: {
+        responsibleUserId: {
           type: DataTypes.INTEGER,
           allowNull: true,
-          field: 'responsible_staff_id',
+          field: 'responsible_user_id',
         },
         campaignId: {
           type: DataTypes.INTEGER,
@@ -54,10 +54,10 @@ class Donation extends Model {
     // 1. A Doação pertence a um Doador (FK: donor_id)
     this.belongsTo(models.Donor, { foreignKey: 'donor_id', as: 'donor' });
 
-    // 2. A Doação pertence a um Staff (FK: responsible_staff_id)
-    this.belongsTo(models.Staff, {
-      foreignKey: 'responsible_staff_id',
-      as: 'responsibleStaff',
+    // 2. A Doação pertence a um User (FK: responsible_user_id)
+    this.belongsTo(models.User, {
+      foreignKey: 'responsible_user_id',
+      as: 'responsibleUser',
     });
 
     // 3. A Doação pertence a uma Campanha (FK: campaign_id)

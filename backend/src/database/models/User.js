@@ -1,7 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 import bcrypt from 'bcryptjs';
 
-class Staff extends Model {
+class User extends Model {
   // método para comparação de senha (usado no login)
   async comparePassword(candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
@@ -38,25 +38,25 @@ class Staff extends Model {
       },
       {
         sequelize, // conexão passada pelo database/index.js
-        tableName: 'staff',
-        modelName: 'Staff',
+        tableName: 'user',
+        modelName: 'User',
         timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at',
         underscored: true,
 
-        // criptografar senha
+        // criptografar senha (fornecido pelo gemini, necessário alterar futuramente)
         hooks: {
-          beforeCreate: async (staff) => {
-            if (staff.password) {
+          beforeCreate: async (user) => {
+            if (user.password) {
               const salt = await bcrypt.genSalt(10);
-              staff.password = await bcrypt.hash(staff.password, salt);
+              user.password = await bcrypt.hash(user.password, salt);
             }
           },
-          beforeUpdate: async (staff) => {
-            if (staff.changed('password')) {
+          beforeUpdate: async (user) => {
+            if (user.changed('password')) {
               const salt = await bcrypt.genSalt(10);
-              staff.password = await bcrypt.hash(staff.password, salt);
+              user.password = await bcrypt.hash(user.password, salt);
             }
           },
         },
@@ -67,14 +67,14 @@ class Staff extends Model {
   // Associações
   static associate(models) {
     this.hasMany(models.Donation, {
-      foreignKey: 'responsible_staff_id',
+      foreignKey: 'responsible_user_id',
       as: 'responsibleDonations',
     });
     this.hasMany(models.Distribution, {
-      foreignKey: 'delivery_staff_id',
+      foreignKey: 'delivery_user_id',
       as: 'deliveredDistributions',
     });
   }
 }
 
-export default Staff;
+export default User;

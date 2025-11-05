@@ -24,11 +24,11 @@ export async function up(queryInterface, Sequelize) {
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
     },
-    delivery_staff_id: {
+    delivery_user_id: {
       type: Sequelize.INTEGER,
       // Usar SET NULL aqui é recomendado para manter o histórico
       allowNull: true,
-      references: { model: 'staff', key: 'id' },
+      references: { model: 'user', key: 'id' },
       onUpdate: 'CASCADE',
       onDelete: 'SET NULL',
     },

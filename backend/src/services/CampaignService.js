@@ -1,24 +1,30 @@
-import db from '../database';
-
-const { Campaign } = db;
-
 class CampaignService {
-  static async create(data) {
+  constructor(CampaignModel) {
+    if (!CampaignModel) {
+      throw new Error(
+        'O modelo Campaign é obrigatório para inicializar o Service.',
+      );
+    }
+
+    this.Campaign = CampaignModel;
+  }
+
+  async create(data) {
     if (!data.name || !data.startDate || !data.endDate) {
       throw new Error('Todos os campos obrigatórios devem ser preenchidos.');
     }
 
-    const newCampaign = await Campaign.create(data);
+    const newCampaign = await this.Campaign.create(data);
     return newCampaign;
   }
 
-  static async findAll() {
-    return await Campaign.findAll({
+  async findAll() {
+    return await this.Campaign.findAll({
       attributes: [
         'id',
         'name',
-        ['start_date', 'startDate'],
-        ['end_date', 'endDate'],
+        'startDate',
+        'endDate',
         ['created_at', 'createdAt'],
         ['updated_at', 'updatedAt'],
       ],
@@ -26,13 +32,13 @@ class CampaignService {
     });
   }
 
-  static async findById(id) {
-    const campaign = await Campaign.findByPk(id, {
+  async findById(id) {
+    const campaign = await this.Campaign.findByPk(id, {
       attributes: [
         'id',
         'name',
-        ['start_date', 'startDate'],
-        ['end_date', 'endDate'],
+        'startDate',
+        'endDate',
         ['created_at', 'createdAt'],
         ['updated_at', 'updatedAt'],
       ],
@@ -41,21 +47,22 @@ class CampaignService {
     if (!campaign) {
       throw new Error(`Campanha com ID ${id} não encontrada.`);
     }
+
     return campaign;
   }
 
-  static async update(id, data) {
+  async update(id, data) {
     const campaign = await this.findById(id);
 
     await campaign.update(data);
     return campaign;
   }
 
-  static async destroy(id) {
+  async destroy(id) {
     const campaign = await this.findById(id);
 
     await campaign.destroy();
-    return { message: `Campanha com ID ${id} excluída com sucesso.` };
+    return true;
   }
 }
 

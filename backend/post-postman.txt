@@ -1,0 +1,24 @@
+doador pf:
+{
+    "type": "individual",
+    "name": "Joana Silva",
+    "email": "joana@exemplo.com",
+    "phone": "11988887777",
+    "individual": {
+        "cpf": "12345678900",
+        "dateOfBirth": "1990-05-15"
+    }
+}
+
+doador pj:
+{
+    "type": "legal",
+    "name": "Empresa Beta Serviços",
+    "email": "contato@beta.com",
+    "phone": "2133334444",
+    "legal": {
+        "cnpj": "00000000000191",
+        "tradeName": "BetaTech",
+        "companyName": "Beta Serviços Ltda"
+    }
+}

@@ -2,10 +2,10 @@ import bcrypt from 'bcryptjs';
 
 export async function up(queryInterface) {
   // senha teste
-  const hashedPassword = await bcrypt.hash('Staff@123', 10);
+  const hashedPassword = await bcrypt.hash('User@123', 10);
 
   await queryInterface.bulkInsert(
-    'staff',
+    'user',
     [
       {
         login: 'admin',
@@ -21,5 +21,5 @@ export async function up(queryInterface) {
 }
 
 export async function down(queryInterface) {
-  await queryInterface.bulkDelete('staff', { login: 'admin' }, {});
+  await queryInterface.bulkDelete('user', { login: 'admin' }, {});
 }

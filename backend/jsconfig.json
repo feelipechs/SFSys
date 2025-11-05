@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    // isso diz ao VS Code para usar as regras de importação do Node.js modernas
+    "module": "NodeNext", 
+    "moduleResolution": "NodeNext",
+    
+    // Opcional, dependendo da sua versão do Node.js, mas geralmente seguro
+    "target": "ES2022" 
+  },
+  "exclude": ["node_modules"]
+}

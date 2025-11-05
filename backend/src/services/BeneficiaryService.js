@@ -1,47 +1,35 @@
-import db from '../database/index.js';
-
-// Desestruturamos o Model Beneficiary para uso direto
-const { Beneficiary } = db;
-
 class BeneficiaryService {
+  // Recebe o modelo Beneficiary no construtor
+  constructor(BeneficiaryModel) {
+    if (!BeneficiaryModel) {
+      throw new Error(
+        'O modelo Beneficiary é obrigatório para inicializar o Service.',
+      );
+    }
+
+    this.Beneficiary = BeneficiaryModel;
+  }
+
   // Método para criar um novo beneficiário
-  static async create(data) {
+  async create(data) {
     // Validação básica
     if (!data.responsibleName || !data.address || !data.familyMembersCount) {
       throw new Error('Todos os campos obrigatórios devem ser preenchidos.');
     }
 
-    // Se registrationDate não for fornecida, usa a data/hora atual (simplifica a inserção)
     const creationData = {
       ...data,
       registrationDate: data.registrationDate || new Date(),
     };
 
-    const newBeneficiary = await Beneficiary.create(creationData);
+    // Usa a propriedade de instância
+    const newBeneficiary = await this.Beneficiary.create(creationData);
     return newBeneficiary;
   }
 
   // Método para buscar todos os beneficiários
-  static async findAll() {
-    return await Beneficiary.findAll({
-      // ✅ CORREÇÃO AQUI: Força o Sequelize a buscar 'created_at' e renomear para 'createdAt'
-      attributes: [
-        'id',
-        'responsibleName',
-        'address',
-        'familyMembersCount',
-        'registrationDate',
-        ['created_at', 'createdAt'], // Corrigido
-        ['updated_at', 'updatedAt'], // Incluído por boa prática
-      ],
-      order: [['responsibleName', 'ASC']],
-    });
-  }
-
-  // Método para buscar um beneficiário por ID
-  static async findById(id) {
-    const beneficiary = await Beneficiary.findByPk(id, {
-      // ✅ CORREÇÃO AQUI: Mapeamento explícito para timestamps
+  async findAll() {
+    return await this.Beneficiary.findAll({
       attributes: [
         'id',
         'responsibleName',
@@ -51,30 +39,47 @@ class BeneficiaryService {
         ['created_at', 'createdAt'],
         ['updated_at', 'updatedAt'],
       ],
-      // Se precisar incluir as distribuições:
-      // include: [{ model: db.Distribution, as: 'distributions' }]
+      order: [['responsibleName', 'ASC']],
+    });
+  }
+
+  // Método para buscar um beneficiário por ID
+  async findById(id) {
+    const beneficiary = await this.Beneficiary.findByPk(id, {
+      attributes: [
+        'id',
+        'responsibleName',
+        'address',
+        'familyMembersCount',
+        'registrationDate',
+        ['created_at', 'createdAt'],
+        ['updated_at', 'updatedAt'],
+      ],
     });
 
     if (!beneficiary) {
       throw new Error(`Beneficiário com ID ${id} não encontrado.`);
     }
+
     return beneficiary;
   }
 
   // Método para atualizar um beneficiário
-  static async update(id, data) {
-    const beneficiary = await this.findById(id); // Reusa o findById para checar se existe
+  async update(id, data) {
+    // Reusa o findById
+    const beneficiary = await this.findById(id);
 
     await beneficiary.update(data);
     return beneficiary;
   }
 
   // Método para deletar um beneficiário
-  static async delete(id) {
-    const beneficiary = await this.findById(id); // Reusa o findById para checar se existe
+  async destroy(id) {
+    const beneficiary = await this.findById(id);
 
     await beneficiary.destroy();
-    return { message: `Beneficiário com ID ${id} excluído com sucesso.` };
+    // Retorna true ou nada para o Controller saber que foi sucesso
+    return true;
   }
 }
 
