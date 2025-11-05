@@ -1,24 +1,29 @@
-import { Router } from 'express';
+import express from 'express';
+import db from '../database/index.js';
+import BeneficiaryService from '../services/BeneficiaryService.js';
 import BeneficiaryController from '../controllers/BeneficiaryController.js';
-// Importe middlewares de autenticação e autorização, se necessário
-// import AuthMiddleware from '../middlewares/AuthMiddleware.js';
 
-const router = Router();
+const router = express.Router();
+// --- Injeção de Dependência e Instanciação ---
 
-// Rota para criar um novo beneficiário (POST /api/beneficiary)
-// Exemplo: router.post('/', AuthMiddleware.check(['manager', 'admin']), BeneficiaryController.create);
-router.post('/', BeneficiaryController.create);
+// 1. Prepara o que será injetado no Service
+const { Beneficiary } = db;
 
-// Rota para listar todos os beneficiários (GET /api/beneficiary)
-router.get('/', BeneficiaryController.index);
+// 2. Cria a instância do Service, INJETANDO o Modelo do Sequelize
+const beneficiaryServiceInstance = new BeneficiaryService(Beneficiary);
 
-// Rota para buscar um beneficiário por ID (GET /api/beneficiary/:id)
-router.get('/:id', BeneficiaryController.show);
+// 3. Cria a instância do Controller, INJETANDO o Service
+const beneficiaryControllerInstance = new BeneficiaryController(
+  beneficiaryServiceInstance,
+);
 
-// Rota para atualizar um beneficiário (PUT /api/beneficiary/:id)
-router.put('/:id', BeneficiaryController.update);
+// --- Definição das Rotas ---
 
-// Rota para deletar um beneficiário (DELETE /api/beneficiary/:id)
-router.delete('/:id', BeneficiaryController.destroy);
+// Usa os métodos de instância (que já estão "bindados" no Controller)
+router.post('/', beneficiaryControllerInstance.create); // POST /api/beneficiaries
+router.get('/', beneficiaryControllerInstance.findAll); // GET /api/beneficiaries
+router.get('/:id', beneficiaryControllerInstance.findById); // GET /api/beneficiaries/:id
+router.put('/:id', beneficiaryControllerInstance.update); // PUT /api/beneficiaries/:id
+router.delete('/:id', beneficiaryControllerInstance.destroy); // DELETE /api/beneficiaries/:id
 
 export default router;

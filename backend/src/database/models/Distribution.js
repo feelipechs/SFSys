@@ -32,10 +32,10 @@ class Distribution extends Model {
           allowNull: false,
           field: 'beneficiary_id',
         },
-        deliveryStaffId: {
+        deliveryUserId: {
           type: DataTypes.INTEGER,
           allowNull: true,
-          field: 'delivery_staff_id',
+          field: 'delivery_user_id',
         },
       },
       {
@@ -51,10 +51,10 @@ class Distribution extends Model {
   }
 
   static associate(models) {
-    // 1. A Distribuição PERTENCE A UM Staff (N:1)
-    this.belongsTo(models.Staff, {
-      foreignKey: 'delivery_staff_id',
-      as: 'deliveryStaff',
+    // 1. A Distribuição PERTENCE A UM User (N:1)
+    this.belongsTo(models.User, {
+      foreignKey: 'delivery_user_id',
+      as: 'deliveryUser',
     });
 
     // 2. A Distribuição PERTENCE A UM Beneficiário (N:1)

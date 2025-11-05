@@ -15,7 +15,6 @@ export async function up(queryInterface, Sequelize) {
       allowNull: false,
     },
     current_stock: {
-      // O tipo DECIMAL (ou NUMERIC, são sinônimos no PostgreSQL)
       type: Sequelize.DECIMAL(10, 2),
       allowNull: false,
       defaultValue: 0.0, // É uma boa prática inicializar estoques

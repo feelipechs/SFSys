@@ -1,5 +1,5 @@
 export async function up(queryInterface, Sequelize) {
-  await queryInterface.createTable('staff', {
+  await queryInterface.createTable('user', {
     id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
@@ -32,5 +32,5 @@ export async function up(queryInterface, Sequelize) {
 
 export async function down(queryInterface) {
   // Para MySQL, basta remover a tabela. O tipo ENUM é excluído com ela.
-  await queryInterface.dropTable('staff');
+  await queryInterface.dropTable('user');
 }

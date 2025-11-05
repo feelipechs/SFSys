@@ -1,4 +1,4 @@
-class DonationController {
+class UserController {
   constructor(service) {
     this.service = service;
 
@@ -9,63 +9,63 @@ class DonationController {
     this.destroy = this.destroy.bind(this);
   }
 
-  // POST /api/donations
+  // POST /api/users
   async create(req, res) {
     try {
-      const newDonation = await this.service.create(req.body);
-      return res.status(201).json(newDonation);
+      const newUser = await this.service.create(req.body);
+      return res.status(201).json(newUser);
     } catch (error) {
-      console.error('Erro ao criar doação:', error.message);
+      console.error('Erro ao criar usuário:', error.message);
       return res.status(500).json({ error: error.message });
     }
   }
 
-  // GET /api/donations
+  // GET /api/users
   async findAll(req, res) {
     try {
-      const donations = await this.service.findAll();
-      return res.status(200).json(donations);
+      const users = await this.service.findAll();
+      return res.status(200).json(users);
     } catch (error) {
-      console.error('Erro ao listar doações:', error.message);
-      return res.status(500).json({ error: 'Erro interno ao buscar lista.' });
+      console.error('Erro ao listar usuários:', error.message);
+      return res.status(500).json({ error: error.message });
     }
   }
 
-  // GET/api/donations/:id
+  // GET /api/users/:id
   async findById(req, res) {
     try {
       const { id } = req.params;
-      const donation = await this.service.findById(id);
-      return res.status(200).json(donation);
+      const user = await this.service.findById(id);
+      return res.status(200).json(user);
     } catch (error) {
-      console.error('Erro ao buscar doação:', error.message);
+      console.error('Erro ao buscar usuário:', error.message);
       return res.status(500).json({ error: error.message });
     }
   }
 
-  // PUT /api/donations/:id
+  // PUT /api/users/:id
   async update(req, res) {
     try {
       const { id } = req.params;
-      const updatedDonation = await this.service.update(id, req.body);
-      return res.status(200).json(updatedDonation);
+      const user = await this.service.update(id, req.body);
+      return res.status(200).json(user);
     } catch (error) {
-      console.error('Erro ao atualizar doação:', error.message);
+      console.error('Erro ao atualizar usuário', error.message);
       return res.status(500).json({ error: error.message });
     }
   }
 
-  // DELETE /api/donations/:id
+  // DELETE /api/users/:id
   async destroy(req, res) {
     try {
       const { id } = req.params;
       await this.service.destroy(id);
       return res.status(204).send();
     } catch (error) {
-      console.error('Erro ao deletar doação:', error.message);
+      console.error('Erro ao deletar usuário', error.message);
       return res.status(500).json({ error: error.message });
     }
   }
 }
 
-export default DonationController;
+export default UserController;

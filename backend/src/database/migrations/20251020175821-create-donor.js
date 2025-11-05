@@ -6,6 +6,10 @@ export async function up(queryInterface, Sequelize) {
       autoIncrement: true,
       allowNull: false,
     },
+    type: {
+      type: Sequelize.ENUM('individual', 'legal'),
+      allowNull: false,
+    },
     name: {
       type: Sequelize.STRING(80),
       allowNull: false,

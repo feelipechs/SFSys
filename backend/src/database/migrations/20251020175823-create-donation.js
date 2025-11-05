@@ -20,10 +20,10 @@ export async function up(queryInterface, Sequelize) {
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE',
     },
-    responsible_staff_id: {
+    responsible_user_id: {
       type: Sequelize.INTEGER,
       allowNull: true,
-      references: { model: 'staff', key: 'id' },
+      references: { model: 'user', key: 'id' },
       onUpdate: 'CASCADE',
       onDelete: 'SET NULL',
     },
