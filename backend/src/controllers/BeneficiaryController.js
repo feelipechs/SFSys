@@ -8,7 +8,7 @@ class BeneficiaryController {
     this.findAll = this.findAll.bind(this);
     this.findById = this.findById.bind(this);
     this.update = this.update.bind(this);
-    this.destroy = this.destroy.bind(this);
+    this.delete = this.delete.bind(this);
   }
 
   // POST /api/beneficiaries
@@ -61,10 +61,10 @@ class BeneficiaryController {
   }
 
   // DELETE /api/beneficiaries/:id
-  async destroy(req, res) {
+  async delete(req, res) {
     try {
       const { id } = req.params;
-      await this.service.destroy(id);
+      await this.service.delete(id);
       // 204 No Content para deleção bem-sucedida
       return res.status(204).send();
     } catch (error) {

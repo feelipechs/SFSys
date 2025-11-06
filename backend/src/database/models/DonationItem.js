@@ -27,12 +27,17 @@ class DonationItem extends Model {
           type: DataTypes.DECIMAL(10, 2),
           allowNull: false,
         },
+        validity: {
+          type: DataTypes.DATE,
+        },
       },
       {
         sequelize, // Usa a conexão passada no init
         tableName: 'donation_item',
         modelName: 'DonationItem',
-        timestamps: false, // Assumindo que não há created_at/updated_at nesta tabela
+        timestamps: true,
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
         underscored: true,
       },
     );

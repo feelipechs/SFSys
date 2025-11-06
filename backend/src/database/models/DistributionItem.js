@@ -31,7 +31,9 @@ class DistributionItem extends Model {
         sequelize, // Usa a conexão passada no init
         tableName: 'distribution_item',
         modelName: 'DistributionItem',
-        timestamps: false, // Itens de distribuição geralmente não usam created_at/updated_at
+        timestamps: true,
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
         underscored: true,
       },
     );

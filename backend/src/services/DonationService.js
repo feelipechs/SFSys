@@ -1,24 +1,71 @@
 class DonationService {
-  constructor(DonationModel) {
-    if (!DonationModel) {
+  constructor(models) {
+    if (
+      !models ||
+      !models.Donation ||
+      !models.DonationItem ||
+      !models.Product ||
+      (!models.connection && !models.sequelize)
+    ) {
       throw new Error(
-        'O modelo Donation é obrigatório para inicializar o Service.',
+        'Modelos (Donation, DonationItem) e instância do Sequelize são obrigatórios para inicializar o Service.',
       );
     }
 
-    this.Donation = DonationModel;
+    this.Donation = models.Donation;
+    this.DonationItem = models.DonationItem;
+    this.Product = models.Product;
+    this.sequelize = models.connection;
   }
 
   async create(data) {
-    if (!data.dateTime || !data.donorId) {
-      throw new Error('Todos os campos obrigatórios devem ser preenchidos.');
+    // desestruturar array de itens e dados principais da tabela
+    const { items, ...donationBaseData } = data;
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      if (!items || items.length === 0) {
+        throw new Error('A doação deve conter pelo menos um item.');
+      }
+
+      // criando o pai (Donation) primeiro
+      const newDonation = await this.Donation.create(donationBaseData, {
+        transaction,
+      });
+
+      // criando o objeto do filho (DonationItem) injetando o id do pai
+      const itemsToCreate = items.map((item) => ({
+        ...item,
+        donationId: newDonation.id,
+      }));
+
+      // criando os filhos em lote
+      await this.DonationItem.bulkCreate(itemsToCreate, {
+        transaction,
+      });
+
+      // estoque: incrementando o currentStock (entrada)
+      // Promise.all para executar todas as atualizações de forma paralela e eficiente
+      const stockUpdates = itemsToCreate.map((item) => {
+        return this.Product.increment(
+          // coluna a ser incrementada
+          { currentStock: item.quantity },
+          // condições: onde o ID do produto corresponde ao item
+          { where: { id: item.productId }, transaction },
+        );
+      });
+
+      // espera que todas as atualizações de estoque sejam concluídas (dentro da transação)
+      await Promise.all(stockUpdates);
+      // fim da lógica de estoque
+
+      await transaction.commit();
+
+      return this.findById(newDonation.id);
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
     }
-
-    // incluir o responsibleUserId e campaignId
-    // na validação se eles também forem NOT NULL no DB (mesmo que allowNull: true no modelo).
-
-    const newDonation = await this.Donation.create(data);
-    return newDonation;
   }
 
   async findAll() {
@@ -33,11 +80,41 @@ class DonationService {
         ['created_at', 'createdAt'],
         ['updated_at', 'updatedAt'],
       ],
+      include: [
+        // 1. INCLUSÃO DO DOADOR
+        {
+          association: 'donor',
+          attributes: ['id', 'name', 'type', 'phone'], // Apenas campos essenciais do Doador
+        },
+        // 2. INCLUSÃO DO USUÁRIO RESPONSÁVEL
+        {
+          association: 'responsibleUser',
+          attributes: ['id', 'name', 'role'],
+        },
+        // 3. INCLUSÃO DA CAMPANHA
+        {
+          association: 'campaign',
+          attributes: ['id', 'name', 'startDate', 'endDate'], // Apenas campos essenciais da Campanha
+        },
+        // 4. INCLUSÃO DOS ITENS DA DOAÇÃO (DONATION_ITEM)
+        {
+          association: 'items',
+          attributes: ['id', 'quantity', 'validity', 'productId'], // Apenas campos essenciais do Item
+          // INCLUSÃO ANINHADA: Trazendo o Produto associado a CADA Item
+          include: [
+            {
+              association: 'product', // Nome do alias na model DonationItem
+              attributes: ['id', 'name', 'unitOfMeasurement', 'currentStock'], // Apenas dados essenciais do Produto
+            },
+          ],
+        },
+      ],
       order: [['dateTime', 'DESC']],
     });
   }
 
-  async findById(id) {
+  // 'transaction = null' como parâmetro opcional
+  async findById(id, transaction = null) {
     const donation = await this.Donation.findByPk(id, {
       attributes: [
         'id',
@@ -49,6 +126,33 @@ class DonationService {
         ['created_at', 'createdAt'],
         ['updated_at', 'updatedAt'],
       ],
+      include: [
+        {
+          association: 'donor',
+          attributes: ['id', 'name', 'type', 'phone'],
+        },
+        {
+          association: 'responsibleUser',
+          attributes: ['id', 'name', 'role'],
+        },
+        {
+          association: 'campaign',
+          attributes: ['id', 'name', 'startDate', 'endDate'],
+        },
+        {
+          association: 'items',
+          attributes: ['id', 'quantity', 'validity', 'productId'],
+          include: [
+            {
+              association: 'product',
+              attributes: ['id', 'name', 'unitOfMeasurement', 'currentStock'],
+            },
+          ],
+        },
+      ],
+
+      // passa o objeto transaction para o sequelize
+      transaction,
     });
 
     if (!donation) {
@@ -58,18 +162,66 @@ class DonationService {
     return donation;
   }
 
+  // permite atualizar somente dados do cabeçalho da doação (observação, data)
   async update(id, data) {
+    const { items, ...donationBaseData } = data; // filtra os itens
     const donation = await this.findById(id);
 
-    await donation.update(data);
+    await donation.update(donationBaseData);
     return donation;
   }
 
-  async destroy(id) {
-    const donation = await this.findById(id);
+  async delete(id) {
+    const transaction = await this.sequelize.transaction();
 
-    await donation.destroy();
-    return true;
+    try {
+      // busca transacional: traz a doação com os itens e o currentStock do produto
+      const donation = await this.findById(id, transaction);
+
+      if (!donation) {
+        throw new Error(`Doação com ID ${id} não encontrada.`);
+      }
+
+      // lógica de bloqueio: garante que há estoque suficiente para reverter a doação
+      const itemsToRevert = donation.items;
+
+      for (const item of itemsToRevert) {
+        // o estoque atual do produto é acessado via inclusão (include)
+        const availableStock = parseFloat(item.product.currentStock);
+        const quantityToRevert = parseFloat(item.quantity);
+
+        // se o estoque atual for menor que a quantidade a ser revertida, bloqueia
+        if (availableStock < quantityToRevert) {
+          // lança o erro e força o rollback no catch
+          throw new Error(
+            `Não é possível excluir esta doação. O produto ${item.product.name} (ID ${item.productId}) tem estoque insuficiente (${availableStock}) para reverter a doação de ${quantityToRevert}.`,
+          );
+        }
+      }
+      // fim da lógica de bloqueio
+
+      // reversão de estoque (decremento)
+      const stockUpdates = itemsToRevert.map((item) => {
+        return this.Product.decrement(
+          { currentStock: item.quantity },
+          { where: { id: item.productId }, transaction },
+        );
+      });
+
+      await Promise.all(stockUpdates);
+
+      // destruição do registro (pai e filhos)
+      await donation.destroy({ transaction });
+
+      // commit e finalização
+      await transaction.commit();
+
+      return true;
+    } catch (error) {
+      // garante que a transação seja desfeita se a validação ou o decremento falhar
+      await transaction.rollback();
+      throw error;
+    }
   }
 }
 

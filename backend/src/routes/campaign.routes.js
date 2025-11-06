@@ -17,6 +17,6 @@ router.post('/', campaignControllerInstance.create); // POST /api/campaigns
 router.get('/', campaignControllerInstance.findAll); // GET /api/campaigns
 router.get('/:id', campaignControllerInstance.findById); // GET /api/campaigns/:id
 router.put('/:id', campaignControllerInstance.update); // PUT /api/campaigns/:id
-router.delete('/:id', campaignControllerInstance.destroy); // DELETE /api/campaigns/:id
+router.delete('/:id', campaignControllerInstance.delete); // DELETE /api/campaigns/:id
 
 export default router;

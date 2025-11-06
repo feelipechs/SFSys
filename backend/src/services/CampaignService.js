@@ -58,7 +58,7 @@ class CampaignService {
     return campaign;
   }
 
-  async destroy(id) {
+  async delete(id) {
     const campaign = await this.findById(id);
 
     await campaign.destroy();

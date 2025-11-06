@@ -1,8 +1,56 @@
+usuario:
+{
+    "login": "admin",
+    "password": "123",
+    "name": "Administrador",
+    "role": "admin"
+}
+
+campanha:
+{
+    "name": "campanha de arrecadação de alimentos",
+    "startDate": "2025-11-01",
+    "endDate": "2025-11-30"
+}
+
+produto:
+{
+    "name": "arroz",
+    "unitOfMeasurement": "kg",
+    "currentStock": 10
+}
+
+beneficiário:
+{
+    "responsibleName": "John Doe",
+    "address": "Rua das Flores, 200 Novo",
+    "familyMembersCount": 4
+}
+
+distribuição:
+{
+  "dateTime": "2025-11-06",
+  "observation": "Distribuição de teste para instituição X.",
+  "responsibleUserId": 1,
+  "beneficiaryId": 1,
+  "quantityBaskets": 2,
+  "items": [
+    {
+      "quantity": 3,
+      "productId": 1
+    },
+    {
+      "quantity": 3,
+      "productId": 2
+    }
+  ]
+}
+
 doador pf:
 {
     "type": "individual",
-    "name": "Joana Silva",
-    "email": "joana@exemplo.com",
+    "name": "John Doe",
+    "email": "john@exemplo.com",
     "phone": "11988887777",
     "individual": {
         "cpf": "12345678900",
@@ -21,4 +69,25 @@ doador pj:
         "tradeName": "BetaTech",
         "companyName": "Beta Serviços Ltda"
     }
+}
+
+doação:
+{
+  "dateTime": "2025-11-06",
+  "observation": "Teste de criação em cascata com Sequelize",
+  "donorId": 1, 
+  "responsibleUserId": 1,
+  "campaignId": 1,
+  "items": [
+    {
+      "quantity": 5,
+      "validity": "2026-10-30", 
+      "productId": 1
+    },
+    {
+      "quantity": 5,
+      "validity": "2027-01-01",
+      "productId": 2
+    }
+  ]
 }

@@ -13,7 +13,7 @@ class DonorService {
     this.sequelize = models.connection;
   }
 
-  // 1. CREATE (Método Corrigido: Sequencial e com Campo 'type' Incluso)
+  // 1. CREATE
   async create(data) {
     // 1. Desestruturar 'type' e os dados aninhados.
     // Usamos 'donorBaseData' para os campos que vão para a tabela 'donor'.
@@ -70,7 +70,6 @@ class DonorService {
   }
 
   // 2. READ (Lida com Herança - precisa do include)
-
   // Busca todos os Doadores, incluindo seus detalhes de herança.
   async findAll() {
     return this.Donor.findAll({
@@ -128,7 +127,7 @@ class DonorService {
 
   // 4. DELETE (Depende do 'CASCADE' nos modelos)
   // Exclui um Doador por ID.
-  async destroy(id) {
+  async delete(id) {
     const donor = await this.findById(id);
 
     // O onDelete: 'CASCADE' na associação garante que a sub-tabela também seja excluída.
