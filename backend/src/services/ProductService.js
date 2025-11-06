@@ -10,11 +10,16 @@ class ProductService {
   }
 
   async create(data) {
-    if (!data.name || !data.unitOfMeasurement || !data.currentStock) {
+    // desestruturar, filtrando 'currentStock' do payload de entrada
+    const { currentStock, ...productBaseData } = data;
+
+    if (!productBaseData.name || !productBaseData.unitOfMeasurement) {
       throw new Error('Todos os campos obrigatórios devem ser preenchidos.');
     }
 
-    const newProduct = await this.Product.create(data);
+    // criar o produto apenas com os dados base filtrados
+    const newProduct = await this.Product.create(productBaseData);
+
     return newProduct;
   }
 
@@ -57,7 +62,7 @@ class ProductService {
     return product;
   }
 
-  async destroy(id) {
+  async delete(id) {
     const product = await this.findById(id);
 
     await product.destroy();

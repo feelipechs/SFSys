@@ -15,6 +15,6 @@ router.post('/', productControllerInstance.create);
 router.get('/', productControllerInstance.findAll);
 router.get('/:id', productControllerInstance.findById);
 router.put('/:id', productControllerInstance.update);
-router.delete('/:id', productControllerInstance.destroy);
+router.delete('/:id', productControllerInstance.delete);
 
 export default router;

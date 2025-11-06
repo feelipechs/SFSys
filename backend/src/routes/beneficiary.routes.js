@@ -24,6 +24,6 @@ router.post('/', beneficiaryControllerInstance.create); // POST /api/beneficiari
 router.get('/', beneficiaryControllerInstance.findAll); // GET /api/beneficiaries
 router.get('/:id', beneficiaryControllerInstance.findById); // GET /api/beneficiaries/:id
 router.put('/:id', beneficiaryControllerInstance.update); // PUT /api/beneficiaries/:id
-router.delete('/:id', beneficiaryControllerInstance.destroy); // DELETE /api/beneficiaries/:id
+router.delete('/:id', beneficiaryControllerInstance.delete); // DELETE /api/beneficiaries/:id
 
 export default router;

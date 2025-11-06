@@ -24,7 +24,7 @@ export async function up(queryInterface, Sequelize) {
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
     },
-    delivery_user_id: {
+    responsible_user_id: {
       type: Sequelize.INTEGER,
       // Usar SET NULL aqui é recomendado para manter o histórico
       allowNull: true,

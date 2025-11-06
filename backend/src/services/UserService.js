@@ -66,7 +66,7 @@ class UserService {
     return this._getSafeUser(user);
   }
 
-  async destroy(id) {
+  async delete(id) {
     const user = await this.findById(id);
 
     await user.destroy();

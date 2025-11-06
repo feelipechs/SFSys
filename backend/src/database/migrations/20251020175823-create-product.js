@@ -22,6 +22,12 @@ export async function up(queryInterface, Sequelize) {
     created_at: { type: Sequelize.DATE, allowNull: false },
     updated_at: { type: Sequelize.DATE, allowNull: false },
   });
+
+  // unicidade para evitar ter dois produtos com mesmo nome e unidade de medida
+  await queryInterface.addIndex('product', ['name', 'unit_of_measurement'], {
+    unique: true,
+    name: 'product_unique_name_unit',
+  });
 }
 
 export async function down(queryInterface) {

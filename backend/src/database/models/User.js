@@ -44,6 +44,11 @@ class User extends Model {
         createdAt: 'created_at',
         updatedAt: 'updated_at',
         underscored: true,
+        defaultScope: {
+          attributes: {
+            exclude: ['password'], // exclui a senha de consultas em outros lugares
+          },
+        },
 
         // criptografar senha (fornecido pelo gemini, necessário alterar futuramente)
         hooks: {

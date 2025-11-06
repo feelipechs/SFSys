@@ -15,6 +15,6 @@ router.post('/', userControllerInstance.create);
 router.get('/', userControllerInstance.findAll);
 router.get('/:id', userControllerInstance.findById);
 router.put('/:id', userControllerInstance.update);
-router.delete('/:id', userControllerInstance.destroy);
+router.delete('/:id', userControllerInstance.delete);
 
 export default router;
