@@ -1,12 +1,22 @@
-import { Router } from 'express';
+import express from 'express';
+import db from '../database/index.js';
 import AuthController from '../controllers/AuthController.js';
+import AuthService from '../services/AuthService.js';
 
-const router = Router();
+const router = express.Router();
 
-// Rota para a Equipe (login na tabela User)
-router.post('/user/login', AuthController.userLogin);
+// instanciação do service, injetando a Model User
+// o AuthService precisa apenas da Model User
+const authServiceInstance = new AuthService(db.User);
 
-// Rota para a criação de User (controlada por admin, usando o sistema de convite)
-// Nota: Esta rota estaria em user.routes.js, pois é protegida.
+// instanciação do controller, injetando o service
+const authControllerInstance = new AuthController(authServiceInstance);
+
+// definição da rota de login (não precisa de middlewares de Auth/Authorize)
+// POST /login
+router.post('/login', authControllerInstance.login);
+
+// rota opcional para teste rápido de um token (não necessária para o login, mas útil)
+// router.get('/validate', authenticate, (req, res) => res.status(200).json({ message: 'Token válido', user: req.user }));
 
 export default router;

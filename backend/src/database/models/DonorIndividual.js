@@ -1,32 +1,31 @@
 import { DataTypes, Model } from 'sequelize';
 
 class DonorIndividual extends Model {
-  // Método estático de inicialização: Recebe a conexão como parâmetro
   static init(sequelize) {
     super.init(
       {
-        // CAMPO CHAVE PRIMÁRIA/ESTRANGEIRA (Não auto-increment)
+        // CAMPO CHAVE PRIMÁRIA/ESTRANGEIRA (não auto-increment)
         donorId: {
           type: DataTypes.INTEGER,
           primaryKey: true,
           allowNull: false,
-          field: 'donor_id', // Mapeamento
+          field: 'donor_id',
         },
 
         // CAMPOS DE DADOS DA PESSOA FÍSICA
         cpf: {
-          type: DataTypes.STRING(14),
+          type: DataTypes.STRING(11),
           allowNull: false,
           unique: true,
         },
         dateOfBirth: {
           type: DataTypes.DATEONLY,
           allowNull: false,
-          field: 'date_of_birth', // Mapeamento
+          field: 'date_of_birth',
         },
       },
       {
-        sequelize, // Usa a conexão passada no init
+        sequelize,
         tableName: 'donor_individual',
         modelName: 'DonorIndividual',
         timestamps: true,
@@ -34,15 +33,15 @@ class DonorIndividual extends Model {
         updatedAt: 'updated_at',
         underscored: true,
 
-        // IMPORTANTE: id: false é desnecessário aqui, pois definimos a PK explicitamente (donorId).
-        // Se a PK for uma FK, o auto-increment deve ser evitado (como já está na migration).
-        // O Sequelize entende que donorId é a PK.
+        // id: false é desnecessário aqui, pois definimos a PK explicitamente (donorId)
+        // Se a PK for uma FK, o auto-increment deve ser evitado (como já está na migration)
+        // O Sequelize entende que donorId é a PK
       },
     );
   }
 
   static associate(models) {
-    // O registro de PF PERTENCE AO registro Mãe (Donor)
+    // O registro de PF PERTENCE AO registro pai (Donor)
     this.belongsTo(models.Donor, {
       foreignKey: 'donor_id',
       as: 'donor',

@@ -10,7 +10,7 @@ export async function up(queryInterface, Sequelize) {
       onDelete: 'CASCADE',
     },
     cpf: {
-      type: Sequelize.STRING(14),
+      type: Sequelize.STRING(11),
       allowNull: false,
       unique: true,
     },

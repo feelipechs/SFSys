@@ -1,25 +1,49 @@
+import { BadRequestError, NotFoundError } from '../utils/api-error.js';
+
 class UserService {
-  constructor(UserModel) {
-    if (!UserModel) {
+  constructor(models) {
+    if (
+      !models ||
+      !models.User ||
+      !models.Donation ||
+      !models.Distribution ||
+      !models.sequelize
+    ) {
       throw new Error(
         'O modelo User é obrigatório para inicializar o Service.',
       );
     }
 
-    this.User = UserModel;
+    this.User = models.User;
+    this.Donation = models.Donation;
+    this.Distribution = models.Distribution;
+    this.sequelize = models.sequelize;
   }
 
   async create(data) {
-    // Validação básica
-    if (!data.login || !data.password || !data.name) {
-      throw new Error('Todos os campos obrigatórios devem ser preenchidos.');
+    // validação básica
+    if (!data.email || !data.password || !data.name || !data.role) {
+      throw new BadRequestError(
+        'Todos os campos obrigatórios devem ser preenchidos.',
+      );
     }
 
-    // O Hook 'beforeCreate' no modelo User fará o hashing da senha automaticamente.
+    // validação de unicidade
+    const existingUser = await this.User.findOne({
+      where: { email: data.email },
+    });
+
+    if (existingUser) {
+      // se encontrou, significa que o login já está em uso
+      throw new BadRequestError('Email já em uso, escolha outro.');
+    }
+    // fim da validação
+
+    // O hook beforeCreate no modelo user fará o hashing da senha automaticamente
     const newUser = await this.User.create(data);
 
-    // Otimização: Garantir que a senha não seja retornada na resposta.
-    // Usamos o método getSafeUser que criaremos para consistência.
+    // otimização: garantir que a senha não seja retornada na resposta
+    // usa o método getSafeUser para consistência
     return this._getSafeUser(newUser);
   }
 
@@ -27,7 +51,7 @@ class UserService {
     return await this.User.findAll({
       attributes: [
         'id',
-        'login',
+        'email',
         'name',
         'role',
         ['created_at', 'createdAt'],
@@ -37,11 +61,11 @@ class UserService {
     });
   }
 
-  async findById(id) {
+  async findById(id, transaction = null) {
     const user = await this.User.findByPk(id, {
       attributes: [
         'id',
-        'login',
+        'email',
         'name',
         'role',
         ['created_at', 'createdAt'],
@@ -50,7 +74,7 @@ class UserService {
     });
 
     if (!user) {
-      throw new Error(`Usuário com ID ${id} não encontrado.`);
+      throw new NotFoundError(`Usuário com ID ${id} não encontrado.`);
     }
 
     return user;
@@ -58,26 +82,52 @@ class UserService {
 
   async update(id, data) {
     const user = await this.findById(id);
-    // O Hook 'beforeUpdate' no modelo User hasheará a senha SE o campo 'password'
-    // estiver presente no 'data' e for diferente do valor atual.
+    // o hook beforeUpdate no modelo user hasheará a senha SE o campo password estiver presente no data e for diferente do valor atual
     await user.update(data);
 
-    // Otimização: Retornar o objeto limpo
+    // otimização: retornar o objeto limpo
     return this._getSafeUser(user);
   }
 
   async delete(id) {
-    const user = await this.findById(id);
+    const transaction = await this.sequelize.transaction();
+    try {
+      const user = await this.findById(id, transaction); // assumindo findById passa a transação
 
-    await user.destroy();
-    return true;
+      // checagem de doações
+      const hasDonations = await this.Donation.count({
+        where: { responsibleUserId: id },
+        transaction,
+      });
+
+      // checagem de distribuições
+      const hasDistributions = await this.Distribution.count({
+        where: { responsibleUserId: id },
+        transaction,
+      });
+
+      // bloqueio
+      if (hasDonations > 0 || hasDistributions > 0) {
+        throw new BadRequestError(
+          'Não é possível excluir este usuário. Ele está associado a transações históricas (doações ou distribuições).',
+        );
+      }
+
+      // se não houver histórico, procede com a exclusão (soft delete idealmente)
+      await user.destroy({ transaction });
+      await transaction.commit();
+      return true;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
-  // MÉTODO PRIVADO: Garante que a senha não saia da Service
+  // método para que a senha não saia da service
   _getSafeUser(user) {
     if (!user) return null;
 
-    // Criamos uma cópia limpa do objeto de dados antes de retornar
+    // cria uma cópia limpa do objeto de dados antes de retornar
     const safeData = user.get({ plain: true });
     delete safeData.password;
 

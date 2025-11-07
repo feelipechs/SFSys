@@ -1,7 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 
 class DonationItem extends Model {
-  // Método estático de inicialização: Recebe a conexão como parâmetro
   static init(sequelize) {
     super.init(
       {
@@ -11,18 +10,17 @@ class DonationItem extends Model {
           autoIncrement: true,
           allowNull: false,
         },
-        // Foreign Keys (Mapeamento explícito para camelCase)
+        // foreign keys
         donationId: {
           type: DataTypes.INTEGER,
           allowNull: false,
-          field: 'donation_id', // Mapeamento
+          field: 'donation_id',
         },
         productId: {
           type: DataTypes.INTEGER,
           allowNull: false,
-          field: 'product_id', // Mapeamento
+          field: 'product_id',
         },
-        // Campo de Conteúdo
         quantity: {
           type: DataTypes.DECIMAL(10, 2),
           allowNull: false,
@@ -32,7 +30,7 @@ class DonationItem extends Model {
         },
       },
       {
-        sequelize, // Usa a conexão passada no init
+        sequelize,
         tableName: 'donation_item',
         modelName: 'DonationItem',
         timestamps: true,

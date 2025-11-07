@@ -1,34 +1,34 @@
 import path from 'path';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url'; // Utilitário para simular __dirname
+import { fileURLToPath } from 'url'; // utilitário para simular __dirname
 import express from 'express';
-import routes from './routes/index.js'; // Note o .js na importação
-import { connectDB } from './database/index.js'; // Note o .js na importação
+import routes from './routes/index.js';
+import { connectDB } from './database/index.js';
 
-// --- Funções Auxiliares para ES Modules ---
+// funções auxiliares para ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // ----------------------------------------
 
-// --- Carregamento Inteligente do .env ---
+// carregamento inteligente do .env
 const nodeEnv = process.env.NODE_ENV || 'development';
 const envFile = `.env.${nodeEnv}${nodeEnv === 'development' ? '.local' : ''}`;
 const envPath = path.resolve(__dirname, '..', envFile);
 dotenv.config({ path: envPath });
 
-// --- Express Setup ---
+// express setup
 const app = express();
 
-app.use(express.json()); // Middleware essencial para ler body JSON
-app.use(routes); // Carrega todas as rotas
+app.use(express.json()); // middleware para ler body JSON
+app.use(routes); // carrega todas as rotas
 
 const PORT = process.env.PORT || 3000;
 
-// --- Início do Servidor ---
+// início do servidor
 async function startServer() {
   try {
-    console.log('🔗 Tentando conectar ao Banco de Dados...');
-    await connectDB(); // Garante a conexão antes de subir o servidor
+    console.log('Tentando conectar ao Banco de Dados...');
+    await connectDB(); // garante a conexão antes de subir o servidor
 
     app.listen(PORT, () => {
       console.log(`Servidor rodando em http://localhost:${PORT}`);

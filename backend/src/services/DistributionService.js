@@ -1,3 +1,5 @@
+import { BadRequestError, NotFoundError } from '../utils/api-error.js';
+
 class DistributionService {
   constructor(models) {
     if (
@@ -5,7 +7,7 @@ class DistributionService {
       !models.Distribution ||
       !models.DistributionItem ||
       !models.Product ||
-      (!models.connection && !models.sequelize)
+      !models.sequelize
     ) {
       throw new Error(
         'Modelos (Distribution, DistributionItem) e instância do Sequelize são obrigatórios para inicializar o Service.',
@@ -15,7 +17,7 @@ class DistributionService {
     this.Distribution = models.Distribution;
     this.DistributionItem = models.DistributionItem;
     this.Product = models.Product;
-    this.sequelize = models.connection;
+    this.sequelize = models.sequelize;
   }
 
   async create(data) {
@@ -25,7 +27,9 @@ class DistributionService {
 
     try {
       if (!items || items.length === 0) {
-        throw new Error('A distribuição deve conter pelo menos um item.');
+        throw new BadRequestError(
+          'A distribuição deve conter pelo menos um item.',
+        );
       }
 
       // validação de estoque: busca os produtos necessários
@@ -48,12 +52,14 @@ class DistributionService {
         const requestedQuantity = parseFloat(item.quantity);
 
         if (availableStock === undefined) {
-          throw new Error(`Produto com ID ${item.productId} não encontrado.`);
+          throw new NotFoundError(
+            `Produto com ID ${item.productId} não encontrado.`,
+          );
         }
 
         // condição de falha
         if (availableStock < requestedQuantity) {
-          throw new Error(
+          throw new BadRequestError(
             `Estoque insuficiente para o produto ${products.find((p) => p.id === item.productId).name}. Disponível: ${availableStock}, Solicitado: ${requestedQuantity}.`,
           );
         }
@@ -171,7 +177,7 @@ class DistributionService {
     });
 
     if (!distribution) {
-      throw new Error(`Distribuição com ID ${id} não encontrado.`);
+      throw new NotFoundError(`Distribuição com ID ${id} não encontrada.`);
     }
 
     return distribution;
@@ -183,7 +189,7 @@ class DistributionService {
 
     // validação: checa se há algum dado para atualizar no cabeçalho
     if (Object.keys(distributionBaseData).length === 0) {
-      throw new Error(
+      throw new BadRequestError(
         'Nenhum campo válido fornecido para atualização do cabeçalho da distribuição.',
       );
     }
@@ -206,7 +212,7 @@ class DistributionService {
       const distribution = await this.findById(id, transaction);
 
       if (!distribution) {
-        throw new Error(`Distribuição com ID ${id} não encontrada.`);
+        throw new NotFoundError(`Distribuição com ID ${id} não encontrada.`);
       }
 
       // reposição de estoque (incremento)

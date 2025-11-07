@@ -9,14 +9,31 @@ class DonationController {
     this.delete = this.delete.bind(this);
   }
 
+  // função utilitária para tratamento de erro
+  _handleError(res, error) {
+    // obtém o status: usa error.status (400, 404, 403) ou 500 para erros não mapeados
+    const statusCode = error.status || 500;
+
+    // opcional: logar erros 500 para debug, mas não 4xx
+    if (statusCode >= 500) {
+      console.error(`Erro interno no servidor: ${error.message}`, error.stack);
+    }
+
+    // retorna a resposta HTTP correta
+    return res.status(statusCode).json({
+      message: error.message,
+      status: statusCode, // opcional, informa o status no corpo
+    });
+  }
+
   // POST /api/donations
   async create(req, res) {
     try {
       const newDonation = await this.service.create(req.body);
       return res.status(201).json(newDonation);
     } catch (error) {
-      console.error('Erro ao criar doação:', error.message);
-      return res.status(500).json({ error: error.message });
+      // usa o tratador de erro para BadRequest (400)
+      return this._handleError(res, error);
     }
   }
 
@@ -26,8 +43,8 @@ class DonationController {
       const donations = await this.service.findAll();
       return res.status(200).json(donations);
     } catch (error) {
-      console.error('Erro ao listar doações:', error.message);
-      return res.status(500).json({ error: 'Erro interno ao buscar lista.' });
+      // usa o tratador de erro
+      return this._handleError(res, error);
     }
   }
 
@@ -38,8 +55,8 @@ class DonationController {
       const donation = await this.service.findById(id);
       return res.status(200).json(donation);
     } catch (error) {
-      console.error('Erro ao buscar doação:', error.message);
-      return res.status(500).json({ error: error.message });
+      // usa o tratador de erro para NotFound (404)
+      return this._handleError(res, error);
     }
   }
 
@@ -50,8 +67,8 @@ class DonationController {
       const updatedDonation = await this.service.update(id, req.body);
       return res.status(200).json(updatedDonation);
     } catch (error) {
-      console.error('Erro ao atualizar doação:', error.message);
-      return res.status(500).json({ error: error.message });
+      // usa o tratador de erro para NotFound (404), BadRequest (400)
+      return this._handleError(res, error);
     }
   }
 
@@ -62,8 +79,8 @@ class DonationController {
       await this.service.delete(id);
       return res.status(204).send();
     } catch (error) {
-      console.error('Erro ao deletar doação:', error.message);
-      return res.status(500).json({ error: error.message });
+      // usa o tratador de erro para NotFound (404), BadRequest (400 - ex: estoque insuficiente para reverter)
+      return this._handleError(res, error);
     }
   }
 }

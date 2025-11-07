@@ -1,9 +1,9 @@
 usuario:
 {
-    "login": "admin",
+    "login": "gerente@exemplo.com",
     "password": "123",
-    "name": "Administrador",
-    "role": "admin"
+    "name": "gerente",
+    "role": "manager"
 }
 
 campanha:
@@ -16,77 +16,77 @@ campanha:
 produto:
 {
     "name": "arroz",
-    "unitOfMeasurement": "kg",
-    "currentStock": 10
+    "unitOfMeasurement": "kg"
 }
 
 beneficiário:
 {
-    "responsibleName": "John Doe",
-    "address": "Rua das Flores, 200 Novo",
+    "responsibleName": "john doe",
+    "responsibleCpf": "13254000099",
+    "address": "rua lorem ipsum, 123",
     "familyMembersCount": 4
-}
-
-distribuição:
-{
-  "dateTime": "2025-11-06",
-  "observation": "Distribuição de teste para instituição X.",
-  "responsibleUserId": 1,
-  "beneficiaryId": 1,
-  "quantityBaskets": 2,
-  "items": [
-    {
-      "quantity": 3,
-      "productId": 1
-    },
-    {
-      "quantity": 3,
-      "productId": 2
-    }
-  ]
 }
 
 doador pf:
 {
     "type": "individual",
-    "name": "John Doe",
+    "name": "john doe",
     "email": "john@exemplo.com",
     "phone": "11988887777",
     "individual": {
-        "cpf": "12345678900",
-        "dateOfBirth": "1990-05-15"
+        "cpf": "32750782082",
+        "dateOfBirth": "2000-01-01"
     }
 }
 
 doador pj:
 {
     "type": "legal",
-    "name": "Empresa Beta Serviços",
-    "email": "contato@beta.com",
+    "name": "empresa lorem ipsum",
+    "email": "contato@exemplo.com",
     "phone": "2133334444",
     "legal": {
         "cnpj": "00000000000191",
-        "tradeName": "BetaTech",
-        "companyName": "Beta Serviços Ltda"
+        "tradeName": "LoremIpsum",
+        "companyName": "lorem ipsum ltda"
     }
 }
 
 doação:
 {
-  "dateTime": "2025-11-06",
-  "observation": "Teste de criação em cascata com Sequelize",
+  "dateTime": "2025-11-01",
+  "observation": "doação",
   "donorId": 1, 
   "responsibleUserId": 1,
   "campaignId": 1,
   "items": [
     {
       "quantity": 5,
-      "validity": "2026-10-30", 
+      "validity": "2026-12-31", 
       "productId": 1
     },
     {
       "quantity": 5,
-      "validity": "2027-01-01",
+      "validity": "2026-12-31",
+      "productId": 2
+    }
+  ]
+}
+
+distribuição:
+{
+  "dateTime": "2025-11-01",
+  "observation": "distribuição de alimentos para familia X",
+  "responsibleUserId": 1,
+  "beneficiaryId": 1,
+  "quantityBaskets": 1,
+  "items": [
+    {
+      "quantity": 5,
+      "productId": 1
+    },
+    {
+      "quantity": 5,
       "productId": 2
     }
   ]

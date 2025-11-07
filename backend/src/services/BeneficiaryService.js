@@ -1,20 +1,58 @@
+import { BadRequestError, NotFoundError } from '../utils/api-error.js';
+import { DataValidator } from '../utils/validator.js';
+
 class BeneficiaryService {
-  // Recebe o modelo Beneficiary no construtor
-  constructor(BeneficiaryModel) {
-    if (!BeneficiaryModel) {
+  constructor(models) {
+    if (
+      !models ||
+      !models.Beneficiary ||
+      !models.Distribution ||
+      !models.sequelize
+    ) {
       throw new Error(
-        'O modelo Beneficiary é obrigatório para inicializar o Service.',
+        'Modelos (Beneficiary, Distribution) e a instância do Sequelize são obrigatórios para inicializar o Service.',
       );
     }
 
-    this.Beneficiary = BeneficiaryModel;
+    this.Beneficiary = models.Beneficiary;
+    this.Distribution = models.Distribution;
+    this.sequelize = models.sequelize;
   }
 
-  // Método para criar um novo beneficiário
+  _validateData(data) {
+    if (data.responsibleCpf && !DataValidator.isValidCPF(data.responsibleCpf)) {
+      throw new BadRequestError(
+        'CPF inválido ou não passou na checagem algorítmica.',
+      );
+    }
+    // adicionar validação de email etc caso necessário
+  }
+
   async create(data) {
-    // Validação básica
-    if (!data.responsibleName || !data.address || !data.familyMembersCount) {
-      throw new Error('Todos os campos obrigatórios devem ser preenchidos.');
+    // 1. Validação de campos obrigatórios
+    if (
+      !data.responsibleName ||
+      !data.address ||
+      !data.familyMembersCount ||
+      !data.responsibleCpf
+    ) {
+      throw new BadRequestError(
+        'Os campos Nome do Responsável, Endereço, Número de Membros e CPF são obrigatórios.',
+      );
+    }
+
+    // 2. CHAMADA AO VALIDADOR DE FORMATO/ALGORITMO
+    this._validateData(data); // <-- Novo
+
+    // 3. Validação de unicidade (checa se o CPF já existe no banco)
+    const existingBeneficiary = await this.Beneficiary.findOne({
+      where: { responsibleCpf: data.responsibleCpf },
+    });
+
+    if (existingBeneficiary) {
+      throw new BadRequestError(
+        'Já existe um beneficiário cadastrado com este CPF. Verifique a unicidade.',
+      );
     }
 
     const creationData = {
@@ -22,17 +60,16 @@ class BeneficiaryService {
       registrationDate: data.registrationDate || new Date(),
     };
 
-    // Usa a propriedade de instância
     const newBeneficiary = await this.Beneficiary.create(creationData);
     return newBeneficiary;
   }
 
-  // Método para buscar todos os beneficiários
   async findAll() {
     return await this.Beneficiary.findAll({
       attributes: [
         'id',
         'responsibleName',
+        'responsibleCpf',
         'address',
         'familyMembersCount',
         'registrationDate',
@@ -43,12 +80,12 @@ class BeneficiaryService {
     });
   }
 
-  // Método para buscar um beneficiário por ID
-  async findById(id) {
+  async findById(id, transaction = null) {
     const beneficiary = await this.Beneficiary.findByPk(id, {
       attributes: [
         'id',
         'responsibleName',
+        'responsibleCpf',
         'address',
         'familyMembersCount',
         'registrationDate',
@@ -58,28 +95,71 @@ class BeneficiaryService {
     });
 
     if (!beneficiary) {
-      throw new Error(`Beneficiário com ID ${id} não encontrado.`);
+      throw new NotFoundError(`Beneficiário com ID ${id} não encontrado.`);
     }
 
     return beneficiary;
   }
 
-  // Método para atualizar um beneficiário
   async update(id, data) {
-    // Reusa o findById
+    // 1. Validação de payload vazio
+    if (Object.keys(data).length === 0) {
+      throw new BadRequestError(
+        'Nenhum dado de atualização válido foi fornecido.',
+      );
+    }
+
     const beneficiary = await this.findById(id);
+
+    // 2. CHAMADA AO VALIDADOR DE FORMATO/ALGORITMO (se o campo estiver no payload)
+    this._validateData(data); // <-- Novo
+
+    // 3. Validação de unicidade de CPF (se o CPF estiver sendo alterado)
+    if (
+      data.responsibleCpf &&
+      data.responsibleCpf !== beneficiary.responsibleCpf
+    ) {
+      const existingBeneficiary = await this.Beneficiary.findOne({
+        where: { responsibleCpf: data.responsibleCpf },
+      });
+
+      if (existingBeneficiary) {
+        throw new BadRequestError(
+          'O novo CPF informado já está em uso por outro beneficiário.',
+        );
+      }
+    }
 
     await beneficiary.update(data);
     return beneficiary;
   }
 
-  // Método para deletar um beneficiário
   async delete(id) {
-    const beneficiary = await this.findById(id);
+    const transaction = await this.sequelize.transaction();
+    try {
+      // reusa findById (para a checagem 404)
+      const beneficiary = await this.findById(id, transaction); // Passa transaction
 
-    await beneficiary.destroy();
-    // Retorna true ou nada para o Controller saber que foi sucesso
-    return true;
+      // checagem de histórico: o beneficiário não pode ser excluído se tiver distribuições associadas
+      const hasDistributions = await this.Distribution.count({
+        where: { beneficiaryId: id },
+        transaction,
+      });
+
+      if (hasDistributions > 0) {
+        throw new BadRequestError(
+          'Não é possível excluir este beneficiário. Ele recebeu distribuições e deve ser mantido para auditoria.',
+        );
+      }
+
+      // se for seguro, procede com a exclusão
+      await beneficiary.destroy({ transaction });
+      await transaction.commit();
+      return true;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 }
 

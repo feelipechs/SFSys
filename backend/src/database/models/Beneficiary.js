@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 
 class Beneficiary extends Model {
+  // método estático de inicialização: recebe a conexão como parâmetro
   static init(sequelize) {
     super.init(
       {
@@ -10,10 +11,17 @@ class Beneficiary extends Model {
           autoIncrement: true,
           allowNull: false,
         },
+        // mapeamento snake_case para camelCase
         responsibleName: {
           type: DataTypes.STRING(80),
           allowNull: false,
           field: 'responsible_name',
+        },
+        responsibleCpf: {
+          type: DataTypes.STRING(11),
+          unique: true,
+          allowNull: false,
+          field: 'responsible_cpf',
         },
         registrationDate: {
           type: DataTypes.DATE,
@@ -31,10 +39,10 @@ class Beneficiary extends Model {
         },
       },
       {
-        sequelize,
+        sequelize, // usa a conexão passada no init
         tableName: 'beneficiary',
         modelName: 'Beneficiary',
-        timestamps: true,
+        timestamps: true, // garante que created_at/updated_at sejam gerenciados
         createdAt: 'created_at',
         updatedAt: 'updated_at',
         underscored: true,

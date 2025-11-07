@@ -1,7 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 
 class Campaign extends Model {
-  // Método estático de inicialização: Recebe a conexão como parâmetro
   static init(sequelize) {
     super.init(
       {
@@ -15,7 +14,6 @@ class Campaign extends Model {
           type: DataTypes.STRING(100),
           allowNull: false,
         },
-        // Mapeamento snake_case para camelCase
         startDate: {
           type: DataTypes.DATE,
           allowNull: false,
@@ -28,10 +26,10 @@ class Campaign extends Model {
         },
       },
       {
-        sequelize, // Usa a conexão passada no init
+        sequelize,
         tableName: 'campaign',
         modelName: 'Campaign',
-        timestamps: true, // Garante que created_at/updated_at sejam gerenciados
+        timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at',
         underscored: true,

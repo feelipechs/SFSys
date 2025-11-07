@@ -9,14 +9,26 @@ class DistributionController {
     this.delete = this.delete.bind(this);
   }
 
+  _handleError(res, error) {
+    const statusCode = error.status || 500;
+
+    if (statusCode >= 500) {
+      console.error(`Erro interno no servidor: ${error.message}`, error.stack);
+    }
+
+    return res.status(statusCode).json({
+      message: error.message,
+      status: statusCode,
+    });
+  }
+
   // POST /api/distributions
   async create(req, res) {
     try {
       const newDistribution = await this.service.create(req.body);
       return res.status(201).json(newDistribution);
     } catch (error) {
-      console.error('Erro ao criar distribuição:', error.message);
-      return res.status(500).json({ error: error.message });
+      return this._handleError(res, error);
     }
   }
 
@@ -26,8 +38,7 @@ class DistributionController {
       const distributions = await this.service.findAll();
       return res.status(200).json(distributions);
     } catch (error) {
-      console.error('Erro ao listar distribuições:', error.message);
-      return res.status(500).json({ error: 'Erro interno ao buscar lista.' });
+      return this._handleError(res, error);
     }
   }
 
@@ -38,8 +49,7 @@ class DistributionController {
       const distribution = await this.service.findById(id);
       return res.status(200).json(distribution);
     } catch (error) {
-      console.error('Erro ao buscar distribuição:', error.message);
-      return res.status(500).json({ error: error.message });
+      return this._handleError(res, error);
     }
   }
 
@@ -50,8 +60,7 @@ class DistributionController {
       const updatedDistribution = await this.service.update(id, req.body);
       return res.status(200).json(updatedDistribution);
     } catch (error) {
-      console.error('Erro ao atualizar distribuição:', error.message);
-      return res.status(500).json({ error: error.message });
+      return this._handleError(res, error);
     }
   }
 
@@ -62,8 +71,7 @@ class DistributionController {
       await this.service.delete(id);
       return res.status(204).send();
     } catch (error) {
-      console.error('Erro ao deletar distribuição:', error.message);
-      return res.status(500).json({ error: error.message });
+      return this._handleError(res, error);
     }
   }
 }

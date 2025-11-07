@@ -1,7 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 
 class Product extends Model {
-  // Método estático de inicialização: Recebe a conexão como parâmetro
   static init(sequelize) {
     super.init(
       {
@@ -15,24 +14,23 @@ class Product extends Model {
           type: DataTypes.STRING(60),
           allowNull: false,
         },
-        // Mapeamento snake_case para camelCase
         unitOfMeasurement: {
           type: DataTypes.STRING(10),
           allowNull: false,
-          field: 'unit_of_measurement', // Mapeamento
+          field: 'unit_of_measurement',
         },
         currentStock: {
           type: DataTypes.DECIMAL(10, 2),
           allowNull: false,
           defaultValue: 0.0,
-          field: 'current_stock', // Mapeamento
+          field: 'current_stock',
         },
       },
       {
-        sequelize, // Usa a conexão passada no init
+        sequelize,
         tableName: 'product',
         modelName: 'Product',
-        timestamps: true, // Assumindo created_at e updated_at
+        timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at',
         underscored: true,
@@ -41,17 +39,15 @@ class Product extends Model {
   }
 
   static associate(models) {
-    // -------------------------------------------------------------------
     // M:N com Donation, via a tabela intermediária DonationItem
-    // -------------------------------------------------------------------
 
-    // 1. Um Produto tem MUITOS Itens de Doação.
+    // Um Produto tem MUITOS Itens de Doação
     this.hasMany(models.DonationItem, {
       foreignKey: 'product_id',
       as: 'donationItems',
     });
 
-    // 2. Um Produto tem MUITOS Itens de Distribuição.
+    // Um Produto tem MUITOS Itens de Distribuição
     this.hasMany(models.DistributionItem, {
       foreignKey: 'product_id',
       as: 'distributionItems',

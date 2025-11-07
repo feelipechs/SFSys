@@ -17,7 +17,7 @@ class User extends Model {
           autoIncrement: true,
           allowNull: false,
         },
-        login: {
+        email: {
           type: DataTypes.STRING(50),
           allowNull: false,
           unique: true,
@@ -37,7 +37,7 @@ class User extends Model {
         },
       },
       {
-        sequelize, // conexão passada pelo database/index.js
+        sequelize,
         tableName: 'user',
         modelName: 'User',
         timestamps: true,
@@ -50,7 +50,7 @@ class User extends Model {
           },
         },
 
-        // criptografar senha (fornecido pelo gemini, necessário alterar futuramente)
+        // criptografar senha (fornecido pelo gemini, não tenho certeza do quão adequado tá)
         hooks: {
           beforeCreate: async (user) => {
             if (user.password) {
@@ -69,14 +69,14 @@ class User extends Model {
     );
   }
 
-  // Associações
+  // associações
   static associate(models) {
     this.hasMany(models.Donation, {
       foreignKey: 'responsible_user_id',
       as: 'responsibleDonations',
     });
     this.hasMany(models.Distribution, {
-      foreignKey: 'delivery_user_id',
+      foreignKey: 'responsible_user_id',
       as: 'deliveredDistributions',
     });
   }

@@ -11,6 +11,19 @@ class BeneficiaryController {
     this.delete = this.delete.bind(this);
   }
 
+  _handleError(res, error) {
+    const statusCode = error.status || 500;
+
+    if (statusCode >= 500) {
+      console.error(`Erro interno no servidor: ${error.message}`, error.stack);
+    }
+
+    return res.status(statusCode).json({
+      message: error.message,
+      status: statusCode,
+    });
+  }
+
   // POST /api/beneficiaries
   async create(req, res) {
     try {
@@ -18,9 +31,7 @@ class BeneficiaryController {
       const newBeneficiary = await this.service.create(req.body);
       return res.status(201).json(newBeneficiary);
     } catch (error) {
-      console.error('Erro ao criar beneficiário:', error.message);
-      // Usa o status anexado ao erro (se for 400), ou 500 por padrão
-      return res.status(error.status || 500).json({ error: error.message });
+      return this._handleError(res, error);
     }
   }
 
@@ -30,8 +41,7 @@ class BeneficiaryController {
       const beneficiaries = await this.service.findAll();
       return res.status(200).json(beneficiaries);
     } catch (error) {
-      console.error('Erro ao listar beneficiários:', error.message);
-      return res.status(500).json({ error: 'Erro interno ao buscar lista.' });
+      return this._handleError(res, error);
     }
   }
 
@@ -42,9 +52,7 @@ class BeneficiaryController {
       const beneficiary = await this.service.findById(id);
       return res.status(200).json(beneficiary);
     } catch (error) {
-      console.error('Erro ao buscar beneficiário:', error.message);
-      // Trata erros 404 (Not Found) ou outros erros do Service
-      return res.status(error.status || 500).json({ error: error.message });
+      return this._handleError(res, error);
     }
   }
 
@@ -55,8 +63,7 @@ class BeneficiaryController {
       const updatedBeneficiary = await this.service.update(id, req.body);
       return res.status(200).json(updatedBeneficiary);
     } catch (error) {
-      console.error('Erro ao atualizar beneficiário:', error.message);
-      return res.status(error.status || 500).json({ error: error.message });
+      return this._handleError(res, error);
     }
   }
 
@@ -68,8 +75,7 @@ class BeneficiaryController {
       // 204 No Content para deleção bem-sucedida
       return res.status(204).send();
     } catch (error) {
-      console.error('Erro ao deletar beneficiário:', error.message);
-      return res.status(error.status || 500).json({ error: error.message });
+      return this._handleError(res, error);
     }
   }
 }
