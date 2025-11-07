@@ -1,7 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 
 class Donor extends Model {
-  // Método estático de inicialização: Recebe a conexão como parâmetro
   static init(sequelize) {
     super.init(
       {
@@ -11,7 +10,7 @@ class Donor extends Model {
           autoIncrement: true,
           allowNull: false,
         },
-        // CAMPO DISCRIMINADOR (Não requer mapeamento, pois é 'type')
+        // CAMPO DISCRIMINADOR (não requer mapeamento, pois é 'type')
         type: {
           type: DataTypes.ENUM('individual', 'legal'), // PF ou PJ
           allowNull: false,
@@ -22,7 +21,7 @@ class Donor extends Model {
         },
         phone: {
           type: DataTypes.STRING(20),
-          allowNull: true, // Assumindo que o phone pode ser nulo
+          allowNull: true, // assumindo que o phone pode ser nulo
         },
         email: {
           type: DataTypes.STRING(100),
@@ -31,10 +30,10 @@ class Donor extends Model {
         },
       },
       {
-        sequelize, // Usa a conexão passada no init
+        sequelize,
         tableName: 'donor',
         modelName: 'Donor',
-        timestamps: true, // Assumindo created_at e updated_at
+        timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at',
         underscored: true,
@@ -43,9 +42,7 @@ class Donor extends Model {
   }
 
   static associate(models) {
-    // -----------------------------------------------------
-    // 1. Associações de Herança (Table per Subclass)
-    // -----------------------------------------------------
+    // Associações de Herança (Table per Subclass)
 
     // Pessoa Física
     this.hasOne(models.DonorIndividual, {
@@ -61,9 +58,7 @@ class Donor extends Model {
       onDelete: 'CASCADE',
     });
 
-    // -----------------------------------------------------
-    // 2. Associação com Doação (1:N)
-    // -----------------------------------------------------
+    // Associação com Doação (1:N)
 
     this.hasMany(models.Donation, {
       foreignKey: 'donor_id',

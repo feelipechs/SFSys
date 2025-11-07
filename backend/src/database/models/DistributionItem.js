@@ -1,7 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 
 class DistributionItem extends Model {
-  // Método estático de inicialização: Recebe a conexão como parâmetro
   static init(sequelize) {
     super.init(
       {
@@ -11,16 +10,16 @@ class DistributionItem extends Model {
           autoIncrement: true,
           allowNull: false,
         },
-        // Foreign Keys (Mapeamento explícito para camelCase)
+        // foreign keys
         distributionId: {
           type: DataTypes.INTEGER,
           allowNull: false,
-          field: 'distribution_id', // Mapeamento
+          field: 'distribution_id',
         },
         productId: {
           type: DataTypes.INTEGER,
           allowNull: false,
-          field: 'product_id', // Mapeamento
+          field: 'product_id',
         },
         quantity: {
           type: DataTypes.DECIMAL(10, 2),
@@ -28,7 +27,7 @@ class DistributionItem extends Model {
         },
       },
       {
-        sequelize, // Usa a conexão passada no init
+        sequelize,
         tableName: 'distribution_item',
         modelName: 'DistributionItem',
         timestamps: true,

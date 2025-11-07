@@ -1,7 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 
 class Distribution extends Model {
-  // Método estático de inicialização: Recebe a conexão como parâmetro
   static init(sequelize) {
     super.init(
       {
@@ -11,7 +10,6 @@ class Distribution extends Model {
           autoIncrement: true,
           allowNull: false,
         },
-        // Mapeamento snake_case para camelCase
         dateTime: {
           type: DataTypes.DATE,
           allowNull: false,
@@ -26,7 +24,7 @@ class Distribution extends Model {
           type: DataTypes.TEXT,
           allowNull: true, // TEXT geralmente permite null, a menos que especificado
         },
-        // Foreign Keys (Mapeamento explícito para evitar conflito de nomes no JS)
+        // foreign keys (mapeamento explícito para evitar conflito de nomes no JS)
         beneficiaryId: {
           type: DataTypes.INTEGER,
           allowNull: false,
@@ -39,7 +37,7 @@ class Distribution extends Model {
         },
       },
       {
-        sequelize, // Usa a conexão passada no init
+        sequelize,
         tableName: 'distribution',
         modelName: 'Distribution',
         timestamps: true,

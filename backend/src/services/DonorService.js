@@ -1,7 +1,10 @@
+import { BadRequestError, NotFoundError } from '../utils/api-error.js';
+import { DataValidator } from '../utils/validator.js';
+
 class DonorService {
-  // Construtor que recebe todos os modelos e a instância do Sequelize.
+  // construtor que recebe todos os modelos e a instância do sequelize
   constructor(models) {
-    if (!models || !models.Donor || (!models.connection && !models.sequelize)) {
+    if (!models || !models.Donor || !models.Donation || !models.sequelize) {
       throw new Error(
         'Modelos (Donor) e instância do Sequelize são obrigatórios para inicializar o Service.',
       );
@@ -10,67 +13,109 @@ class DonorService {
     this.Donor = models.Donor;
     this.DonorIndividual = models.DonorIndividual;
     this.DonorLegal = models.DonorLegal;
-    this.sequelize = models.connection;
+    this.Donation = models.Donation;
+    this.sequelize = models.sequelize;
+    this.Op = models.sequelize.Op; // operadores do sequelize
   }
 
-  // 1. CREATE
+  _validateFormatsAndDocuments(data) {
+    // validação de formato (pode estar na base ou nas sub-tabelas)
+    if (data.email && !DataValidator.isValidEmail(data.email)) {
+      throw new BadRequestError('Formato de e-mail inválido.');
+    }
+    if (data.phone && !DataValidator.isValidPhone(data.phone)) {
+      throw new BadRequestError(
+        'Formato de telefone inválido. Use o padrão brasileiro.',
+      );
+    }
+
+    // validação de CPF (pessoa física)
+    if (data.type === 'individual' && data.individual && data.individual.cpf) {
+      if (!DataValidator.isValidCPF(data.individual.cpf)) {
+        throw new BadRequestError(
+          'CPF inválido ou não passou na checagem algorítmica.',
+        );
+      }
+    }
+
+    // validação de CNPJ (pessoa jurídica)
+    if (data.type === 'legal' && data.legal && data.legal.cnpj) {
+      if (!DataValidator.isValidCNPJ(data.legal.cnpj)) {
+        throw new BadRequestError(
+          'CNPJ inválido ou não passou na checagem algorítmica.',
+        );
+      }
+    }
+  }
+
+  // create
   async create(data) {
-    // 1. Desestruturar 'type' e os dados aninhados.
-    // Usamos 'donorBaseData' para os campos que vão para a tabela 'donor'.
     const { type, individual, legal, ...donorBaseData } = data;
-    const transaction = await this.sequelize.transaction(); // Inicia a transação
+    const transaction = await this.sequelize.transaction();
 
     try {
-      let nestedData;
+      // validação de campos obrigatórios
+      if (!donorBaseData.name || !type) {
+        // phone/email podem não ser obrigatórios na Model
+        throw new BadRequestError('Os campos nome e tipo são obrigatórios.');
+      }
 
-      // Validar e preparar os dados aninhados
-      if (type === 'individual' && individual) {
+      // validação de formato e documento (usando o validator)
+      this._validateFormatsAndDocuments(data);
+
+      let nestedData;
+      let ChildModel;
+      let uniqueField;
+
+      if (type === 'individual') {
+        if (!individual || !individual.cpf)
+          throw new BadRequestError('CPF e dados de Pessoa Física faltando.');
+        ChildModel = this.DonorIndividual;
         nestedData = individual;
-      } else if (type === 'legal' && legal) {
+        uniqueField = 'cpf';
+      } else if (type === 'legal') {
+        if (!legal || !legal.cnpj)
+          throw new BadRequestError(
+            'CNPJ e dados de Pessoa Jurídica faltando.',
+          );
+        ChildModel = this.DonorLegal;
         nestedData = legal;
+        uniqueField = 'cnpj';
       } else {
-        // Se 'type' for válido, mas faltarem os dados aninhados
-        throw new Error(
-          `Dados de herança inválidos ou faltando para o tipo: ${type}.`,
+        throw new BadRequestError(
+          `O tipo de doador '${type}' é inválido. Use 'individual' ou 'legal'.`,
         );
       }
 
-      // 2. CRIAR O PAI (Donor) PRIMEIRO.
-      const donorDataToSave = { ...donorBaseData, type };
+      // validação de unicidade no db (CPF/CNPJ)
+      const existing = await ChildModel.findOne({
+        where: { [uniqueField]: nestedData[uniqueField] },
+      });
+      if (existing) {
+        throw new BadRequestError(
+          `${uniqueField.toUpperCase()} já cadastrado para outro doador.`,
+        );
+      }
 
+      // criação transacional (pai e filho)
+      const donorDataToSave = { ...donorBaseData, type };
       const newDonor = await this.Donor.create(donorDataToSave, {
         transaction,
       });
 
-      // 3. MONTAR O OBJETO DO FILHO, INJETANDO O ID DO PAI.
-      const dataToCreate = {
-        ...nestedData,
-        // Injeta o ID gerado pelo banco.
-        // Usamos 'donorId' (camelCase) para garantir a correspondência no DB.
-        donorId: newDonor.id,
-      };
+      const childDataToSave = { ...nestedData, donorId: newDonor.id };
+      await ChildModel.create(childDataToSave, { transaction });
 
-      // 4. CRIAR O FILHO SEPARADAMENTE (Injeção garantida).
-      if (type === 'individual') {
-        await this.DonorIndividual.create(dataToCreate, { transaction });
-      } else if (type === 'legal') {
-        await this.DonorLegal.create(dataToCreate, { transaction });
-      }
-
-      // 5. Commit e Retorno
       await transaction.commit();
-
-      // Retornamos o objeto completo (buscando-o novamente com os includes)
       return this.findById(newDonor.id);
     } catch (error) {
-      // Se algo falhar, revertemos todas as alterações.
       await transaction.rollback();
       throw error;
     }
   }
 
-  // 2. READ (Lida com Herança - precisa do include)
-  // Busca todos os Doadores, incluindo seus detalhes de herança.
+  // read (lida com herança - precisa do include)
+  // busca todos os doadores, incluindo seus detalhes de herança
   async findAll() {
     return this.Donor.findAll({
       attributes: [
@@ -82,14 +127,14 @@ class DonorService {
         ['created_at', 'createdAt'],
         ['updated_at', 'updatedAt'],
       ],
-      // Inclui ambos os lados para trazer todos os detalhes de todos os doadores.
+      // inclui ambos os lados para trazer todos os detalhes de todos os doadores.
       include: [{ association: 'individual' }, { association: 'legal' }],
       order: [['name', 'ASC']],
     });
   }
 
-  // Busca um Doador por ID, incluindo ambas as associações de herança.
-  async findById(id) {
+  // busca um doador por id, incluindo ambas as associações de herança
+  async findById(id, transaction = null) {
     const donor = await this.Donor.findByPk(id, {
       attributes: [
         'id',
@@ -100,40 +145,108 @@ class DonorService {
         ['created_at', 'createdAt'],
         ['updated_at', 'updatedAt'],
       ],
-      // Inclui ambos os lados da herança para garantir que o tipo correto seja retornado.
+      // inclui ambos os lados da herança para garantir que o tipo correto seja retornado
       include: [{ association: 'individual' }, { association: 'legal' }],
     });
 
     if (!donor) {
-      throw new Error(`Doador com ID ${id} não encontrado.`);
+      throw new NotFoundError(`Doador com ID ${id} não encontrado.`);
     }
 
     return donor;
   }
 
-  // 3. UPDATE (Focado na Tabela Base)
-  // Atualiza os campos do Doador na tabela base.
+  // update (focado na tabela base)
+  // atualiza os campos do doador na tabela base
   async update(id, data) {
-    const donor = await this.findById(id);
+    const transaction = await this.sequelize.transaction();
+    try {
+      const donor = await this.findById(id, transaction); // Lê o doador atual
 
-    // Ignora dados de sub-tabelas para atualização simples da tabela base.
-    const { individual, legal, ...donorBaseData } = data;
+      if (Object.keys(data).length === 0) {
+        throw new BadRequestError(
+          'Nenhum dado de atualização válido foi fornecido.',
+        );
+      }
 
-    await donor.update(donorBaseData);
+      // validação de formato e documento
+      this._validateFormatsAndDocuments({ ...data, type: donor.type }); // passa o type para saber qual doc checar
 
-    // Retorna a instância completa e atualizada
-    return this.findById(id);
+      // separa dados da base e da herança
+      const { individual, legal, ...donorBaseData } = data;
+
+      // atualização da tabela base (Donor)
+      if (Object.keys(donorBaseData).length > 0) {
+        await donor.update(donorBaseData, { transaction });
+      }
+
+      // atualização das tabelas filhas (se houver payload)
+      let childPayload = donor.type === 'individual' ? individual : legal;
+      let ChildModel =
+        donor.type === 'individual' ? this.DonorIndividual : this.DonorLegal;
+      let uniqueField = donor.type === 'individual' ? 'cpf' : 'cnpj';
+
+      if (childPayload) {
+        const documentValue = childPayload[uniqueField];
+
+        if (documentValue) {
+          // checa unicidade: o novo documento não pode ser de outro doador
+          const existing = await ChildModel.findOne({
+            where: {
+              [uniqueField]: documentValue,
+              donorId: { [this.Op.not]: id }, // Op.not (diferente do id atual)
+            },
+            transaction,
+          });
+
+          if (existing) {
+            throw new BadRequestError(
+              `O novo ${uniqueField.toUpperCase()} já está em uso por outro cadastro.`,
+            );
+          }
+
+          // realiza o update na tabela filha
+          await ChildModel.update(childPayload, {
+            where: { donorId: id },
+            transaction,
+          });
+        }
+      }
+
+      await transaction.commit();
+      return this.findById(id);
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
-  // 4. DELETE (Depende do 'CASCADE' nos modelos)
-  // Exclui um Doador por ID.
+  // delete (depende do 'CASCADE' nos modelos)
   async delete(id) {
-    const donor = await this.findById(id);
+    const transaction = await this.sequelize.transaction();
+    try {
+      const donor = await this.findById(id, transaction);
 
-    // O onDelete: 'CASCADE' na associação garante que a sub-tabela também seja excluída.
-    await donor.destroy();
+      // checagem de histórico de doações
+      const hasDonations = await this.Donation.count({
+        where: { donorId: id },
+        transaction,
+      });
 
-    return true;
+      if (hasDonations > 0) {
+        throw new BadRequestError(
+          'Não é possível excluir este doador. Ele possui doações registradas e deve ser mantido para auditoria.',
+        );
+      }
+
+      // se o onDelete: 'CASCADE' estiver configurado no sequelize, a destruição do pai também remove os filhos (individual ou legal)
+      await donor.destroy({ transaction });
+      await transaction.commit();
+      return true;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 }
 

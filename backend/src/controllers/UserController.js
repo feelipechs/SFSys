@@ -9,14 +9,26 @@ class UserController {
     this.delete = this.delete.bind(this);
   }
 
+  _handleError(res, error) {
+    const statusCode = error.status || 500;
+
+    if (statusCode >= 500) {
+      console.error(`Erro interno no servidor: ${error.message}`, error.stack);
+    }
+
+    return res.status(statusCode).json({
+      message: error.message,
+      status: statusCode,
+    });
+  }
+
   // POST /api/users
   async create(req, res) {
     try {
       const newUser = await this.service.create(req.body);
       return res.status(201).json(newUser);
     } catch (error) {
-      console.error('Erro ao criar usuário:', error.message);
-      return res.status(500).json({ error: error.message });
+      return this._handleError(res, error);
     }
   }
 
@@ -26,8 +38,7 @@ class UserController {
       const users = await this.service.findAll();
       return res.status(200).json(users);
     } catch (error) {
-      console.error('Erro ao listar usuários:', error.message);
-      return res.status(500).json({ error: error.message });
+      return this._handleError(res, error);
     }
   }
 
@@ -38,8 +49,7 @@ class UserController {
       const user = await this.service.findById(id);
       return res.status(200).json(user);
     } catch (error) {
-      console.error('Erro ao buscar usuário:', error.message);
-      return res.status(500).json({ error: error.message });
+      return this._handleError(res, error);
     }
   }
 
@@ -50,8 +60,7 @@ class UserController {
       const user = await this.service.update(id, req.body);
       return res.status(200).json(user);
     } catch (error) {
-      console.error('Erro ao atualizar usuário', error.message);
-      return res.status(500).json({ error: error.message });
+      return this._handleError(res, error);
     }
   }
 
@@ -62,8 +71,7 @@ class UserController {
       await this.service.delete(id);
       return res.status(204).send();
     } catch (error) {
-      console.error('Erro ao deletar usuário', error.message);
-      return res.status(500).json({ error: error.message });
+      return this._handleError(res, error);
     }
   }
 }

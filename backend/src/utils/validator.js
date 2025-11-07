@@ -1,0 +1,77 @@
+// Importação das bibliotecas externas para validação algorítmica de documentos
+import { cpf, cnpj } from 'cpf-cnpj-validator';
+
+// 1. REGEX E CONSTANTES
+
+// Regex para e-mail (robusta, baseada em RFC 5322 simplificada)
+const EMAIL_REGEX =
+  /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i;
+
+// Regex para validar a sequência numérica do telefone (10 a 13 dígitos brutos)
+// 10-11 dígitos (DDD + Número) ou 12-13 dígitos (55 + DDD + Número)
+const PHONE_RAW_REGEX = /^\d{10,13}$/;
+
+// 2. CLASSE DE VALIDAÇÃO
+
+export class DataValidator {
+  // --- Validação de Formato Simples (Email/Telefone) ---
+
+  /**
+   * Valida o formato do email.
+   * @param {string} email
+   * @returns {boolean}
+   */
+  static isValidEmail(email) {
+    if (!email) return true; // Permite que o Service verifique se é obrigatório
+    return EMAIL_REGEX.test(email.trim());
+  }
+
+  /**
+   * Valida a sequência de dígitos do telefone brasileiro.
+   * Assume que a pontuação deve ser removida antes da checagem.
+   * @param {string} phone
+   * @returns {boolean}
+   */
+  static isValidPhone(phone) {
+    if (!phone) return true;
+
+    // Remove toda a formatação (parênteses, espaços, hífens)
+    const rawNumber = phone.replace(/\D/g, '');
+
+    // Checa se o número de dígitos está entre 10 e 13
+    if (!PHONE_RAW_REGEX.test(rawNumber)) {
+      return false;
+    }
+
+    // Se o número tiver 12 ou 13 dígitos, o DDI '55' deve ser o prefixo
+    if (rawNumber.length > 11 && !rawNumber.startsWith('55')) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // --- Validação de Documentos (Algorítmica) ---
+
+  /**
+   * Valida CPF (Formato e Dígito Verificador).
+   * @param {string} cpfNumber - O número do CPF (pode ser formatado ou não).
+   * @returns {boolean}
+   */
+  static isValidCPF(cpfNumber) {
+    if (!cpfNumber) return false;
+    // A biblioteca cuida da limpeza da string e do cálculo algorítmico
+    return cpf.isValid(cpfNumber);
+  }
+
+  /**
+   * Valida CNPJ (Formato e Dígito Verificador).
+   * @param {string} cnpjNumber - O número do CNPJ (pode ser formatado ou não).
+   * @returns {boolean}
+   */
+  static isValidCNPJ(cnpjNumber) {
+    if (!cnpjNumber) return false;
+    // A biblioteca cuida da limpeza da string e do cálculo algorítmico
+    return cnpj.isValid(cnpjNumber);
+  }
+}

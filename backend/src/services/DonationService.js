@@ -1,3 +1,5 @@
+import { BadRequestError, NotFoundError } from '../utils/api-error.js';
+
 class DonationService {
   constructor(models) {
     if (
@@ -5,7 +7,7 @@ class DonationService {
       !models.Donation ||
       !models.DonationItem ||
       !models.Product ||
-      (!models.connection && !models.sequelize)
+      !models.sequelize
     ) {
       throw new Error(
         'Modelos (Donation, DonationItem) e instância do Sequelize são obrigatórios para inicializar o Service.',
@@ -15,7 +17,7 @@ class DonationService {
     this.Donation = models.Donation;
     this.DonationItem = models.DonationItem;
     this.Product = models.Product;
-    this.sequelize = models.connection;
+    this.sequelize = models.sequelize;
   }
 
   async create(data) {
@@ -25,7 +27,7 @@ class DonationService {
 
     try {
       if (!items || items.length === 0) {
-        throw new Error('A doação deve conter pelo menos um item.');
+        throw new BadRequestError('A doação deve conter pelo menos um item.');
       }
 
       // criando o pai (Donation) primeiro
@@ -156,7 +158,7 @@ class DonationService {
     });
 
     if (!donation) {
-      throw new Error(`Doação com ID ${id} não encontrado.`);
+      throw new NotFoundError(`Doação com ID ${id} não encontrada.`);
     }
 
     return donation;
@@ -179,7 +181,7 @@ class DonationService {
       const donation = await this.findById(id, transaction);
 
       if (!donation) {
-        throw new Error(`Doação com ID ${id} não encontrada.`);
+        throw new NotFoundError(`Doação com ID ${id} não encontrada.`);
       }
 
       // lógica de bloqueio: garante que há estoque suficiente para reverter a doação
@@ -192,9 +194,9 @@ class DonationService {
 
         // se o estoque atual for menor que a quantidade a ser revertida, bloqueia
         if (availableStock < quantityToRevert) {
-          // lança o erro e força o rollback no catch
-          throw new Error(
-            `Não é possível excluir esta doação. O produto ${item.product.name} (ID ${item.productId}) tem estoque insuficiente (${availableStock}) para reverter a doação de ${quantityToRevert}.`,
+          // lança um erro que carrega o status 400
+          throw new BadRequestError(
+            `Não é possível excluir esta doação. Estoque insuficiente para reverter o item ${item.product.name}.`,
           );
         }
       }

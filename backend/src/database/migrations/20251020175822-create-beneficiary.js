@@ -10,6 +10,11 @@ export async function up(queryInterface, Sequelize) {
       type: Sequelize.STRING(80),
       allowNull: false,
     },
+    responsible_cpf: {
+      type: Sequelize.STRING(11),
+      allowNull: false,
+      unique: true,
+    },
     registration_date: {
       type: Sequelize.DATE,
       allowNull: false,

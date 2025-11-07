@@ -1,14 +1,23 @@
 import bcrypt from 'bcryptjs';
 
+const ADMIN_PASSWORD = process.env.ADMIN_INITIAL_PASSWORD;
+const ADMIN_EMAIL = process.env.ADMIN_INITIAL_EMAIL;
+
 export async function up(queryInterface) {
-  // senha teste
-  const hashedPassword = await bcrypt.hash('User@123', 10);
+  if (!ADMIN_PASSWORD) {
+    console.error(
+      'AVISO: ADMIN_INITIAL_PASSWORD não definida. Ignorando seed do Admin.',
+    );
+    return;
+  }
+
+  const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 10);
 
   await queryInterface.bulkInsert(
     'user',
     [
       {
-        login: 'admin',
+        email: ADMIN_EMAIL,
         password: hashedPassword,
         name: 'Admin',
         role: 'admin',
@@ -21,5 +30,6 @@ export async function up(queryInterface) {
 }
 
 export async function down(queryInterface) {
-  await queryInterface.bulkDelete('user', { login: 'admin' }, {});
+  // ajustar a exclusão para usar o campo 'email'
+  await queryInterface.bulkDelete('user', { email: ADMIN_EMAIL }, {});
 }

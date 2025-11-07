@@ -6,7 +6,7 @@ export async function up(queryInterface, Sequelize) {
       autoIncrement: true,
       allowNull: false,
     },
-    login: {
+    email: {
       type: Sequelize.STRING(50),
       allowNull: false,
       unique: true,
