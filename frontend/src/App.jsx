@@ -1,17 +1,8 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import LoginPage from './pages/Login';
-import AdminPage from './pages/Admin';
+import AppRoutes from './Routes';
 
 function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<AdminPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/admin/dashboard" element={<AdminPage />} />
-      </Routes>
-    </Router>
-  );
+  return <AppRoutes />;
 }
 
 export default App;

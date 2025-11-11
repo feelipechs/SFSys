@@ -62,38 +62,106 @@ npm run dev
 
 Acessar a Aplicação:
 
-O servidor estará ativo em http://localhost:[Sua Porta] (3000 dito anteriormente).
+O servidor estará ativo em http://localhost:[Porta] (3000 dito anteriormente).
 
-## Comandos Úteis do Sequelize
+## Estrutura de scripts package.json
 
-### Criar uma Nova Migration
+### Comandos de Inicialização do Servidor
 
-npx sequelize-cli migration:create --name nome-da-nova-acao
+<b>1. DEV:</b> Ambiente de trabalho com reinício automático (nodemon)
 
-### Reverter a Última Migration
+<b>2. TEST:</b> Comando para rodar testes
 
-npx sequelize-cli db:migrate:undo
+<b>3. PROD:</b> Ambiente final
 
-### Reverter Todos os Seeders
+### Comandos do Sequelize CLI
 
-npx sequelize-cli db:seed:undo:all
+<b>4. FLUXO DEV:</b> Usará NODE_ENV=development e o .env
 
-# Iniciar
+<b>5. FLUXO TEST:</b> Usará NODE_ENV=test e o .env.test
 
-no terminal, use:
+<b>6. FLUXO PROD:</b> Usará NODE_ENV=production e o .env
 
-```
-npm run dev (iniciará o ambiente de desenvolvimento)
-NODE_ENV=test npm run dev (ambiente de teste)
-NODE_ENV=production npm start (ambiente de produção)
-```
+## Como usar
 
-### Migrations
+### Dev
+
+Iniciar o Servidor DEV (Com nodemon)
 
 ```
-# Roda as migrations no banco de TESTE
-NODE_ENV=test npx sequelize-cli db:migrate
+"dev": npm run dev
+```
 
-# Roda as migrations no banco de PROD (CUIDADO!)
-NODE_ENV=production npx sequelize-cli db:migrate
+Aplicar Migrações (Criar/Atualizar tabelas)
+
+```
+"db:migrate": npm run db:migrate
+```
+
+Reverter Migrações (Desfazer a última)
+
+```
+"db:migrate:undo": npm run db:migrate:undo
+```
+
+Resetar o Banco (Reverter TODAS as migrações)
+
+```
+"db:migrate:undo:all": npm run db:migrate:undo:all
+```
+
+Rodar Seeders (Inserir Admin, etc.)
+
+```
+"seed": npm run seed
+```
+
+Reverter Seeders (Remover Admin, etc.)
+
+```
+"seed:undo:dev": npm run seed:undo:dev
+```
+
+## Comandos para Teste e Produção
+
+Use estes comandos apenas quando estiver trabalhando especificamente nesses ambientes:
+
+### Test
+
+Aplicar Migrações no TEST
+
+```
+"db:migrate:test": npm run db:migrate:test
+```
+
+Rodar Seeders no TEST
+
+```
+"seed:test": npm run seed:test
+```
+
+Rodar o Teste (testes unitários)
+
+```
+"test": npm run test
+```
+
+### Prod
+
+Iniciar o Servidor PROD (Modo final)
+
+```
+"start": npm start
+```
+
+Aplicar Migrações no PROD
+
+```
+"db:migrate:prod": npm run db:migrate:prod
+```
+
+Rodar Seeders no PROD (Geralmente 1x)
+
+```
+"seed:prod"	npm run seed:prod
 ```

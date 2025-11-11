@@ -3,14 +3,24 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.jsx';
 import { ThemeProvider } from './components/ThemeProvider';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from './context/AuthContext';
+import { Toaster } from 'sonner';
+
+const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ThemeProvider
-      defaultTheme="system" // Tema padrão (pode ser "light" ou "system")
-      storageKey="vite-ui-theme" // Chave usada no localStorage
+      defaultTheme="system" // tema padrão (pode ser "light" ou "system")
+      storageKey="vite-ui-theme" // chave usada no localStorage
     >
-      <App />
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+        <Toaster position="top-right" />
+      </QueryClientProvider>
     </ThemeProvider>
   </StrictMode>
 );

@@ -7,16 +7,18 @@ class DistributionService {
       !models.Distribution ||
       !models.DistributionItem ||
       !models.Product ||
+      !models.Campaign ||
       !models.sequelize
     ) {
       throw new Error(
-        'Modelos (Distribution, DistributionItem) e instância do Sequelize são obrigatórios para inicializar o Service.',
+        'Modelos (Distribution, DistributionItem, Product e Campaign) e instância do Sequelize são obrigatórios para inicializar o Service.',
       );
     }
 
     this.Distribution = models.Distribution;
     this.DistributionItem = models.DistributionItem;
     this.Product = models.Product;
+    this.Campaign = models.Campaign;
     this.sequelize = models.sequelize;
   }
 
@@ -117,6 +119,7 @@ class DistributionService {
         'observation',
         'beneficiaryId',
         'responsibleUserId',
+        'campaignId',
         ['created_at', 'createdAt'],
         ['updated_at', 'updatedAt'],
       ],
@@ -137,6 +140,10 @@ class DistributionService {
               attributes: ['id', 'name', 'unitOfMeasurement', 'currentStock'], // Apenas dados essenciais do Produto
             },
           ],
+        },
+        {
+          association: 'campaign',
+          attributes: ['id', 'name', 'startDate', 'endDate'],
         },
       ],
       order: [['dateTime', 'DESC']],
@@ -152,6 +159,7 @@ class DistributionService {
         'observation',
         'beneficiaryId',
         'responsibleUserId',
+        'campaignId',
         ['created_at', 'createdAt'],
         ['updated_at', 'updatedAt'],
       ],
@@ -172,6 +180,10 @@ class DistributionService {
               attributes: ['id', 'name', 'unitOfMeasurement', 'currentStock'], // Apenas dados essenciais do Produto
             },
           ],
+        },
+        {
+          association: 'campaign',
+          attributes: ['id', 'name', 'startDate', 'endDate'],
         },
       ],
     });

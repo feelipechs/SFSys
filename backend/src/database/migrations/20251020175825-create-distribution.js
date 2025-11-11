@@ -32,6 +32,15 @@ export async function up(queryInterface, Sequelize) {
       onUpdate: 'CASCADE',
       onDelete: 'SET NULL',
     },
+    campaign_id: {
+      type: Sequelize.INTEGER,
+      // Se nem toda distribuição for resultado de uma campanha, use allowNull: true
+      allowNull: true,
+      references: { model: 'campaign', key: 'id' },
+      onUpdate: 'CASCADE',
+      // Se a campanha for excluída, desassocia a distribuição, mantendo o histórico
+      onDelete: 'SET NULL',
+    },
     created_at: { type: Sequelize.DATE, allowNull: false },
     updated_at: { type: Sequelize.DATE, allowNull: false },
   });
