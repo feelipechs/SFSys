@@ -22,9 +22,32 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-export function NavUser({ user }) {
+const DEFAULT_AVATAR_URL = '/images/logo.png';
+
+export function NavUser() {
   const { isMobile } = useSidebar();
+
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  if (!user) return null;
+
+  // avatar/fallback
+  const avatarUrl = user.avatar || DEFAULT_AVATAR_URL;
+  const userInitials = user.name ? user.name.charAt(0) : 'Us';
+
+  const handleLogout = () => {
+    toast.success(`Até logo, ${user.name}!`, {
+      description: 'Você foi desconectado com sucesso.',
+      duration: 2000, // tempo suficiente para o usuário ver
+    });
+    logout(); // limpa o token e o estado global
+    navigate('/login'); // redireciona o usuário para a página de login
+  };
 
   return (
     <SidebarMenu>
@@ -36,8 +59,10 @@ export function NavUser({ user }) {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarImage src={avatarUrl} alt={user.name} />
+                <AvatarFallback className="rounded-lg">
+                  {userInitials}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -57,8 +82,10 @@ export function NavUser({ user }) {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarImage src={avatarUrl} />
+                  <AvatarFallback className="rounded-lg">
+                    {userInitials}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -76,7 +103,7 @@ export function NavUser({ user }) {
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <IconCreditCard />
-                AINDA NÃO SEI O QUE COLOCAR
+                Sei lá
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <IconNotification />
@@ -84,7 +111,7 @@ export function NavUser({ user }) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <IconLogout />
               Sair
             </DropdownMenuItem>

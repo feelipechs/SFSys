@@ -2,7 +2,7 @@ import { UnauthorizedError, BadRequestError } from '../utils/api-error.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRATION = '1h'; // expiram em 1 hora
+const JWT_EXPIRATION = process.env.JWT_EXPIRATION;
 
 class AuthService {
   // recebe apenas a Model User no construtor

@@ -1,6 +1,6 @@
 usuario:
 {
-    "login": "gerente@exemplo.com",
+    "email": "gerente@exemplo.com",
     "password": "123",
     "name": "gerente",
     "role": "manager"

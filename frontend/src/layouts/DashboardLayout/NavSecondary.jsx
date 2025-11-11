@@ -4,6 +4,7 @@ import * as React from 'react';
 import {
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -15,6 +16,7 @@ export function NavSecondary({ items, ...props }) {
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
+        <SidebarGroupLabel>Lorem</SidebarGroupLabel>
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>

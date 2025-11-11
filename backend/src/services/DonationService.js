@@ -7,22 +7,45 @@ class DonationService {
       !models.Donation ||
       !models.DonationItem ||
       !models.Product ||
+      !models.Campaign ||
       !models.sequelize
     ) {
       throw new Error(
-        'Modelos (Donation, DonationItem) e instância do Sequelize são obrigatórios para inicializar o Service.',
+        'Modelos (Donation, DonationItem, Product e Campaign) e instância do Sequelize são obrigatórios para inicializar o Service.',
       );
     }
 
     this.Donation = models.Donation;
     this.DonationItem = models.DonationItem;
     this.Product = models.Product;
+    this.Campaign = models.Campaign;
     this.sequelize = models.sequelize;
   }
 
   async create(data) {
     // desestruturar array de itens e dados principais da tabela
     const { items, ...donationBaseData } = data;
+
+    // validar status da campanha
+    if (donationBaseData.campaignId) {
+      const campaign = await this.Campaign.findByPk(
+        donationBaseData.campaignId,
+      );
+
+      if (!campaign) {
+        throw new NotFoundError(
+          `Campanha com ID ${donationBaseData.campaignId} não encontrada.`,
+        );
+      }
+
+      // apenas permita doações se o status for inProgress
+      if (campaign.status !== 'inProgress') {
+        throw new BadRequestError(
+          `Não é possível registrar doações para a campanha "${campaign.name}". O status atual é "${campaign.status}".`,
+        );
+      }
+    }
+
     const transaction = await this.sequelize.transaction();
 
     try {
@@ -168,6 +191,29 @@ class DonationService {
   async update(id, data) {
     const { items, ...donationBaseData } = data; // filtra os itens
     const donation = await this.findById(id);
+
+    if (donationBaseData.campaignId) {
+      const newCampaignId = donationBaseData.campaignId;
+
+      // se o id da campanha for diferente do atual (ou se a doação não tinha campanha)
+      if (newCampaignId !== donation.campaignId) {
+        const campaign = await this.Campaign.findByPk(newCampaignId);
+
+        if (!campaign) {
+          throw new NotFoundError(
+            `Campanha com ID ${newCampaignId} não encontrada.`,
+          );
+        }
+
+        // apenas permita a mudança se o status for inProgress
+        if (campaign.status !== 'inProgress') {
+          throw new BadRequestError(
+            `Não é possível associar a doação à campanha "${campaign.name}". O status atual é "${campaign.status}".`,
+          );
+        }
+      }
+      // se a campanha for a mesma, não precisa validar o status, pois ela já foi validada na criação/associação anterior
+    }
 
     await donation.update(donationBaseData);
     return donation;

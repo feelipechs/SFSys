@@ -24,6 +24,11 @@ class Campaign extends Model {
           allowNull: false,
           field: 'end_date',
         },
+        status: {
+          type: DataTypes.ENUM('inProgress', 'finished', 'canceled', 'pending'),
+          allowNull: false,
+          defaultValue: 'pending',
+        },
       },
       {
         sequelize,
@@ -44,8 +49,11 @@ class Campaign extends Model {
       as: 'donations',
     });
 
-    // 2. Associações com Distribuições (Se houver uma FK 'campaign_id' na Distribution)
-    // this.hasMany(models.Distribution, { foreignKey: 'campaign_id', as: 'distributions' });
+    // 2. Uma campanha tem muitas distribuições ou não
+    this.hasMany(models.Distribution, {
+      foreignKey: 'campaign_id',
+      as: 'distributions',
+    });
   }
 }
 

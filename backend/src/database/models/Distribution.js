@@ -35,6 +35,11 @@ class Distribution extends Model {
           allowNull: true,
           field: 'responsible_user_id',
         },
+        campaignId: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+          field: 'campaign_id',
+        },
       },
       {
         sequelize,
@@ -61,7 +66,13 @@ class Distribution extends Model {
       as: 'beneficiary',
     });
 
-    // 3. A Distribuição tem MUITOS Itens de Distribuição (1:N)
+    // 3. A Distribuição pertence a uma Campanha (FK: campaign_id) ou não
+    this.belongsTo(models.Campaign, {
+      foreignKey: 'campaign_id',
+      as: 'campaign',
+    });
+
+    // 4. A Distribuição tem MUITOS Itens de Distribuição (1:N)
     this.hasMany(models.DistributionItem, {
       foreignKey: 'distribution_id',
       as: 'items',

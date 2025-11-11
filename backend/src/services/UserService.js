@@ -1,4 +1,5 @@
 import { BadRequestError, NotFoundError } from '../utils/api-error.js';
+import { DataValidator } from '../utils/validator.js';
 
 class UserService {
   constructor(models) {
@@ -28,6 +29,11 @@ class UserService {
       );
     }
 
+    // validação de email
+    if (!DataValidator.isValidEmail(data.email)) {
+      throw new BadRequestError('O formato do email fornecido é inválido.');
+    }
+
     // validação de unicidade
     const existingUser = await this.User.findOne({
       where: { email: data.email },
@@ -39,7 +45,20 @@ class UserService {
     }
     // fim da validação
 
-    // O hook beforeCreate no modelo user fará o hashing da senha automaticamente
+    // permite apenas um admin
+    if (data.role === 'admin') {
+      const adminCount = await this.User.count({
+        where: { role: 'admin' },
+      });
+
+      if (adminCount >= 1) {
+        throw new BadRequestError(
+          'A criação de administradores é limitada a um único usuário no sistema.',
+        );
+      }
+    }
+
+    // o hook beforeCreate no modelo user fará o hashing da senha automaticamente
     const newUser = await this.User.create(data);
 
     // otimização: garantir que a senha não seja retornada na resposta
@@ -47,7 +66,13 @@ class UserService {
     return this._getSafeUser(newUser);
   }
 
-  async findAll() {
+  async findAll(params = { sort: 'name', order: 'ASC' }) {
+    const { sort, order } = params;
+
+    // cria a cláusula de ordenação dinâmica para o Sequelize
+    const orderClause = [[sort, order.toUpperCase()]];
+
+    // executa a consulta ao banco de dados
     return await this.User.findAll({
       attributes: [
         'id',
@@ -57,7 +82,7 @@ class UserService {
         ['created_at', 'createdAt'],
         ['updated_at', 'updatedAt'],
       ],
-      order: [['name', 'ASC']],
+      order: orderClause,
     });
   }
 
@@ -82,6 +107,52 @@ class UserService {
 
   async update(id, data) {
     const user = await this.findById(id);
+    const updatedRole = data.role; // pega a nova role se estiver sendo atualizada
+    const originalRole = user.role; // pega a role atual do usuário
+
+    // bloqueio contra promoção de um novo admin (limite de 1)
+    if (updatedRole === 'admin' && originalRole !== 'admin') {
+      const adminCount = await this.User.count({
+        where: { role: 'admin' },
+      });
+
+      if (adminCount >= 1) {
+        throw new BadRequestError(
+          'Não é permitido criar um segundo administrador. O limite é de um admin por sistema.',
+        );
+      }
+    }
+
+    // bloqueio contra rebaixamento do único admin
+    // se o usuário atual é o admin e a atualização tenta mudar a role dele para outra coisa
+    if (originalRole === 'admin' && updatedRole && updatedRole !== 'admin') {
+      // como o sistema só permite 1 admin, se o "user" que estamos atualizando é 'admin', ele é, por definição, o único. Mas checar a contagem é a forma mais segura de garantir que o sistema nunca fique sem admin (embora redundante aqui).
+      const adminCount = await this.User.count({
+        where: { role: 'admin' },
+      });
+
+      if (adminCount === 1) {
+        throw new BadRequestError(
+          'Não é possível rebaixar o único administrador do sistema, pois ele garante o acesso à manutenção.',
+        );
+      }
+    }
+
+    // validação de email
+    if (data.email && !DataValidator.isValidEmail(data.email)) {
+      throw new BadRequestError('O formato do email fornecido é inválido.');
+    }
+
+    // checar unicidade do email
+    if (data.email && data.email !== user.email) {
+      const existingUser = await this.User.findOne({
+        where: { email: data.email },
+      });
+      if (existingUser) {
+        throw new BadRequestError('Email já em uso, escolha outro.');
+      }
+    }
+
     // o hook beforeUpdate no modelo user hasheará a senha SE o campo password estiver presente no data e for diferente do valor atual
     await user.update(data);
 
@@ -93,6 +164,13 @@ class UserService {
     const transaction = await this.sequelize.transaction();
     try {
       const user = await this.findById(id, transaction); // assumindo findById passa a transação
+
+      // bloqueio de exclusão de admin
+      if (user.role === 'admin') {
+        throw new BadRequestError(
+          'A exclusão de usuários com a role "admin" não é permitida.',
+        );
+      }
 
       // checagem de doações
       const hasDonations = await this.Donation.count({

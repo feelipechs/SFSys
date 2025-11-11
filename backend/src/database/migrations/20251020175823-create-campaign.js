@@ -18,6 +18,11 @@ export async function up(queryInterface, Sequelize) {
       type: Sequelize.DATE,
       allowNull: false,
     },
+    status: {
+      type: Sequelize.ENUM('inProgress', 'finished', 'canceled', 'pending'),
+      allowNull: false,
+      defaultValue: 'pending',
+    },
     created_at: { type: Sequelize.DATE, allowNull: false },
     updated_at: { type: Sequelize.DATE, allowNull: false },
   });
