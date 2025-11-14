@@ -27,7 +27,7 @@ class Donation extends Model {
         },
         responsibleUserId: {
           type: DataTypes.INTEGER,
-          allowNull: true,
+          allowNull: false,
           field: 'responsible_user_id',
         },
         campaignId: {

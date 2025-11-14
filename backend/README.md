@@ -32,23 +32,23 @@ Siga o exemplo dp <strong>.env.example</strong> para ele.
 
 ### Passo 2: Criar o Esquema e Popular os Dados Iniciais
 
-Com o servidor de banco de dados rodando, use o Sequelize CLI para criar a estrutura (tabelas) e inserir os dados iniciais
+Veja os comandos detalhados no final desse README
 
-Aplicar Migrations (Criar as Tabelas):
+#### Criar migrations e seeds
 
-```
-npx sequelize-cli db:migrate
-```
+Caso necessário criar migration ou seed, use esses comandos:
 
-Isso cria todas as 10 tabelas do modelo objeto-relacional.
-
-Rodar Seeders (Popular os Dados de Autenticação):
+Migration (Tabela):
 
 ```
-npx sequelize-cli db:seed:all
+npx sequelize-cli migration:generate --name nome-da-migration
 ```
 
-Isso insere o admin e o beneficiário para que você possa começar a testar
+Seed (Dados):
+
+```
+npx sequelize-cli seed:generate --name nome-do-seed
+```
 
 ### Passo 3: Iniciando a Aplicação
 

@@ -8,13 +8,6 @@ export class HttpError extends Error {
   }
 }
 
-// erro 404: recurso não encontrado
-export class NotFoundError extends HttpError {
-  constructor(message = 'Recurso não encontrado.') {
-    super(message, 404);
-  }
-}
-
 // erro 400: requisição inválida
 export class BadRequestError extends HttpError {
   constructor(message = 'Requisição inválida. Verifique os dados enviados.') {
@@ -37,5 +30,12 @@ export class ForbiddenError extends HttpError {
     message = 'Acesso negado. Você não tem permissão para esta ação.',
   ) {
     super(message, 403);
+  }
+}
+
+// erro 404: recurso não encontrado
+export class NotFoundError extends HttpError {
+  constructor(message = 'Recurso não encontrado.') {
+    super(message, 404);
   }
 }

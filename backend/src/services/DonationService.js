@@ -1,7 +1,7 @@
 import { BadRequestError, NotFoundError } from '../utils/api-error.js';
 
 class DonationService {
-  constructor(models) {
+  constructor(models, productService) {
     if (
       !models ||
       !models.Donation ||
@@ -20,6 +20,7 @@ class DonationService {
     this.Product = models.Product;
     this.Campaign = models.Campaign;
     this.sequelize = models.sequelize;
+    this.productService = productService;
   }
 
   async create(data) {
@@ -58,10 +59,13 @@ class DonationService {
         transaction,
       });
 
-      // criando o objeto do filho (DonationItem) injetando o id do pai
+      // mapeamento de 'items' para 'itemsToCreate' e injeção do ID
       const itemsToCreate = items.map((item) => ({
-        ...item,
-        donationId: newDonation.id,
+        // usa 'itemId' se este for o nome que vem do frontend (ItemRepeater), e mapea para 'product_id' ou 'productId' que o Sequelize espera
+        productId: item.productId,
+        quantity: item.quantity,
+        validity: item.validity === '' ? null : item.validity,
+        donationId: newDonation.id, // injeta o id do pai
       }));
 
       // criando os filhos em lote
@@ -69,18 +73,16 @@ class DonationService {
         transaction,
       });
 
-      // estoque: incrementando o currentStock (entrada)
-      // Promise.all para executar todas as atualizações de forma paralela e eficiente
+      // usa o método centralizado do ProductService (INCREMENT)
       const stockUpdates = itemsToCreate.map((item) => {
-        return this.Product.increment(
-          // coluna a ser incrementada
-          { currentStock: item.quantity },
-          // condições: onde o ID do produto corresponde ao item
-          { where: { id: item.productId }, transaction },
+        return this.productService.incrementStock(
+          // usar 'item.productId' (que foi definido no mapeamento acima)
+          item.productId,
+          item.quantity,
+          transaction,
         );
       });
 
-      // espera que todas as atualizações de estoque sejam concluídas (dentro da transação)
       await Promise.all(stockUpdates);
       // fim da lógica de estoque
 
@@ -192,6 +194,13 @@ class DonationService {
     const { items, ...donationBaseData } = data; // filtra os itens
     const donation = await this.findById(id);
 
+    if (data.items) {
+      // lança o erro se 'items' estiver presente (não importa se é array vazio ou não)
+      throw new BadRequestError(
+        'Não é permitido atualizar a lista de itens (produtos e quantidades) de uma doação existente. Apenas dados do cabeçalho (observação, data e campanha) podem ser modificados.',
+      );
+    }
+
     if (donationBaseData.campaignId) {
       const newCampaignId = donationBaseData.campaignId;
 
@@ -215,44 +224,36 @@ class DonationService {
       // se a campanha for a mesma, não precisa validar o status, pois ela já foi validada na criação/associação anterior
     }
 
-    await donation.update(donationBaseData);
-    return donation;
+    try {
+      await donation.update(donationBaseData);
+      return donation;
+    } catch (error) {
+      // se houver erros de validação do Sequelize (ex: formato de data, campo ausente),
+      // ele será capturado aqui e lançado de volta ao controller.
+      throw error;
+    }
   }
 
   async delete(id) {
     const transaction = await this.sequelize.transaction();
 
     try {
-      // busca transacional: traz a doação com os itens e o currentStock do produto
+      // busca transacional: traz a doação com os itens
       const donation = await this.findById(id, transaction);
 
       if (!donation) {
         throw new NotFoundError(`Doação com ID ${id} não encontrada.`);
       }
 
-      // lógica de bloqueio: garante que há estoque suficiente para reverter a doação
       const itemsToRevert = donation.items;
 
-      for (const item of itemsToRevert) {
-        // o estoque atual do produto é acessado via inclusão (include)
-        const availableStock = parseFloat(item.product.currentStock);
-        const quantityToRevert = parseFloat(item.quantity);
-
-        // se o estoque atual for menor que a quantidade a ser revertida, bloqueia
-        if (availableStock < quantityToRevert) {
-          // lança um erro que carrega o status 400
-          throw new BadRequestError(
-            `Não é possível excluir esta doação. Estoque insuficiente para reverter o item ${item.product.name}.`,
-          );
-        }
-      }
-      // fim da lógica de bloqueio
-
-      // reversão de estoque (decremento)
+      // usa o método centralizado do ProductService (DECREMENT)
+      // o método decrementStock já faz a checagem de saldo e o bloqueio da linha.
       const stockUpdates = itemsToRevert.map((item) => {
-        return this.Product.decrement(
-          { currentStock: item.quantity },
-          { where: { id: item.productId }, transaction },
+        return this.productService.decrementStock(
+          item.productId, // id do Produto
+          item.quantity, // quantidade a decrementar (reverter)
+          transaction, // transação ativa
         );
       });
 
@@ -261,7 +262,7 @@ class DonationService {
       // destruição do registro (pai e filhos)
       await donation.destroy({ transaction });
 
-      // commit e finalização
+      // ... (commit e finalização)
       await transaction.commit();
 
       return true;

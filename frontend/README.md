@@ -1,16 +1,38 @@
-# React + Vite
+# Tutorial de Configuração: SFSys Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este guia detalha os passos necessários para configurar e rodar o SFSys Backend localmente.
 
-Currently, two official plugins are available:
+## Pré-requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Certifique-se de que os seguintes programas estão instalados no seu sistema:
 
-## React Compiler
+    Node.js e NPM (Versão 18+ ou 20+).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+    Git (Para clonar o repositório).
 
-## Expanding the ESLint configuration
+### Passo 1: Configuração Inicial do Projeto
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Clonar o Repositório:
+
+```
+git clone https://github.com/feelipechs/SFSys.git
+cd SFSys/frontend
+```
+
+Instalar Dependências:
+
+```
+npm install
+```
+
+### Passo 2: Iniciando a Aplicação
+
+Iniciar aplicação:
+
+```
+npm run dev
+```
+
+Acessar a Aplicação:
+
+A aplicação estará ativa em http://localhost:[Porta] (5173 no padrão Vite).

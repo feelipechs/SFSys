@@ -15,7 +15,8 @@ class DonorService {
     this.DonorLegal = models.DonorLegal;
     this.Donation = models.Donation;
     this.sequelize = models.sequelize;
-    this.Op = models.sequelize.Op; // operadores do sequelize
+    // this.Op = models.sequelize.Op; // operadores do sequelize
+    this.Op = this.sequelize.constructor.Op; // operadores do sequelize
   }
 
   _validateFormatsAndDocuments(data) {
@@ -55,9 +56,11 @@ class DonorService {
 
     try {
       // validação de campos obrigatórios
-      if (!donorBaseData.name || !type) {
+      if (!donorBaseData.name || !donorBaseData.email || !type) {
         // phone/email podem não ser obrigatórios na Model
-        throw new BadRequestError('Os campos nome e tipo são obrigatórios.');
+        throw new BadRequestError(
+          'Os campos nome, email e tipo são obrigatórios.',
+        );
       }
 
       // validação de formato e documento (usando o validator)
@@ -68,16 +71,16 @@ class DonorService {
       let uniqueField;
 
       if (type === 'individual') {
-        if (!individual || !individual.cpf)
-          throw new BadRequestError('CPF e dados de Pessoa Física faltando.');
+        if (!individual || !individual.cpf || !individual.dateOfBirth)
+          throw new BadRequestError(
+            'CPF e Data de Nascimento são obrigatórios.',
+          );
         ChildModel = this.DonorIndividual;
         nestedData = individual;
         uniqueField = 'cpf';
       } else if (type === 'legal') {
-        if (!legal || !legal.cnpj)
-          throw new BadRequestError(
-            'CNPJ e dados de Pessoa Jurídica faltando.',
-          );
+        if (!legal || !legal.cnpj || !legal.tradeName)
+          throw new BadRequestError('CNPJ e Razão Social são obrigatórios.');
         ChildModel = this.DonorLegal;
         nestedData = legal;
         uniqueField = 'cnpj';
@@ -95,6 +98,41 @@ class DonorService {
         throw new BadRequestError(
           `${uniqueField.toUpperCase()} já cadastrado para outro doador.`,
         );
+      }
+
+      const emailCheck = donorBaseData.email
+        ? { email: donorBaseData.email }
+        : {};
+      const phoneCheck = donorBaseData.phone
+        ? { phone: donorBaseData.phone }
+        : {};
+
+      const uniqueChecks = [];
+      if (Object.keys(emailCheck).length > 0) uniqueChecks.push(emailCheck);
+      if (Object.keys(phoneCheck).length > 0) uniqueChecks.push(phoneCheck);
+
+      if (uniqueChecks.length > 0) {
+        const existingDonor = await this.Donor.findOne({
+          where: {
+            [this.Op.or]: uniqueChecks,
+          },
+          attributes: ['email', 'phone'],
+          // Não é necessário passar 'transaction' pois é apenas uma leitura
+        });
+
+        if (existingDonor) {
+          let message = '';
+          if (existingDonor.email === donorBaseData.email) {
+            message = 'E-mail já cadastrado.';
+          } else if (existingDonor.phone === donorBaseData.phone) {
+            // Usa 'else if' para priorizar a mensagem mais relevante,
+            // ou você pode lançar dois erros em uma lista.
+            message = 'Telefone já cadastrado.';
+          }
+
+          // Lança o erro customizado que seu Controller já sabe tratar
+          throw new BadRequestError(message);
+        }
       }
 
       // criação transacional (pai e filho)
@@ -161,7 +199,8 @@ class DonorService {
   async update(id, data) {
     const transaction = await this.sequelize.transaction();
     try {
-      const donor = await this.findById(id, transaction); // Lê o doador atual
+      // lê o doador atual (incluindo individual/legal para checagens)
+      const donor = await this.findById(id, transaction);
 
       if (Object.keys(data).length === 0) {
         throw new BadRequestError(
@@ -169,24 +208,96 @@ class DonorService {
         );
       }
 
-      // validação de formato e documento
-      this._validateFormatsAndDocuments({ ...data, type: donor.type }); // passa o type para saber qual doc checar
+      // validação de formato e documento (para campos que estão sendo atualizados)
+      this._validateFormatsAndDocuments({ ...data, type: donor.type });
 
       // separa dados da base e da herança
       const { individual, legal, ...donorBaseData } = data;
+
+      // checagem de unicidade para email/phone na tabela base
+      const emailUpdated =
+        donorBaseData.email && donorBaseData.email !== donor.email;
+      const phoneUpdated =
+        donorBaseData.phone && donorBaseData.phone !== donor.phone;
+
+      if (emailUpdated || phoneUpdated) {
+        const uniqueChecks = [];
+        if (emailUpdated) uniqueChecks.push({ email: donorBaseData.email });
+        if (phoneUpdated) uniqueChecks.push({ phone: donorBaseData.phone });
+
+        if (uniqueChecks.length > 0) {
+          const existingDonor = await this.Donor.findOne({
+            where: {
+              [this.Op.or]: uniqueChecks,
+              // exclui o id do doador atual da pesquisa
+              id: { [this.Op.not]: id },
+            },
+            attributes: ['id', 'email', 'phone'],
+            transaction,
+          });
+
+          if (existingDonor) {
+            let message = 'O dado fornecido já está em uso por outro cadastro:';
+            if (existingDonor.email === donorBaseData.email) {
+              message = 'O novo E-mail já está em uso por outro cadastro.';
+            } else if (existingDonor.phone === donorBaseData.phone) {
+              message = 'O novo Telefone já está em uso por outro cadastro.';
+            }
+
+            throw new BadRequestError(message);
+          }
+        }
+      }
 
       // atualização da tabela base (Donor)
       if (Object.keys(donorBaseData).length > 0) {
         await donor.update(donorBaseData, { transaction });
       }
 
-      // atualização das tabelas filhas (se houver payload)
+      // configuração para atualização das tabelas filhas
       let childPayload = donor.type === 'individual' ? individual : legal;
       let ChildModel =
         donor.type === 'individual' ? this.DonorIndividual : this.DonorLegal;
       let uniqueField = donor.type === 'individual' ? 'cpf' : 'cnpj';
 
       if (childPayload) {
+        // checagem de campos obrigatórios da sub-tabela
+        if (donor.type === 'individual') {
+          const currentIndividual = donor.individual.dataValues;
+
+          // prioriza o valor do payload, senão usa o valor atual do banco
+          const hasCpf =
+            childPayload.cpf !== undefined
+              ? childPayload.cpf
+              : currentIndividual.cpf;
+          const hasDateOfBirth =
+            childPayload.dateOfBirth !== undefined
+              ? childPayload.dateOfBirth
+              : currentIndividual.dateOfBirth;
+
+          if (!hasCpf || !hasDateOfBirth) {
+            throw new BadRequestError(
+              'CPF e Data de Nascimento são obrigatórios.',
+            );
+          }
+        } else if (donor.type === 'legal') {
+          const currentLegal = donor.legal.dataValues;
+
+          // prioriza o valor do payload, senão usa o valor atual do banco
+          const hasCnpj =
+            childPayload.cnpj !== undefined
+              ? childPayload.cnpj
+              : currentLegal.cnpj;
+          const hasTradeName =
+            childPayload.tradeName !== undefined
+              ? childPayload.tradeName
+              : currentLegal.tradeName;
+
+          if (!hasCnpj || !hasTradeName) {
+            throw new BadRequestError('CNPJ e Razão Social são obrigatórios.');
+          }
+        }
+
         const documentValue = childPayload[uniqueField];
 
         if (documentValue) {
@@ -194,7 +305,7 @@ class DonorService {
           const existing = await ChildModel.findOne({
             where: {
               [uniqueField]: documentValue,
-              donorId: { [this.Op.not]: id }, // Op.not (diferente do id atual)
+              donorId: { [this.Op.not]: id }, // diferente do id atual
             },
             transaction,
           });

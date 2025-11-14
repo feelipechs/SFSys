@@ -10,32 +10,27 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import EntityDetailDrawer from '@/components/EntityDetailDrawer';
-import { UserForm } from './UserForm';
+import { EntityDetailDrawer } from '@/components/EntityDetailDrawer';
+import { DonorForm } from './DonorForm';
 import { Button } from '@/components/ui/button';
 import { IconLoader2, IconTrash } from '@tabler/icons-react';
-import { useUserMutations } from '@/hooks/mutations/useUserMutations';
+import { useDonorMutations } from '@/hooks/mutations/useDonorMutations';
 
-// componente local: lógica do botão de exclusão
-const DeleteUserButton = ({ userId, userName, onDrawerClose }) => {
-  const { remove, isPending } = useUserMutations();
+const DeleteDonorButton = ({ donorId, donorName, onDrawerClose }) => {
+  const { remove, isPending } = useDonorMutations();
 
-  // a função de exclusão real só é chamada após a confirmação no AlertDialog
   const handleDeleteConfirm = () => {
     const mutationCallbacks = {
       onSuccess: () => {
-        // fecha o Drawer após a exclusão e a invalidação do cache
         if (onDrawerClose) onDrawerClose();
       },
-      // o onError global (no useUserMutations) já trata o erro
     };
 
-    remove.mutate(userId, mutationCallbacks);
+    remove.mutate(donorId, mutationCallbacks);
   };
 
   return (
     <AlertDialog>
-      {/* trigger: o botão "Excluir" no rodapé do Drawer */}
       <AlertDialogTrigger asChild>
         <Button variant="destructive" size="sm" disabled={isPending}>
           <IconTrash className="size-4" />
@@ -43,19 +38,20 @@ const DeleteUserButton = ({ userId, userName, onDrawerClose }) => {
         </Button>
       </AlertDialogTrigger>
 
-      {/* o conteúdo do modal de confirmação */}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Confirmação de Exclusão</AlertDialogTitle>
           <AlertDialogDescription>
-            Você tem certeza que deseja deletar o usuário{' '}
-            <strong>{userName}</strong>? Esta ação é irreversível.
+            Você tem certeza que deseja deletar o doador{' '}
+            <strong>
+              {donorName} (ID: {donorId})
+            </strong>
+            ? Esta ação é irreversível.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
 
-          {/* AlertDialogAction chama a mutação após a confirmação */}
           <AlertDialogAction
             onClick={handleDeleteConfirm}
             disabled={isPending}
@@ -73,34 +69,31 @@ const DeleteUserButton = ({ userId, userName, onDrawerClose }) => {
   );
 };
 
-// componente principal de ação de linha
-export function UserDetailDrawer({ user, triggerContent }) {
-  const FORM_ID = `user-form-${user.id}`;
+export function DonorDetailDrawer({ donor, triggerContent }) {
+  const FORM_ID = `donor-form-${donor.id}`;
 
-  // lógica de estado do Drawer
   const [isEditDrawerOpen, setIsEditDrawerOpen] = React.useState(false);
   const handleCloseDrawer = () => setIsEditDrawerOpen(false);
 
-  // ação de delete (injetada no cabeçalho)
   const deleteAction = (
-    <DeleteUserButton
-      userId={user.id}
-      userName={user.name}
+    <DeleteDonorButton
+      donorId={donor.id}
+      donorName={donor.name}
       onDrawerClose={handleCloseDrawer}
     />
   );
 
   return (
     <EntityDetailDrawer
-      title={`Editar Usuário: ${user.name}`}
+      title={`Editar Doador: ${donor.name} (ID: ${donor.id})`}
       formId={FORM_ID}
       open={isEditDrawerOpen}
       onOpenChange={setIsEditDrawerOpen}
       extraButtons={deleteAction}
-      // usa o triggerContent passado pela prop (botão editar ou nome)
       triggerContent={triggerContent}
+      description="Altere os dados do doador e clique em 'Salvar Alterações'."
     >
-      <UserForm user={user} formId={FORM_ID} onClose={handleCloseDrawer} />
+      <DonorForm donor={donor} formId={FORM_ID} onClose={handleCloseDrawer} />
     </EntityDetailDrawer>
   );
 }

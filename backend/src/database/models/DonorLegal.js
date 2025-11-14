@@ -42,6 +42,12 @@ class DonorLegal extends Model {
     );
   }
 
+  toJSON() {
+    const values = { ...this.get() };
+    delete values.donor_id;
+    return values;
+  }
+
   static associate(models) {
     // O registro de PJ PERTENCE AO registro pai (Donor)
     this.belongsTo(models.Donor, {

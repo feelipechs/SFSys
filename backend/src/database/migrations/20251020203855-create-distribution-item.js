@@ -27,6 +27,9 @@ export async function up(queryInterface, Sequelize) {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: false,
     },
+    validity: {
+      type: Sequelize.DATE,
+    },
     // Colunas padrão de rastreamento
     created_at: { type: Sequelize.DATE, allowNull: false },
     updated_at: { type: Sequelize.DATE, allowNull: false },
