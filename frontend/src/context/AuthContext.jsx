@@ -1,14 +1,25 @@
-import { createContext, useState, useContext, useEffect, useMemo } from 'react';
+import {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useMemo,
+  useCallback,
+} from 'react';
+import { useNavigate } from 'react-router-dom';
+import { setUnauthorizedErrorCallback } from '@/services/api';
 
-// Chaves de localStorage
+// chaves de localStorage
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
 
-// Criação do Contexto
+// criação do contexto
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  // Inicializa o estado lendo do localStorage, se houver
+  const navigate = useNavigate();
+
+  // inicializa o estado lendo do localStorage, se houver
   const [token, setToken] = useState(localStorage.getItem(TOKEN_KEY));
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem(USER_KEY);
@@ -17,26 +28,38 @@ export function AuthProvider({ children }) {
 
   const isLoggedIn = useMemo(() => !!token && !!user, [token, user]);
 
-  // Função para lidar com o login bem-sucedido
+  // função para lidar com o login bem-sucedido
   const login = (userData, jwtToken) => {
-    // 1. Armazena no estado do React
+    // armazena no estado do React
     setToken(jwtToken);
     setUser(userData);
 
-    // 2. Armazena no Local Storage para persistência (reloads de página)
+    // armazena no localStorage para persistência (reloads de página)
     localStorage.setItem(TOKEN_KEY, jwtToken);
     localStorage.setItem(USER_KEY, JSON.stringify(userData));
   };
 
-  // Função para logout
-  const logout = () => {
+  // função para logout (useCallback para otimização)
+  // modificar logout para incluir redirecionamento
+  const logout = useCallback(() => {
     setToken(null);
     setUser(null);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-  };
 
-  // O valor que será fornecido para os componentes
+    // redirecionar para a página de login
+    navigate('/login');
+
+    // opcional: ,ostrar uma mensagem ao usuário (ex: Toast), já tem no navuser
+  }, [navigate]); // navigate é uma dependência do useCallback
+
+  // injetar logout no Interceptor
+  useEffect(() => {
+    // garante que a função 'logout' (que inclui o navigate) será chamada sempre que o interceptor HTTP receber 401
+    setUnauthorizedErrorCallback(logout);
+  }, [logout]); // executa apenas quando a função 'logout' (usando useCallback) muda
+
+  // valor que será fornecido para os componentes
   const contextValue = useMemo(
     () => ({
       isLoggedIn,
@@ -45,7 +68,7 @@ export function AuthProvider({ children }) {
       login,
       logout,
     }),
-    [isLoggedIn, user, token]
+    [isLoggedIn, user, token, logout]
   );
 
   return (
@@ -53,5 +76,5 @@ export function AuthProvider({ children }) {
   );
 }
 
-// Hook customizado para fácil acesso ao contexto
+// hook customizado para fácil acesso ao contexto
 export const useAuth = () => useContext(AuthContext);

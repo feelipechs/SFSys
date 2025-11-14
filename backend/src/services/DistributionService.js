@@ -1,7 +1,7 @@
 import { BadRequestError, NotFoundError } from '../utils/api-error.js';
 
 class DistributionService {
-  constructor(models) {
+  constructor(models, productService) {
     if (
       !models ||
       !models.Distribution ||
@@ -20,6 +20,7 @@ class DistributionService {
     this.Product = models.Product;
     this.Campaign = models.Campaign;
     this.sequelize = models.sequelize;
+    this.productService = productService;
   }
 
   async create(data) {
@@ -34,70 +35,35 @@ class DistributionService {
         );
       }
 
-      // validação de estoque: busca os produtos necessários
-      const productIds = items.map((item) => item.productId);
-
-      const products = await this.Product.findAll({
-        where: { id: productIds },
-        attributes: ['id', 'name', 'currentStock'],
-        transaction, // <-- dentro da transação
-      });
-
-      const productMap = products.reduce((map, product) => {
-        map[product.id] = parseFloat(product.currentStock);
-        return map;
-      }, {});
-
-      // compara estoque solicitado vs. estoque disponível
-      for (const item of items) {
-        const availableStock = productMap[item.productId];
-        const requestedQuantity = parseFloat(item.quantity);
-
-        if (availableStock === undefined) {
-          throw new NotFoundError(
-            `Produto com ID ${item.productId} não encontrado.`,
-          );
-        }
-
-        // condição de falha
-        if (availableStock < requestedQuantity) {
-          throw new BadRequestError(
-            `Estoque insuficiente para o produto ${products.find((p) => p.id === item.productId).name}. Disponível: ${availableStock}, Solicitado: ${requestedQuantity}.`,
-          );
-        }
-      }
-
-      // criando o pai (Distribution) primeiro
       const newDistribution = await this.Distribution.create(
         distributionBaseData,
-        {
-          transaction,
-        },
+        { transaction },
       );
 
-      // criando o objeto do filho (DistributionItem) injetando o id do pai
+      // mapea 'itemId' para 'productId'
       const itemsToInsert = items.map((item) => ({
-        ...item,
+        // aqui mapeia os campos do frontend para o que o backend espera
+        productId: item.productId,
+        quantity: item.quantity,
+        validity: item.validity === '' ? null : item.validity,
         distributionId: newDistribution.id,
       }));
 
-      // criando os filhos em lote
       await this.DistributionItem.bulkCreate(itemsToInsert, {
         transaction,
       });
 
-      // estoque: decrementando o currentStock (saída)
-      // Promise.all para executar todas as atualizações de forma paralela e eficiente
+      // usando o método centralizado do ProductService (DECREMENT)
+      // decrementStock vai checar o saldo e decrementar a linha, tudo dentro da transação
       const stockUpdates = itemsToInsert.map((item) => {
-        return this.Product.decrement(
-          // coluna a ser decrementada
-          { currentStock: item.quantity },
-          // condições: onde o ID do produto corresponde ao item
-          { where: { id: item.productId }, transaction },
+        return this.productService.decrementStock(
+          item.productId, // usa o campo mapeado 'productId'
+          item.quantity,
+          transaction,
         );
       });
 
-      // espera que todas as atualizações de estoque sejam concluídas (dentro da transação)
+      // se qualquer um dos decrementStock falhar (por saldo), o Promise.all falha, e o bloco catch faz o rollback
       await Promise.all(stockUpdates);
       // fim da lógica de estoque
 
@@ -124,26 +90,29 @@ class DistributionService {
         ['updated_at', 'updatedAt'],
       ],
       include: [
+        // beneficiario
+        {
+          association: 'beneficiary',
+        },
         // usuário responsável
         {
           association: 'responsibleUser',
           attributes: ['id', 'name', 'role'],
         },
+        {
+          association: 'campaign',
+        },
         // itens da distribuição
         {
           association: 'items',
-          attributes: ['id', 'quantity', 'productId'],
-          // INCLUSÃO ANINHADA: Trazendo o Produto associado a CADA Item
+          attributes: ['id', 'quantity', 'validity', 'productId'],
+          // inclusão aninhada: trazendo o produto associado a cada item
           include: [
             {
-              association: 'product', // Nome do alias na model DonationItem
-              attributes: ['id', 'name', 'unitOfMeasurement', 'currentStock'], // Apenas dados essenciais do Produto
+              association: 'product',
+              attributes: ['id', 'name', 'unitOfMeasurement', 'currentStock'],
             },
           ],
-        },
-        {
-          association: 'campaign',
-          attributes: ['id', 'name', 'startDate', 'endDate'],
         },
       ],
       order: [['dateTime', 'DESC']],
@@ -164,26 +133,28 @@ class DistributionService {
         ['updated_at', 'updatedAt'],
       ],
       include: [
+        {
+          association: 'beneficiary',
+        },
         // usuário responsável
         {
           association: 'responsibleUser',
           attributes: ['id', 'name', 'role'],
         },
-        // itens da distribuição
-        {
-          association: 'items',
-          attributes: ['id', 'quantity', 'productId'],
-          // INCLUSÃO ANINHADA: Trazendo o Produto associado a CADA Item
-          include: [
-            {
-              association: 'product', // Nome do alias na model DonationItem
-              attributes: ['id', 'name', 'unitOfMeasurement', 'currentStock'], // Apenas dados essenciais do Produto
-            },
-          ],
-        },
         {
           association: 'campaign',
           attributes: ['id', 'name', 'startDate', 'endDate'],
+        },
+        // itens da distribuição
+        {
+          association: 'items',
+          attributes: ['id', 'quantity', 'validity', 'productId'],
+          include: [
+            {
+              association: 'product',
+              attributes: ['id', 'name', 'unitOfMeasurement', 'currentStock'],
+            },
+          ],
         },
       ],
     });
@@ -209,6 +180,13 @@ class DistributionService {
     // busca e atualiza
     const distribution = await this.findById(id);
 
+    if (data.items) {
+      // lança o erro se 'items' estiver presente (não importa se é array vazio ou não)
+      throw new BadRequestError(
+        'Não é permitido atualizar a lista de itens (produtos e quantidades) de uma doação existente. Apenas dados do cabeçalho (observação, data e campanha) podem ser modificados.',
+      );
+    }
+
     // tualiza apenas os campos do cabeçalho (data, observação, etc.)
     await distribution.update(distributionBaseData);
 
@@ -230,20 +208,20 @@ class DistributionService {
       // reposição de estoque (incremento)
       const itemsToRestore = distribution.items;
 
+      // usando o método centralizado do ProductService (INCREMENT)
       const stockUpdates = itemsToRestore.map((item) => {
-        // usamos increment para somar a quantidade de volta ao estoque
-        return this.Product.increment(
-          { currentStock: item.quantity },
-          { where: { id: item.productId }, transaction },
+        return this.productService.incrementStock(
+          item.productId,
+          item.quantity,
+          transaction, // transação ativa
         );
       });
 
       await Promise.all(stockUpdates);
 
-      // destruição do registro (pai e filhos)
+      // destruição do registro
       await distribution.destroy({ transaction });
 
-      // commit e finalização
       await transaction.commit();
 
       return true;

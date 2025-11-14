@@ -52,11 +52,13 @@ export function DataTable({
   data: initialData,
   columns: externalColumns,
   tabsData,
-  mainActionLabel = 'Add Section',
+  mainActionLabel = 'Adicionar Seção',
   mainActionComponent,
   extraTabsContent,
-  // prop para passar o estado de sorting para o pai (Management)
   onSortingChange,
+  // props para comunicação com o componente pai
+  onTabChange,
+  initialTabValue,
 }) {
   const [data, setData] = React.useState(() => initialData);
   const [rowSelection, setRowSelection] = React.useState({});
@@ -68,9 +70,33 @@ export function DataTable({
     pageSize: 10,
   });
 
-  // estado para controle das Tabs
-  const [activeTab, setActiveTab] = React.useState('outline');
+  // determina o valor da aba principal: usa o valor do primeiro item de tabsData como padrão
+  const defaultMainTabValue = tabsData?.[0]?.value || 'first';
+
+  // usa o valor inicial da prop, ou o valor principal padrão
+  const [activeTab, setActiveTab] = React.useState(
+    initialTabValue || defaultMainTabValue
+  );
   const [globalFilter, setGlobalFilter] = React.useState('');
+
+  // sincroniza os dados externos com o estado interno sempre que initialData mudar
+  // isso é crucial para que o TanStack Table use os dados filtrados do componente pai
+  React.useEffect(() => {
+    setData(initialData);
+    // opcional: reseta a paginação ao trocar de dados, evitando página vazia
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  }, [initialData]);
+
+  const handleTabChange = (value) => {
+    // atualiza o estado interno
+    setActiveTab(value);
+    // chama o handler do componente pai (Management)
+    if (onTabChange) {
+      onTabChange(value);
+    }
+    // reseta o filtro global ao trocar de aba para evitar que o filtro persista em dados diferentes
+    setGlobalFilter('');
+  };
 
   const table = useReactTable({
     data,
@@ -90,13 +116,11 @@ export function DataTable({
     onPaginationChange: setPagination,
     onGlobalFilterChange: setGlobalFilter,
 
-    // ordenação: atualiza o estado interno e chama o handler do componente pai
     onSortingChange: (updater) => {
-      // se o pai passar uma função, chamamos ela para acionar o TanStack Query
       if (onSortingChange) {
         onSortingChange(updater);
       }
-      setSorting(updater); // atualiza o estado interno para o header visual
+      setSorting(updater);
     },
 
     getCoreRowModel: getCoreRowModel(),
@@ -107,13 +131,17 @@ export function DataTable({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
+  // identifica quais abas NÃO são abas extras (ou seja, são abas de tabela)
+  const isTableTab =
+    !extraTabsContent || !extraTabsContent.some((e) => e.value === activeTab);
+
   return (
     <Tabs
       value={activeTab}
-      onValueChange={setActiveTab}
+      onValueChange={handleTabChange}
       className="w-full flex-col justify-start gap-6"
     >
-      {/* header: tabs e botões de ação */}
+      {/* header: tabs e botões de ação (CONTROLES UNIFICADOS) */}
       <div className="flex items-center justify-between px-4 lg:px-6">
         <div className="flex items-center gap-4">
           {/* pesquisa */}
@@ -128,8 +156,8 @@ export function DataTable({
           <Label htmlFor="view-selector" className="sr-only">
             View
           </Label>
-          {/* select mobile (Dinâmico) */}
-          <Select value={activeTab} onValueChange={setActiveTab}>
+          {/* select mobile (Dinâmico, usa handleTabChange) */}
+          <Select value={activeTab} onValueChange={handleTabChange}>
             <SelectTrigger
               className="flex w-fit @4xl/main:hidden"
               size="sm"
@@ -148,7 +176,7 @@ export function DataTable({
           </Select>
         </div>
 
-        {/* tabs list desktop (Dinâmico) */}
+        {/* tabs list desktop (Dinâmico, usa handleTabChange) */}
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
           {tabsData &&
             tabsData.map((tab) => (
@@ -179,25 +207,31 @@ export function DataTable({
                     column.getCanHide()
                 )
                 .map((column) => {
+                  const label =
+                    typeof column.columnDef.header === 'string'
+                      ? column.columnDef.header
+                      : column.id;
+
+                  if (column.id === 'select' || column.id === 'actions')
+                    return null;
+
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
-                      className="capitalize"
                       checked={column.getIsVisible()}
                       onCheckedChange={(value) =>
                         column.toggleVisibility(!!value)
                       }
                     >
-                      {column.id}
+                      {label}
                     </DropdownMenuCheckboxItem>
                   );
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* renderiza o componente customizado, o o botão padrão se não existir */}
+          {/* renderiza o componente customizado ou o botão padrão */}
           {mainActionComponent ? (
-            // deve ser renderizado diretamente, sem wrapper <Button>
             mainActionComponent
           ) : (
             <Button variant="outline" size="sm">
@@ -208,167 +242,204 @@ export function DataTable({
         </div>
       </div>
 
-      {/* 2. conteúdo da aba principal (tabela) */}
-      <TabsContent
-        value="outline"
-        className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
-      >
-        <div className="overflow-hidden rounded-lg border">
-          <Table>
-            <TableHeader className="bg-muted sticky top-0 z-10">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead
-                        key={header.id}
-                        colSpan={header.colSpan}
-                        // clique e estilo de cursor
-                        className={
-                          header.column.getCanSort()
-                            ? 'cursor-pointer select-none'
-                            : ''
-                        }
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {header.isPlaceholder ? null : (
-                          <div className="flex items-center space-x-1">
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                            {/* exibição de ícone de ordenação */}
-                            {header.column.getCanSort() &&
-                              header.column.id !== 'select' &&
-                              header.column.id !== 'actions' &&
-                              (header.column.getIsSorted() === 'asc' ? (
-                                <IconChevronUp className="h-4 w-4" />
-                              ) : header.column.getIsSorted() === 'desc' ? (
-                                <IconChevronDown className="h-4 w-4" />
-                              ) : (
-                                // mostra um ícone de "sem ordenação" para indicar que é clicável
-                                <IconArrowsSort className="h-4 w-4 text-muted-foreground opacity-50" />
-                              ))}
-                          </div>
-                        )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                <>
-                  {table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && 'selected'}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </>
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={table.getAllColumns().length}
-                    className="h-24 text-center"
-                  >
-                    Sem Resultados.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+      {/* conteúdo da tabela (renderiza para qualquer aba que NÃO seja extra) */}
+      {/* cria um TabsContent para cada aba que deve conter a tabela */}
+      {tabsData
+        .filter((tab) => isTableTab || tab.value === activeTab)
+        .map((tab) => {
+          if (
+            extraTabsContent &&
+            extraTabsContent.some((e) => e.value === tab.value)
+          ) {
+            return null; // aaba extra será renderizada no loop abaixo
+          }
 
-        {/* paginação */}
-        <div className="flex items-center justify-between px-4">
-          <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-            {table.getFilteredSelectedRowModel().rows.length} de{' '}
-            {table.getFilteredRowModel().rows.length} linha(s) selecionada(s).
-          </div>
-          <div className="flex w-full items-center gap-8 lg:w-fit">
-            <div className="hidden items-center gap-2 lg:flex">
-              <Label htmlFor="rows-per-page" className="text-sm font-medium">
-                Linhas por página
-              </Label>
-              <Select
-                value={`${table.getState().pagination.pageSize}`}
-                onValueChange={(value) => {
-                  table.setPageSize(Number(value));
-                }}
-              >
-                <SelectTrigger size="sm" className="w-20" id="rows-per-page">
-                  <SelectValue
-                    placeholder={table.getState().pagination.pageSize}
-                  />
-                </SelectTrigger>
-                <SelectContent side="top">
-                  {[10, 20, 30, 40, 50].map((pageSize) => (
-                    <SelectItem key={pageSize} value={`${pageSize}`}>
-                      {pageSize}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex w-fit items-center justify-center text-sm font-medium">
-              Página {table.getState().pagination.pageIndex + 1} de{' '}
-              {table.getPageCount()}
-            </div>
-            <div className="ml-auto flex items-center gap-2 lg:ml-0">
-              <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Ir para a primeira página</span>
-                <IconChevronsLeft />
-              </Button>
-              <Button
-                variant="outline"
-                className="size-8"
-                size="icon"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Ir para a página anterior</span>
-                <IconChevronLeft />
-              </Button>
-              <Button
-                variant="outline"
-                className="size-8"
-                size="icon"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Ir para a próxima página</span>
-                <IconChevronRight />
-              </Button>
-              <Button
-                variant="outline"
-                className="hidden size-8 lg:flex"
-                size="icon"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Ir para a última página</span>
-                <IconChevronsRight />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </TabsContent>
+          return (
+            <TabsContent
+              key={tab.value}
+              value={tab.value} // o valor da aba (ex: 'all-donors', 'pf-donors', 'pj-donors')
+              className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
+            >
+              {/* o conteúdo da tabela só é renderizado se esta for a aba ativa */}
+              {activeTab === tab.value && (
+                <>
+                  <div className="overflow-hidden rounded-lg border">
+                    <Table>
+                      <TableHeader className="bg-muted sticky top-0 z-10">
+                        {table.getHeaderGroups().map((headerGroup) => (
+                          <TableRow key={headerGroup.id}>
+                            {headerGroup.headers.map((header) => {
+                              return (
+                                <TableHead
+                                  key={header.id}
+                                  colSpan={header.colSpan}
+                                  className={
+                                    header.column.getCanSort()
+                                      ? 'cursor-pointer select-none'
+                                      : ''
+                                  }
+                                  onClick={header.column.getToggleSortingHandler()}
+                                >
+                                  {header.isPlaceholder ? null : (
+                                    <div className="flex items-center space-x-1">
+                                      {flexRender(
+                                        header.column.columnDef.header,
+                                        header.getContext()
+                                      )}
+                                      {header.column.getCanSort() &&
+                                        header.column.id !== 'select' &&
+                                        header.column.id !== 'actions' &&
+                                        (header.column.getIsSorted() ===
+                                        'asc' ? (
+                                          <IconChevronUp className="h-4 w-4" />
+                                        ) : header.column.getIsSorted() ===
+                                          'desc' ? (
+                                          <IconChevronDown className="h-4 w-4" />
+                                        ) : (
+                                          <IconArrowsSort className="h-4 w-4 text-muted-foreground opacity-50" />
+                                        ))}
+                                    </div>
+                                  )}
+                                </TableHead>
+                              );
+                            })}
+                          </TableRow>
+                        ))}
+                      </TableHeader>
+                      <TableBody>
+                        {table.getRowModel().rows?.length ? (
+                          <>
+                            {table.getRowModel().rows.map((row) => (
+                              <TableRow
+                                key={row.id}
+                                data-state={row.getIsSelected() && 'selected'}
+                              >
+                                {row.getVisibleCells().map((cell) => (
+                                  <TableCell key={cell.id}>
+                                    {flexRender(
+                                      cell.column.columnDef.cell,
+                                      cell.getContext()
+                                    )}
+                                  </TableCell>
+                                ))}
+                              </TableRow>
+                            ))}
+                          </>
+                        ) : (
+                          <TableRow>
+                            <TableCell
+                              colSpan={table.getAllColumns().length}
+                              className="h-24 text-center"
+                            >
+                              Sem Resultados.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* paginação */}
+                  <div className="flex items-center justify-between px-4">
+                    <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+                      {table.getFilteredSelectedRowModel().rows.length} de{' '}
+                      {table.getFilteredRowModel().rows.length} linha(s)
+                      selecionada(s).
+                    </div>
+                    <div className="flex w-full items-center gap-8 lg:w-fit">
+                      <div className="hidden items-center gap-2 lg:flex">
+                        <Label
+                          htmlFor="rows-per-page"
+                          className="text-sm font-medium"
+                        >
+                          Linhas por página
+                        </Label>
+                        <Select
+                          value={`${table.getState().pagination.pageSize}`}
+                          onValueChange={(value) => {
+                            table.setPageSize(Number(value));
+                          }}
+                        >
+                          <SelectTrigger
+                            size="sm"
+                            className="w-20"
+                            id="rows-per-page"
+                          >
+                            <SelectValue
+                              placeholder={table.getState().pagination.pageSize}
+                            />
+                          </SelectTrigger>
+                          <SelectContent side="top">
+                            {[10, 20, 30, 40, 50].map((pageSize) => (
+                              <SelectItem key={pageSize} value={`${pageSize}`}>
+                                {pageSize}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex w-fit items-center justify-center text-sm font-medium">
+                        Página {table.getState().pagination.pageIndex + 1} de{' '}
+                        {table.getPageCount()}
+                      </div>
+                      <div className="ml-auto flex items-center gap-2 lg:ml-0">
+                        <Button
+                          variant="outline"
+                          className="hidden h-8 w-8 p-0 lg:flex"
+                          onClick={() => table.setPageIndex(0)}
+                          disabled={!table.getCanPreviousPage()}
+                        >
+                          <span className="sr-only">
+                            Ir para a primeira página
+                          </span>
+                          <IconChevronsLeft />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="size-8"
+                          size="icon"
+                          onClick={() => table.previousPage()}
+                          disabled={!table.getCanPreviousPage()}
+                        >
+                          <span className="sr-only">
+                            Ir para a página anterior
+                          </span>
+                          <IconChevronLeft />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="size-8"
+                          size="icon"
+                          onClick={() => table.nextPage()}
+                          disabled={!table.getCanNextPage()}
+                        >
+                          <span className="sr-only">
+                            Ir para a próxima página
+                          </span>
+                          <IconChevronRight />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="hidden size-8 lg:flex"
+                          size="icon"
+                          onClick={() =>
+                            table.setPageIndex(table.getPageCount() - 1)
+                          }
+                          disabled={!table.getCanNextPage()}
+                        >
+                          <span className="sr-only">
+                            Ir para a última página
+                          </span>
+                          <IconChevronsRight />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </TabsContent>
+          );
+        })}
 
       {/* conteúdo das abas extras (Dinâmico) */}
       {extraTabsContent &&

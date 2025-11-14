@@ -18,14 +18,14 @@ export async function up(queryInterface, Sequelize) {
       allowNull: false,
       references: { model: 'donor', key: 'id' },
       onUpdate: 'CASCADE',
-      onDelete: 'CASCADE',
+      onDelete: 'RESTRICT',
     },
     responsible_user_id: {
       type: Sequelize.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: { model: 'user', key: 'id' },
       onUpdate: 'CASCADE',
-      onDelete: 'SET NULL',
+      onDelete: 'RESTRICT',
     },
     campaign_id: {
       type: Sequelize.INTEGER,

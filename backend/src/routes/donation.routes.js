@@ -1,12 +1,15 @@
 import express from 'express';
 import db from '../database/index.js';
+import ProductService from '../services/ProductService.js';
 import DonationController from '../controllers/DonationController.js';
 import DonationService from '../services/DonationService.js';
 import { authenticate, authorize } from '../middlewares/AuthMiddleware.js';
 
 const router = express.Router();
 
-const donationServiceInstance = new DonationService(db);
+const productServiceInstance = new ProductService(db);
+
+const donationServiceInstance = new DonationService(db, productServiceInstance);
 
 const donationControllerInstance = new DonationController(
   donationServiceInstance,

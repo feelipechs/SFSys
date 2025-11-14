@@ -24,7 +24,6 @@ import {
 } from '@/components/ui/sidebar';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 const DEFAULT_AVATAR_URL = '/images/logo.png';
 
@@ -32,7 +31,6 @@ export function NavUser() {
   const { isMobile } = useSidebar();
 
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
   if (!user) return null;
 
@@ -46,7 +44,6 @@ export function NavUser() {
       duration: 2000, // tempo suficiente para o usuário ver
     });
     logout(); // limpa o token e o estado global
-    navigate('/login'); // redireciona o usuário para a página de login
   };
 
   return (

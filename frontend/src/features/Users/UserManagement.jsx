@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/DataTable';
 import { ChartAreaInteractive } from '@/components/ChartAreaInteractive';
 import { useUsersQuery } from '@/hooks/queries/useUsersQuery';
-import EntityDetailDrawer from '@/components/EntityDetailDrawer';
+import { EntityDetailDrawer } from '@/components/EntityDetailDrawer';
 import { IconPlus } from '@tabler/icons-react';
 import { userColumns } from './UserColumns';
 import { UserForm } from './UserForm';

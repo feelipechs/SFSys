@@ -25,6 +25,9 @@ class DistributionItem extends Model {
           type: DataTypes.DECIMAL(10, 2),
           allowNull: false,
         },
+        validity: {
+          type: DataTypes.DATE,
+        },
       },
       {
         sequelize,

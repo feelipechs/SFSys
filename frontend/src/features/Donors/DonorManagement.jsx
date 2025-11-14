@@ -1,0 +1,120 @@
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/DataTable';
+import { ChartAreaInteractive } from '@/components/ChartAreaInteractive';
+import { useDonorsQuery } from '@/hooks/queries/useDonorsQuery';
+import { EntityDetailDrawer } from '@/components/EntityDetailDrawer';
+import { IconPlus } from '@tabler/icons-react';
+import { DonorForm } from './DonorForm';
+
+// conjunto de colunas
+import { donorColumnsAll } from './DonorColumnsAll';
+import { donorColumnsIndividual } from './DonorColumnsIndividual';
+import { donorColumnsLegal } from './DonorColumnsLegal';
+
+const TABS_DATA = [
+  { label: 'Todos os Doadores', value: 'all-donors' },
+  { label: 'Pessoa Física (PF)', value: 'pf-donors' },
+  { label: 'Pessoa Jurídica (PJ)', value: 'pj-donors' },
+  { label: 'Gráfico/Tendência', value: 'chart-trend' },
+];
+
+const donorExtraTabsContent = [
+  {
+    value: 'chart-trend',
+    component: (
+      <div className="pt-4">
+        <h2>Tendência de Cadastros de Doadores</h2>
+        <ChartAreaInteractive />
+      </div>
+    ),
+  },
+  // as abas PF e PJ não estão aqui, pois o conteúdo delas é a DataTable principal
+];
+
+function DonorManagement() {
+  const { data: donors, isLoading, isError, dataUpdatedAt } = useDonorsQuery();
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = React.useState(false);
+
+  // estado para rastrear a aba ativa, padrão é 'all-donors'
+  const [activeTab, setActiveTab] = React.useState('all-donors');
+
+  const FORM_ID = 'donor-form';
+
+  // lógica de filtragem de dados
+  const allDonors = donors || [];
+
+  const filteredData = React.useMemo(() => {
+    if (activeTab === 'pf-donors') {
+      return allDonors.filter((donor) => donor.type === 'individual');
+    }
+    if (activeTab === 'pj-donors') {
+      return allDonors.filter((donor) => donor.type === 'legal');
+    }
+    return allDonors; // aba 'all-donors'
+  }, [allDonors, activeTab]);
+
+  // lógica de seleção de colunas
+  const columnsToDisplay = React.useMemo(() => {
+    if (activeTab === 'pf-donors') {
+      return donorColumnsIndividual;
+    }
+    if (activeTab === 'pj-donors') {
+      return donorColumnsLegal;
+    }
+    return donorColumnsAll; // aba 'all-donors'
+  }, [activeTab]);
+
+  // criação do botão de ação
+  const createButton = (
+    <EntityDetailDrawer
+      title="Criar Novo Doador"
+      description="Preencha os dados do novo doador para criar um registro."
+      formId={FORM_ID}
+      open={isCreateDrawerOpen}
+      onOpenChange={setIsCreateDrawerOpen}
+      triggerContent={
+        <Button variant="outline" size="sm">
+          <IconPlus />
+          <span className="hidden lg:inline">Adicionar Novo Doador</span>
+        </Button>
+      }
+    >
+      <DonorForm
+        formId={FORM_ID}
+        onClose={() => setIsCreateDrawerOpen(false)}
+      />
+    </EntityDetailDrawer>
+  );
+
+  if (isLoading) return <div className="p-4">Carregando Doadores...</div>;
+
+  if (isError)
+    return (
+      <div className="p-4 text-red-600">
+        Erro ao carregar doadores. Verifique a autenticação ou o backend.
+      </div>
+    );
+
+  if (!donors)
+    return <div className="p-4">Nenhum dado de doador encontrado.</div>;
+
+  return (
+    <div className="p-4">
+      <DataTable
+        // a chave força o re-render do TanStack Table ao mudar de aba/dados, garantindo que os filtros/paginação sejam resetados corretamente
+        key={dataUpdatedAt + activeTab}
+        data={filteredData} // passa os dados filtrados
+        columns={columnsToDisplay} // passa as colunas corretas
+        tabsData={TABS_DATA}
+        extraTabsContent={donorExtraTabsContent}
+        mainActionComponent={createButton}
+        // DataTable notifica qual aba foi clicada
+        onTabChange={setActiveTab}
+        initialTabValue={activeTab}
+      />
+    </div>
+  );
+}
+
+export default DonorManagement;

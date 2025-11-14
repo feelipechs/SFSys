@@ -10,6 +10,7 @@ import {
   PieChart,
 } from 'lucide-react';
 
+import { GiCannedFish } from 'react-icons/gi';
 import { GoPackageDependents } from 'react-icons/go';
 import { MdFamilyRestroom } from 'react-icons/md';
 import {
@@ -166,6 +167,29 @@ const data = {
       ],
     },
     {
+      title: 'Produtos',
+      url: '/products',
+      icon: GiCannedFish,
+      items: [
+        {
+          title: 'General',
+          url: '#',
+        },
+        {
+          title: 'Team',
+          url: '#',
+        },
+        {
+          title: 'Billing',
+          url: '#',
+        },
+        {
+          title: 'Limits',
+          url: '#',
+        },
+      ],
+    },
+    {
       title: 'Usuários',
       url: '/users',
       icon: FaUser,
@@ -252,8 +276,8 @@ export function AppSidebar({ ...props }) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={filteredNavMain} />
-        <NavProjects projects={data.projects} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* <NavProjects projects={data.projects} /> */}
+        <NavSecondary items={data.navSecondary} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

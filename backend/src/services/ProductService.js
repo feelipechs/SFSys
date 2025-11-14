@@ -21,6 +21,7 @@ class ProductService {
   }
 
   async create(data) {
+    // filtrar currentStock para impedir alteração manual na criação
     const { currentStock, ...productBaseData } = data;
 
     if (!productBaseData.name || !productBaseData.unitOfMeasurement) {
@@ -33,16 +34,15 @@ class ProductService {
       const newProduct = await this.Product.create(productBaseData);
       return newProduct;
     } catch (error) {
-      // capturar erro específico do sequelize para unicidade (Código 23505 no Postgres, 1062 no MySQL)
+      // captura de erro de unicidade (código omitido por brevidade, mas deve ser mantido)
       if (
         error.name === 'SequelizeUniqueConstraintError' ||
         (error.parent && error.parent.code === '1062')
       ) {
         throw new BadRequestError(
-          'Já existe um produto com este nome e unidade de medida. Verifique a unicidade.',
+          'Já existe um produto com este nome e unidade de medida.',
         );
       }
-      // para todos os outros erros, relança o erro genérico
       throw error;
     }
   }
@@ -63,14 +63,8 @@ class ProductService {
 
   async findById(id, transaction = null) {
     const product = await this.Product.findByPk(id, {
-      attributes: [
-        'id',
-        'name',
-        'unitOfMeasurement',
-        'currentStock',
-        ['created_at', 'createdAt'],
-        ['updated_at', 'updatedAt'],
-      ],
+      attributes: ['id', 'name', 'unitOfMeasurement', 'currentStock'],
+      transaction, // permite que a busca ocorra dentro de uma transação
     });
 
     if (!product) {
@@ -80,10 +74,9 @@ class ProductService {
   }
 
   async update(id, data) {
-    // filtra o currentStock para evitar que seja alterado manualmente
+    // filtrar currentStock para impedir alteração manual no update
     const { currentStock, ...updateData } = data;
 
-    // opcional: checar se há dados válidos para atualizar
     if (Object.keys(updateData).length === 0) {
       throw new BadRequestError(
         'Nenhum campo válido fornecido para atualização do produto.',
@@ -92,11 +85,21 @@ class ProductService {
 
     const product = await this.findById(id);
 
-    // validação de unicidade no ipdate: se nome ou unidade mudar, checar unicidade
-    // (O Sequelize pode cuidar disso via Model/DB, mas uma checagem explícita aqui é mais amigável).
-
-    await product.update(updateData);
-    return product;
+    try {
+      await product.update(updateData);
+      return product;
+    } catch (error) {
+      // captura de erro de unicidade (código omitido)
+      if (
+        error.name === 'SequelizeUniqueConstraintError' ||
+        (error.parent && error.parent.code === '1062')
+      ) {
+        throw new BadRequestError(
+          'Já existe outro produto com este nome e unidade de medida.',
+        );
+      }
+      throw error;
+    }
   }
 
   async delete(id) {
@@ -104,26 +107,24 @@ class ProductService {
     try {
       const product = await this.findById(id, transaction);
 
-      // checagem do histórico de doações
+      // product_id e productId funcionam...
+      const historyWhere = { product_id: id };
+
       const hasDonationHistory = await this.DonationItem.count({
-        where: { productId: id },
+        where: historyWhere,
         transaction,
       });
-
-      // checagem do histórico de distribuições
       const hasDistributionHistory = await this.DistributionItem.count({
-        where: { productId: id },
+        where: historyWhere,
         transaction,
       });
 
-      // bloqueio
       if (hasDonationHistory > 0 || hasDistributionHistory > 0) {
         throw new BadRequestError(
-          'Não é possível excluir este produto. Ele está associado a doações ou distribuições históricas e deve ser mantido para auditoria.',
+          'Não é possível excluir este produto. Ele está associado a transações históricas e deve ser mantido para auditoria.',
         );
       }
 
-      // se não houver histórico, procede com a exclusão
       await product.destroy({ transaction });
       await transaction.commit();
       return true;
@@ -131,6 +132,70 @@ class ProductService {
       await transaction.rollback();
       throw error;
     }
+  }
+
+  // gestão de estoque (requerem transaction)
+
+  /**
+   * Adiciona uma quantidade ao estoque do produto (Entrada, Doação).
+   * @param {number} productId O ID do produto.
+   * @param {number} quantity A quantidade a ser adicionada.
+   * @param {object} transaction A transação ativa do Sequelize (obrigatória).
+   */
+  async incrementStock(productId, quantity, transaction) {
+    if (!transaction) {
+      throw new Error(
+        'Uma transação (transaction) é obrigatória para movimentação de estoque.',
+      );
+    }
+
+    // incrementa o estoque. O Sequelize lida com a concorrência na coluna
+    await this.Product.increment('current_stock', {
+      by: quantity,
+      where: { id: productId },
+      transaction: transaction,
+    });
+    return true;
+  }
+
+  /**
+   * Remove uma quantidade do estoque do produto (Saída, Distribuição) após verificação.
+   * @param {number} productId O ID do produto.
+   * @param {number} quantity A quantidade a ser removida.
+   * @param {object} transaction A transação ativa do Sequelize (obrigatória).
+   */
+  async decrementStock(productId, quantity, transaction) {
+    if (!transaction) {
+      throw new Error(
+        'Uma transação (transaction) é obrigatória para movimentação de estoque.',
+      );
+    }
+
+    // bloqueia a linha para leitura e verifica o saldo
+    const product = await this.Product.findByPk(productId, {
+      attributes: ['name', 'currentStock'],
+      // bloqueia a linha no db para que outro processo não altere o saldo antes do decremento
+      lock: transaction.LOCK.UPDATE,
+      transaction: transaction,
+    });
+
+    if (!product) {
+      throw new NotFoundError(`Produto com ID ${productId} não encontrado.`);
+    }
+
+    if (product.currentStock < quantity) {
+      throw new BadRequestError(
+        `Estoque insuficiente para o Produto ${product.name}, com ID ${productId}. Disponível: ${product.currentStock}.`,
+      );
+    }
+
+    // decrementa o estoque
+    await this.Product.decrement('current_stock', {
+      by: quantity,
+      where: { id: productId },
+      transaction: transaction,
+    });
+    return true;
   }
 }
 

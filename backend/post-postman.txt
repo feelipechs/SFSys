@@ -80,6 +80,7 @@ distribuição:
   "responsibleUserId": 1,
   "beneficiaryId": 1,
   "quantityBaskets": 1,
+  "campaignId": 1,
   "items": [
     {
       "quantity": 5,
