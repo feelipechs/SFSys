@@ -12,6 +12,25 @@ const userControllerInstance = new UserController(userServiceInstance);
 
 router.use(authenticate);
 
+router.get(
+  '/me',
+  // o 'authenticate' já garante que há um usuário.
+  userControllerInstance.getProfile,
+);
+
+router.put(
+  '/me',
+  // permite que qualquer usuário autenticado edite seu próprio registro
+  userControllerInstance.updateProfile,
+);
+
+// rota de estatísticas do perfil logado
+router.get(
+  '/me/stats',
+  authenticate, // protege a rota, garantindo que req.user exista
+  userControllerInstance.getStats,
+);
+
 router.post(
   '/',
   authorize(['admin', 'manager']),
@@ -20,13 +39,13 @@ router.post(
 
 router.get(
   '/',
-  authorize(['admin', 'manager']),
+  // authorize(['admin', 'manager']),
   userControllerInstance.findAll,
 );
 
 router.get(
   '/:id',
-  authorize(['admin', 'manager']),
+  // authorize(['admin', 'manager']),
   userControllerInstance.findById,
 );
 

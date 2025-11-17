@@ -1,12 +1,16 @@
 import * as React from 'react'; // necessário para React.useMemo, useState, etc.
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/DataTable';
-import { ChartAreaInteractive } from '@/components/ChartAreaInteractive';
 import { useCampaignsQuery } from '@/hooks/queries/useCampaignsQuery';
 import { EntityDetailDrawer } from '@/components/EntityDetailDrawer';
 import { IconPlus } from '@tabler/icons-react';
 import { campaignColumns } from './CampaignColumns';
 import { CampaignForm } from './CampaignForm';
+import {
+  LoadingContent,
+  LoadingFail,
+  NoContent,
+} from '@/components/LoadingContent';
 
 const campaignTabsData = [
   { label: 'Outline', value: 'outline' },
@@ -18,12 +22,7 @@ const campaignTabsData = [
 const campaignExtraTabsContent = [
   {
     value: 'past-performance',
-    component: (
-      <div className="pt-4">
-        <h2>Tendência de Cadastros</h2>
-        <ChartAreaInteractive />
-      </div>
-    ),
+    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
   },
   {
     value: 'key-personnel',
@@ -68,17 +67,12 @@ function CampaignManagement() {
     </EntityDetailDrawer>
   );
 
-  if (isLoading) return <div className="p-4">Carregando Campanhas...</div>;
+  if (isLoading) return <LoadingContent>campanhas</LoadingContent>;
 
-  if (isError)
-    return (
-      <div className="p-4 text-red-600">
-        Erro ao carregar campanhas. Verifique a autenticação ou o backend.
-      </div>
-    );
+  if (isError) return <LoadingFail>campanhas</LoadingFail>;
 
-  if (!campaigns)
-    return <div className="p-4">Nenhum dado de campanha encontrado.</div>;
+  if (!campaigns || campaigns.length === 0)
+    return <NoContent createComponent={createButton}>campanhas</NoContent>;
 
   return (
     <div className="p-4">

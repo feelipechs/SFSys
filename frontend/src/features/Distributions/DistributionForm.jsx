@@ -26,7 +26,7 @@ export function DistributionForm({ distribution, formId, onClose }) {
           quantityBaskets: distribution.quantityBaskets || 0,
           beneficiaryId: distribution.beneficiaryId,
           responsibleUserId: distribution.responsibleUserId,
-          campaignId: distribution.campaignId,
+          campaignId: distribution.campaignId || '',
 
           // mapeamento de items (productId -> itemId)
           items: distribution.items.map((item) => ({
@@ -158,7 +158,7 @@ export function DistributionForm({ distribution, formId, onClose }) {
       </div>
 
       <div className="flex flex-col gap-3">
-        <Label htmlFor="campaignId">Campanha</Label>
+        <Label htmlFor="campaignId">Campanha (Opcional)</Label>
         <RelationInput
           name="campaignId"
           control={formControl}
@@ -176,6 +176,7 @@ export function DistributionForm({ distribution, formId, onClose }) {
           control={formControl}
           itemOptions={productOptions} // lista de produtos disponíveis
           itemLabel="Produto" // rótulo para esta transação
+          productsData={products}
           idFieldName="productId"
           isPending={isFormLoading}
           disabled={isUpdateMode}

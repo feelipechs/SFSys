@@ -8,6 +8,8 @@ export const useDistributionMutations = () => {
 
   const onSuccessHandler = (message) => {
     queryClient.invalidateQueries({ queryKey: ['distributions'] });
+    queryClient.invalidateQueries({ queryKey: ['user', 'stats'] });
+    queryClient.invalidateQueries({ queryKey: ['global', 'stats'] });
     toast.success(message, { duration: 3000 });
   };
 

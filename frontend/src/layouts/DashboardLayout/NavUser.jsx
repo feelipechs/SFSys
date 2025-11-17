@@ -24,8 +24,7 @@ import {
 } from '@/components/ui/sidebar';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
-
-const DEFAULT_AVATAR_URL = '/images/logo.png';
+import { Link } from 'react-router-dom';
 
 export function NavUser() {
   const { isMobile } = useSidebar();
@@ -33,10 +32,6 @@ export function NavUser() {
   const { user, logout } = useAuth();
 
   if (!user) return null;
-
-  // avatar/fallback
-  const avatarUrl = user.avatar || DEFAULT_AVATAR_URL;
-  const userInitials = user.name ? user.name.charAt(0) : 'Us';
 
   const handleLogout = () => {
     toast.success(`Até logo, ${user.name}!`, {
@@ -56,9 +51,12 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={avatarUrl} alt={user.name} />
+                <AvatarImage
+                  src="https://api.dicebear.com/9.x/bottts/svg?seed=Amaya"
+                  alt={user.name}
+                />
                 <AvatarFallback className="rounded-lg">
-                  {userInitials}
+                  {user.name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -79,9 +77,9 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={avatarUrl} />
+                  <AvatarImage src="https://api.dicebear.com/9.x/bottts/svg?seed=Amaya" />
                   <AvatarFallback className="rounded-lg">
-                    {userInitials}
+                    {user.name.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -94,14 +92,12 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <IconUserCircle />
-                Conta
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconCreditCard />
-                Sei lá
-              </DropdownMenuItem>
+              <Link to="/profile">
+                <DropdownMenuItem>
+                  <IconUserCircle />
+                  Conta
+                </DropdownMenuItem>
+              </Link>
               <DropdownMenuItem>
                 <IconNotification />
                 Notificações

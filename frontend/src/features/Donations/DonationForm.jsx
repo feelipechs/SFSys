@@ -166,6 +166,7 @@ export function DonationForm({ donation, formId, onClose }) {
           name="items" // nome do array no useForm
           control={formControl}
           itemOptions={productOptions} // lista de produtos disponíveis
+          productsData={products}
           itemLabel="Produto" // rótulo para esta transação
           idFieldName="productId"
           isPending={isFormLoading}

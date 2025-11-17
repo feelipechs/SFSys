@@ -25,7 +25,21 @@ class DistributionController {
   // POST /api/distributions
   async create(req, res) {
     try {
-      const newDistribution = await this.service.create(req.body);
+      // captura o id do usuário logado da requisição
+      const responsibleUserId = req.user.id;
+
+      // cria o payload injetando o id do responsável
+      let payload = {
+        ...req.body,
+        responsibleUserId: responsibleUserId,
+      };
+
+      if (payload.campaignId === '') {
+        payload.campaignId = null;
+      }
+
+      // chama o service com o payload completo
+      const newDistribution = await this.service.create(payload);
       return res.status(201).json(newDistribution);
     } catch (error) {
       return this._handleError(res, error);

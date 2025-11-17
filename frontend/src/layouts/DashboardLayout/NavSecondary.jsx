@@ -16,7 +16,7 @@ export function NavSecondary({ items, ...props }) {
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
-        <SidebarGroupLabel>Lorem</SidebarGroupLabel>
+        <SidebarGroupLabel>Suporte</SidebarGroupLabel>
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>

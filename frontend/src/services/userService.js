@@ -25,6 +25,16 @@ const UserService = {
     await api.delete(`/users/${id}`);
     return id;
   },
+
+  updateProfile: async (updates) => {
+    // a rota do backend /users/me não requer o ID na URL
+    const response = await api.put('/users/me', updates);
+    return response.data;
+  },
+
+  getStats: async () => {
+    return api.get('/users/me/stats');
+  },
 };
 
 export default UserService;

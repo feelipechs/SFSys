@@ -1,12 +1,16 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/DataTable';
-import { ChartAreaInteractive } from '@/components/ChartAreaInteractive';
 import { useDonationsQuery } from '@/hooks/queries/useDonationsQuery';
 import { EntityDetailDrawer } from '@/components/EntityDetailDrawer';
 import { IconPlus } from '@tabler/icons-react';
 import { donationColumns } from './DonationColumns';
 import { DonationForm } from './DonationForm';
+import {
+  LoadingContent,
+  LoadingFail,
+  NoContent,
+} from '@/components/LoadingContent';
 
 const donationTabsData = [
   { label: 'Outline', value: 'outline' },
@@ -18,12 +22,7 @@ const donationTabsData = [
 const donationExtraTabsContent = [
   {
     value: 'past-performance',
-    component: (
-      <div className="pt-4">
-        <h2>Tendência de Cadastros</h2>
-        <ChartAreaInteractive />
-      </div>
-    ),
+    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
   },
   {
     value: 'key-personnel',
@@ -67,17 +66,12 @@ function DonationManagement() {
     </EntityDetailDrawer>
   );
 
-  if (isLoading) return <div className="p-4">Carregando Doações...</div>;
+  if (isLoading) return <LoadingContent>doações</LoadingContent>;
 
-  if (isError)
-    return (
-      <div className="p-4 text-red-600">
-        Erro ao carregar doações. Verifique a autenticação ou o backend.
-      </div>
-    );
+  if (isError) return <LoadingFail>doações</LoadingFail>;
 
-  if (!donations)
-    return <div className="p-4">Nenhum dado de doação encontrado.</div>;
+  if (!donations || donations.length === 0)
+    return <NoContent createComponent={createButton}>doações</NoContent>;
 
   return (
     <div className="p-4">

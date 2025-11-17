@@ -29,7 +29,22 @@ class DonationController {
   // POST /api/donations
   async create(req, res) {
     try {
-      const newDonation = await this.service.create(req.body);
+      // captura o ID do usuário logado da requisição
+      const responsibleUserId = req.user.id;
+
+      // cria o payload injetando o id do responsável
+      let payload = {
+        ...req.body,
+        responsibleUserId: responsibleUserId,
+      };
+
+      // garante que o campo opcional seja NULL
+      if (payload.campaignId === '') {
+        payload.campaignId = null;
+      }
+
+      // chama o service com o payload completo
+      const newDonation = await this.service.create(payload);
       return res.status(201).json(newDonation);
     } catch (error) {
       // usa o tratador de erro para BadRequest (400)
