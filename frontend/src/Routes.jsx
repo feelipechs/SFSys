@@ -1,7 +1,10 @@
 import { Route, Routes } from 'react-router-dom';
 import { PrivateRoute } from '@/components/PrivateRoute';
-import ErrorPage from './pages/ErrorPage';
 import LoginPage from './pages/LoginPage';
+import ErrorPage from './pages/ErrorPage';
+import ContactPage from './pages/ContactPage';
+import HelpPage from './pages/HelpPage';
+import ProfilePage from './pages/ProfilePage';
 import DashboardLayout from './layouts/DashboardLayout/DashboardLayout'; // Shell com Sidebar
 import DashboardOverview from './features/Dashboard/DashboardOverview';
 import CampaignManagement from './features/Campaigns/CampaignManagement';
@@ -34,6 +37,10 @@ function AppRoutes() {
           <Route element={<PrivateRoute allowedRoles={['admin', 'manager']} />}>
             <Route path="users" element={<UserManagement />} />
           </Route>
+
+          <Route path="contact" element={<ContactPage />} />
+          <Route path="help" element={<HelpPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Route>
 

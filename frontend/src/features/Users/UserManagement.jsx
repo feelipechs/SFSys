@@ -1,12 +1,16 @@
 import * as React from 'react'; // necessário para React.useMemo, useState, etc.
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/DataTable';
-import { ChartAreaInteractive } from '@/components/ChartAreaInteractive';
 import { useUsersQuery } from '@/hooks/queries/useUsersQuery';
 import { EntityDetailDrawer } from '@/components/EntityDetailDrawer';
 import { IconPlus } from '@tabler/icons-react';
 import { userColumns } from './UserColumns';
 import { UserForm } from './UserForm';
+import {
+  LoadingContent,
+  LoadingFail,
+  NoContent,
+} from '@/components/LoadingContent';
 
 // definição dos dados das abas
 const userTabsData = [
@@ -22,12 +26,7 @@ const userExtraTabsContent = [
   // define o que cada aba renderiza
   {
     value: 'past-performance',
-    component: (
-      <div className="pt-4">
-        <h2>Tendência de Cadastros</h2>
-        <ChartAreaInteractive />
-      </div>
-    ),
+    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
   },
   {
     value: 'key-personnel',
@@ -66,22 +65,14 @@ function UserManagement() {
   );
 
   // tratamento de carregamento (isLoading)
-  if (isLoading) return <div className="p-4">Carregando Usuários...</div>;
+  if (isLoading) return <LoadingContent>usuários</LoadingContent>;
+
+  if (isError) return <LoadingFail>usuários</LoadingFail>;
 
   // tratamento de erro (isError)
   // se houver um erro (como o 401), o `isError` será true
-  if (isError)
-    return (
-      <div className="p-4 text-red-600">
-        Erro ao carregar usuários. Verifique a autenticação ou o backend.
-      </div>
-    );
-
-  // tratamento de dados nulos (users == null)
-  // o TanStack Query só chega aqui se a promessa resolveu
-  // mas é bom tratar se `users` for null ou undefined (se a API retornar 200, mas sem corpo)
-  if (!users)
-    return <div className="p-4">Nenhum dado de usuário encontrado.</div>;
+  if (!users || users.length === 0)
+    return <NoContent createComponent={createButton}>usuários</NoContent>;
 
   // renderiza a tabela
   return (

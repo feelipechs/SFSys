@@ -12,11 +12,15 @@ export const useUserMutations = () => {
     toast.success(message, { duration: 3000 });
   };
 
-  // const onErrorHandler = (error, action) => {
-  //   // tratamento de erro
-  //   console.error(`Erro ao ${action}:`, error);
-  //   toast.error(`Falha ao ${action}.`, { description: error.message });
-  // };
+  // função para invalidar o cache do perfil logado
+  const onSuccessProfileHandler = (message) => {
+    // invalida a query que o AuthContext/ProfileForm usa para buscar o usuário logado
+    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    queryClient.invalidateQueries({ queryKey: ['profile'] }); // invalida outras possíveis chaves de perfil
+    queryClient.invalidateQueries({ queryKey: ['user', 'stats'] });
+    queryClient.invalidateQueries({ queryKey: ['global', 'stats'] });
+    toast.success(message, { duration: 3000 });
+  };
 
   const onErrorHandler = (error, action) => {
     // tratamento de erro
@@ -41,6 +45,13 @@ export const useUserMutations = () => {
     onError: (error) => onErrorHandler(error, 'atualizar usuário'),
   });
 
+  const updateProfileMutation = useMutation({
+    mutationFn: UserService.updateProfile,
+    onSuccess: () =>
+      onSuccessProfileHandler('Seu perfil foi atualizado com sucesso!'),
+    onError: (error) => onErrorHandler(error, 'atualizar seu perfil'),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: UserService.delete,
     onSuccess: () => onSuccessHandler('Usuário removido.'),
@@ -50,10 +61,12 @@ export const useUserMutations = () => {
   return {
     create: createMutation,
     update: updateMutation,
+    updateProfile: updateProfileMutation,
     remove: deleteMutation,
     isPending:
       createMutation.isPending ||
       updateMutation.isPending ||
+      updateProfileMutation.isPending ||
       deleteMutation.isPending,
   };
 };

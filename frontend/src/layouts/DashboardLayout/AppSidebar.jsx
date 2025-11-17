@@ -18,6 +18,8 @@ import {
   FaHandHoldingHeart,
   FaPeopleCarry,
   FaUser,
+  FaPaperPlane,
+  FaQuestion,
 } from 'react-icons/fa';
 
 import { NavMain } from '@/layouts/DashboardLayout/NavMain';
@@ -43,19 +45,19 @@ const data = {
   },
   teams: [
     {
-      name: 'Acme Inc',
+      name: 'Time Um',
       logo: GalleryVerticalEnd,
-      plan: 'Enterprise',
+      plan: 'Avançado',
     },
     {
-      name: 'Acme Corp.',
+      name: 'Time Dois',
       logo: AudioWaveform,
-      plan: 'Startup',
+      plan: 'Intermediário',
     },
     {
-      name: 'Evil Corp.',
+      name: 'Time Três',
       logo: Command,
-      plan: 'Free',
+      plan: 'Iniciante',
     },
   ],
   navMain: [
@@ -215,19 +217,14 @@ const data = {
   ],
   navSecondary: [
     {
-      title: 'Settings',
-      url: '#',
-      icon: Frame,
+      title: 'Contato',
+      url: '/contact',
+      icon: FaPaperPlane,
     },
     {
-      title: 'Get Help',
-      url: '#',
-      icon: Frame,
-    },
-    {
-      title: 'Search',
-      url: '#',
-      icon: Frame,
+      title: 'Ajuda',
+      url: '/help',
+      icon: FaQuestion,
     },
   ],
   projects: [

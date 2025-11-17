@@ -8,6 +8,8 @@ export const useDonationMutations = () => {
 
   const onSuccessHandler = (message) => {
     queryClient.invalidateQueries({ queryKey: ['donations'] });
+    queryClient.invalidateQueries({ queryKey: ['user', 'stats'] });
+    queryClient.invalidateQueries({ queryKey: ['global', 'stats'] });
     toast.success(message, { duration: 3000 });
   };
 

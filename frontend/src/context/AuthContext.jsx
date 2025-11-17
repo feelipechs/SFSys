@@ -39,6 +39,13 @@ export function AuthProvider({ children }) {
     localStorage.setItem(USER_KEY, JSON.stringify(userData));
   };
 
+  // função para atualizar o usuário após uma edição de perfil
+  const updateUser = useCallback((updatedUserData) => {
+    setUser(updatedUserData);
+    // atualiza o localStorage com os novos dados
+    localStorage.setItem(USER_KEY, JSON.stringify(updatedUserData));
+  }, []); // sem dependências, pois só usa o setter e localStorage
+
   // função para logout (useCallback para otimização)
   // modificar logout para incluir redirecionamento
   const logout = useCallback(() => {
@@ -67,8 +74,9 @@ export function AuthProvider({ children }) {
       token,
       login,
       logout,
+      updateUser,
     }),
-    [isLoggedIn, user, token, logout]
+    [isLoggedIn, user, token, logout, updateUser]
   );
 
   return (

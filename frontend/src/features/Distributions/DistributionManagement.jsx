@@ -1,12 +1,16 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/DataTable';
-import { ChartAreaInteractive } from '@/components/ChartAreaInteractive';
 import { useDistributionsQuery } from '@/hooks/queries/useDistributionsQuery';
 import { EntityDetailDrawer } from '@/components/EntityDetailDrawer';
 import { IconPlus } from '@tabler/icons-react';
 import { distributionColumns } from './DistributionColumns';
 import { DistributionForm } from './DistributionForm';
+import {
+  LoadingContent,
+  LoadingFail,
+  NoContent,
+} from '@/components/LoadingContent';
 
 const distributionTabsData = [
   { label: 'Outline', value: 'outline' },
@@ -18,12 +22,7 @@ const distributionTabsData = [
 const distributionExtraTabsContent = [
   {
     value: 'past-performance',
-    component: (
-      <div className="pt-4">
-        <h2>Tendência de Cadastros</h2>
-        <ChartAreaInteractive />
-      </div>
-    ),
+    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
   },
   {
     value: 'key-personnel',
@@ -67,17 +66,12 @@ function DistributionManagement() {
     </EntityDetailDrawer>
   );
 
-  if (isLoading) return <div className="p-4">Carregando Distribuições...</div>;
+  if (isLoading) return <LoadingContent>distribuições</LoadingContent>;
 
-  if (isError)
-    return (
-      <div className="p-4 text-red-600">
-        Erro ao carregar distribuições. Verifique a autenticação ou o backend.
-      </div>
-    );
+  if (isError) return <LoadingFail>distribuições</LoadingFail>;
 
-  if (!distributions)
-    return <div className="p-4">Nenhum dado de distribuição encontrado.</div>;
+  if (!distributions || distributions.length === 0)
+    return <NoContent createComponent={createButton}>distribuições</NoContent>;
 
   return (
     <div className="p-4">

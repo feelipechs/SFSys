@@ -8,6 +8,7 @@ export const useBeneficiaryMutations = () => {
 
   const onSuccessHandler = (message) => {
     queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+    queryClient.invalidateQueries({ queryKey: ['global', 'stats'] });
     toast.success(message, { duration: 3000 });
   };
 

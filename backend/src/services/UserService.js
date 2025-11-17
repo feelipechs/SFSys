@@ -1,4 +1,8 @@
-import { BadRequestError, NotFoundError } from '../utils/api-error.js';
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from '../utils/api-error.js';
 import { DataValidator } from '../utils/validator.js';
 
 class UserService {
@@ -105,10 +109,21 @@ class UserService {
     return user;
   }
 
-  async update(id, data) {
+  async update(id, data, editor) {
     const user = await this.findById(id);
     const updatedRole = data.role; // pega a nova role se estiver sendo atualizada
     const originalRole = user.role; // pega a role atual do usuário
+
+    // bloqueia update de senhas de outros
+    const isEditingSelf = editor.id === id;
+
+    // se a senha estiver presente no payload e o editor NÃO for o próprio usuário e o editor NÃO for um 'admin'
+    if (data.password && !isEditingSelf && editor.role !== 'admin') {
+      const error = new ForbiddenError(
+        'Você não tem permissão para alterar a senha de outros usuários.',
+      );
+      throw error;
+    }
 
     // bloqueio contra promoção de um novo admin (limite de 1)
     if (updatedRole === 'admin' && originalRole !== 'admin') {
@@ -199,6 +214,34 @@ class UserService {
       await transaction.rollback();
       throw error;
     }
+  }
+
+  // retorna a contagem de entidades criadas pelo usuário
+  async getUserStats(userId) {
+    if (!userId) {
+      throw new BadRequestError(
+        'O ID do usuário é obrigatório para buscar estatísticas.',
+      );
+    }
+
+    // contagem de doações
+    const registeredDonations = await this.Donation.count({
+      where: {
+        responsibleUserId: userId,
+      },
+    });
+
+    // contagem de distribuições
+    const registeredDistributions = await this.Distribution.count({
+      where: {
+        responsibleUserId: userId,
+      },
+    });
+
+    return {
+      registeredDonations,
+      registeredDistributions,
+    };
   }
 
   // método para que a senha não saia da service

@@ -1,11 +1,15 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/DataTable';
-import { ChartAreaInteractive } from '@/components/ChartAreaInteractive';
 import { useDonorsQuery } from '@/hooks/queries/useDonorsQuery';
 import { EntityDetailDrawer } from '@/components/EntityDetailDrawer';
 import { IconPlus } from '@tabler/icons-react';
 import { DonorForm } from './DonorForm';
+import {
+  LoadingContent,
+  LoadingFail,
+  NoContent,
+} from '@/components/LoadingContent';
 
 // conjunto de colunas
 import { donorColumnsAll } from './DonorColumnsAll';
@@ -22,12 +26,7 @@ const TABS_DATA = [
 const donorExtraTabsContent = [
   {
     value: 'chart-trend',
-    component: (
-      <div className="pt-4">
-        <h2>Tendência de Cadastros de Doadores</h2>
-        <ChartAreaInteractive />
-      </div>
-    ),
+    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
   },
   // as abas PF e PJ não estão aqui, pois o conteúdo delas é a DataTable principal
 ];
@@ -87,17 +86,12 @@ function DonorManagement() {
     </EntityDetailDrawer>
   );
 
-  if (isLoading) return <div className="p-4">Carregando Doadores...</div>;
+  if (isLoading) return <LoadingContent>doadores</LoadingContent>;
 
-  if (isError)
-    return (
-      <div className="p-4 text-red-600">
-        Erro ao carregar doadores. Verifique a autenticação ou o backend.
-      </div>
-    );
+  if (isError) return <LoadingFail>doadores</LoadingFail>;
 
-  if (!donors)
-    return <div className="p-4">Nenhum dado de doador encontrado.</div>;
+  if (!donors || donors.length === 0)
+    return <NoContent createComponent={createButton}>doadores</NoContent>;
 
   return (
     <div className="p-4">

@@ -55,7 +55,7 @@ function pick(arr, idx) {
 }
 
 /* ----- Unidades de medida permitidas (exemplos) ----- */
-const units = ['kg', 'un', 'cx', 'pct'];
+const units = ['kg', 'l', 'un'];
 
 export async function up(queryInterface, Sequelize) {
   const now = new Date();
@@ -496,13 +496,13 @@ export async function up(queryInterface, Sequelize) {
   const productNames = [
     'Arroz Tipo 1',
     'Feijão Carioca',
-    'Óleo de Soja 900ml',
+    'Óleo de Soja',
     'Açúcar Cristal',
-    'Macarrão Espaguete 500g',
-    'Leite UHT 1L',
-    'Farinha de Trigo 1kg',
-    'Café Torrado 250g',
-    'Enlatados Mix 400g',
+    'Macarrão Espaguete',
+    'Leite UHT',
+    'Farinha de Trigo',
+    'Café Torrado',
+    'Enlatados Mix',
     'Sabonete Glicerinado',
   ];
 
