@@ -1,6 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DateTime } from '@/components/DateTime';
+import { DateTimePicker } from '@/components/DateTimePicker';
 import { useDistributionMutations } from '@/hooks/mutations/useDistributionMutations';
 import { Controller, useForm } from 'react-hook-form';
 import { RelationInput } from '../../components/RelationInput';
@@ -113,7 +113,7 @@ export function DistributionForm({ distribution, formId, onClose }) {
           rules={{ required: 'A Data e Hora são obrigatórias.' }}
           render={({ field }) => (
             // DateTime recebe value e onChange do 'field'
-            <DateTime
+            <DateTimePicker
               value={field.value} // valor atual do formulário (string ISO)
               onChange={field.onChange} // função para atualizar o valor no formulário
               disabled={isPending}

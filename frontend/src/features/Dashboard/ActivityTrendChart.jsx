@@ -27,7 +27,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useActivityTrendQuery } from '@/hooks/queries/useActivityTrendQuery';
 
-export const description = 'An interactive area chart';
+export const description = 'Um gráfico de área interativo';
 
 const chartConfig = {
   activity: {
@@ -156,6 +156,7 @@ export function ActivityTrendChart() {
                 return date.toLocaleDateString('pt-BR', {
                   month: 'short',
                   day: 'numeric',
+                  timeZone: 'UTC',
                 });
               }}
             />
@@ -167,6 +168,7 @@ export function ActivityTrendChart() {
                     return new Date(value).toLocaleDateString('pt-BR', {
                       month: 'short',
                       day: 'numeric',
+                      timeZone: 'UTC',
                     });
                   }}
                   indicator="dot"

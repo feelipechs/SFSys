@@ -10,6 +10,7 @@ export const useDonationMutations = () => {
     queryClient.invalidateQueries({ queryKey: ['donations'] });
     queryClient.invalidateQueries({ queryKey: ['user', 'stats'] });
     queryClient.invalidateQueries({ queryKey: ['global', 'stats'] });
+    queryClient.invalidateQueries({ queryKey: ['activity', 'trend'] });
     toast.success(message, { duration: 3000 });
   };
 

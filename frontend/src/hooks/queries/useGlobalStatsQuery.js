@@ -10,6 +10,7 @@ export const useGlobalStatsQuery = () => {
   return useQuery({
     queryKey: ['global', 'stats'],
     queryFn: fetchGlobalStats,
-    staleTime: 1000 * 60 * 10,
+    // staleTime: 1000 * 60 * 10, // 10minutos
+    staleTime: 1000 * 10, // 30s
   });
 };

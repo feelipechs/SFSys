@@ -5,21 +5,21 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development nodemon src/server.js",
-    "test": "NODE_ENV=test echo \"Rodando testes...\" && exit 1",
-    "start": "NODE_ENV=production node src/server.js",
+    "dev": "cross-env NODE_ENV=development nodemon src/server.js",
+    "test": "cross-env NODE_ENV=test echo \"Rodando testes...\" && exit 1",
+    "start": "cross-env NODE_ENV=production node src/server.js",
     "db:migrate": "npm run db:migrate:dev",
-    "db:migrate:dev": "NODE_ENV=development npx sequelize-cli db:migrate",
-    "db:migrate:undo": "NODE_ENV=development npx sequelize-cli db:migrate:undo",
-    "db:migrate:undo:all": "NODE_ENV=development npx sequelize-cli db:migrate:undo:all",
+    "db:migrate:dev": "cross-env NODE_ENV=development npx sequelize-cli db:migrate",
+    "db:migrate:undo": "cross-env NODE_ENV=development npx sequelize-cli db:migrate:undo",
+    "db:migrate:undo:all": "cross-env NODE_ENV=development npx sequelize-cli db:migrate:undo:all",
     "seed": "npm run seed:dev",
-    "seed:dev": "NODE_ENV=development npx sequelize-cli db:seed:all",
-    "seed:undo:dev": "NODE_ENV=development npx sequelize-cli db:seed:undo:all",
-    "db:migrate:test": "NODE_ENV=test npx sequelize-cli db:migrate",
-    "seed:test": "NODE_ENV=test npx sequelize-cli db:seed:all",
-    "seed:undo:test": "NODE_ENV=test npx sequelize-cli db:seed:undo:all",
-    "db:migrate:prod": "NODE_ENV=production npx sequelize-cli db:migrate",
-    "seed:prod": "NODE_ENV=production npx sequelize-cli db:seed:all"
+    "seed:dev": "cross-env NODE_ENV=development npx sequelize-cli db:seed:all",
+    "seed:undo:dev": "cross-env NODE_ENV=development npx sequelize-cli db:seed:undo:all",
+    "db:migrate:test": "cross-env NODE_ENV=test npx sequelize-cli db:migrate",
+    "seed:test": "cross-env NODE_ENV=test npx sequelize-cli db:seed:all",
+    "seed:undo:test": "cross-env NODE_ENV=test npx sequelize-cli db:seed:undo:all",
+    "db:migrate:prod": "cross-env NODE_ENV=production npx sequelize-cli db:migrate",
+    "seed:prod": "cross-env NODE_ENV=production npx sequelize-cli db:seed:all"
   },
   "keywords": [],
   "author": "",
@@ -37,7 +37,12 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10",
+    "cross-env": "^10.1.0",
+    "nodemon": "^3.1.11",
+    "rimraf": "^6.1.0",
     "sequelize-cli": "^6.6.3"
+  },
+  "overrides": {
+    "glob": "12.0.0"
   }
 }

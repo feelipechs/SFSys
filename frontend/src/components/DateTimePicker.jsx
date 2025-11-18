@@ -18,7 +18,7 @@ import {
   combineDateTimeToISO,
 } from '@/utils/dateTimeHandlers';
 
-export function DateTime({ value, onChange, disabled }) {
+export function DateTimePicker({ value, onChange, disabled }) {
   const [open, setOpen] = React.useState(false);
 
   // usando as funções para carregar o valor

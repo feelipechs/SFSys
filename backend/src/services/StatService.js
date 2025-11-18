@@ -33,7 +33,6 @@ class StatService {
     const totalUsers = await this.User.count({});
 
     // 4. Total de Famílias Atendidas (IDs de Beneficiários ÚNICOS)
-    // Se 1 Beneficiário = 1 Família, a contagem de únicos é mais precisa aqui
     const totalFamiliesAttended = await this.Distribution.count({
       distinct: true,
       col: 'beneficiaryId',
@@ -48,32 +47,37 @@ class StatService {
   }
 
   // método auxiliar para gerar todas as datas no intervalo
+  // usa métodos de data local para gerar YYYY-MM-DD
   _generateDateRange(startDate, endDate) {
     const dates = [];
     const currentDate = new Date(startDate);
     const end = new Date(endDate);
 
-    // zera o tempo para garantir comparação correta
+    // zera o tempo para garantir que a comparação e a data gerada sejam no fuso horário local
     currentDate.setHours(0, 0, 0, 0);
     end.setHours(0, 0, 0, 0);
 
-    // adiciona um dia extra ao final para garantir que o dia de término seja incluído
-    end.setDate(end.getDate() + 1);
+    // itera enquanto a data atual for menor ou igual à data final
+    while (currentDate <= end) {
+      // usa getFullYear(), getMonth(), getDate() para obter a data local
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // mês é zero-based (Jan=0)
+      const day = String(currentDate.getDate()).padStart(2, '0');
 
-    while (currentDate < end) {
-      const formattedDate = currentDate.toISOString().split('T')[0];
+      // formato YYYY-MM-DD (data pura, sem fuso horário)
+      const formattedDate = `${year}-${month}-${day}`;
       dates.push(formattedDate);
+
+      // avança para o próximo dia
       currentDate.setDate(currentDate.getDate() + 1);
     }
     return dates;
   }
 
   _mergeDailyActivity(donations, distributions, startDate, endDate) {
-    // recebe as datas
     const map = {};
 
     // 1. Gera todas as datas no intervalo (e inicializa com zero)
-    // startDate e endDate estão definidos e vindo do método chamador
     const dateRange = this._generateDateRange(startDate, endDate);
 
     dateRange.forEach((date) => {
@@ -98,44 +102,57 @@ class StatService {
       }
     });
 
-    // retorna o array ordenado (as datas já foram geradas em ordem)
+    // retorna o array ordenado
     return Object.values(map);
   }
 
   async getDailyActivityTrend(days = 90) {
     const today = new Date();
-    const startDate = new Date(today);
-    startDate.setDate(today.getDate() - days);
 
+    // o final do intervalo é o início do dia de hoje
     const endDate = new Date(today);
+    endDate.setHours(0, 0, 0, 0); // ex: 2025-11-18 00:00:00 (local)
 
-    // Consulta 1: Doações por dia
+    // o início do intervalo é "days" dias atrás, no início daquele dia
+    const startDate = new Date(endDate);
+    startDate.setDate(endDate.getDate() - days); // ex: 2025-08-20 00:00:00 (local)
+
+    // para a cláusula WHERE do Sequelize/SQL:
+    // queremos dados de [startDate, até o final do dia de hoje]
+    const sqlEndDate = new Date(endDate);
+    sqlEndDate.setDate(sqlEndDate.getDate() + 1); // ex: 2025-11-19 00:00:00 (local)
+
+    const whereClause = {
+      created_at: {
+        [this.Op.gte]: startDate,
+        [this.Op.lt]: sqlEndDate, // menor que o início do dia seguinte
+      },
+    };
+
+    // consulta 1: doações por dia
+    // o DATE() do MySQL/Postgres extrai a data calendarizada do timestamp UTC, e o WHERE filtra corretamente o range de tempo
     const donations = await this.Donation.findAll({
       attributes: [
         [this.sequelize.fn('DATE', this.sequelize.col('created_at')), 'date'],
         [this.sequelize.fn('COUNT', this.sequelize.col('id')), 'count'],
       ],
-      where: {
-        created_at: { [this.Op.gte]: startDate },
-      },
+      where: whereClause,
       group: [this.sequelize.fn('DATE', this.sequelize.col('created_at'))],
       raw: true,
     });
 
-    // Consulta 2: Distribuições por dia
+    // consulta 2: distribuições por dia
     const distributions = await this.Distribution.findAll({
       attributes: [
         [this.sequelize.fn('DATE', this.sequelize.col('created_at')), 'date'],
         [this.sequelize.fn('COUNT', this.sequelize.col('id')), 'count'],
       ],
-      where: {
-        created_at: { [this.Op.gte]: startDate },
-      },
+      where: whereClause,
       group: [this.sequelize.fn('DATE', this.sequelize.col('created_at'))],
       raw: true,
     });
 
-    // passando startDate e endDate para a função de merge
+    // o merge usa startDate (início do intervalo) e endDate (início do dia de hoje)
     const mergedData = this._mergeDailyActivity(
       donations,
       distributions,

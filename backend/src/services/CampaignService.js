@@ -63,7 +63,7 @@ class CampaignService {
         ['created_at', 'createdAt'],
         ['updated_at', 'updatedAt'],
       ],
-      order: [['name', 'ASC']],
+      order: [['status', 'ASC']],
     });
   }
 

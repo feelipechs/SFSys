@@ -1,6 +1,6 @@
 import { ProfileForm } from '@/features/Profile/ProfileForm';
 
-export default function ProfilePage() {
+const ProfilePage = () => {
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
@@ -15,4 +15,6 @@ export default function ProfilePage() {
       </div>
     </div>
   );
-}
+};
+
+export default ProfilePage;
