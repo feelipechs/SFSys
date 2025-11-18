@@ -1,5 +1,5 @@
 import { Label } from '@/components/ui/label';
-import { DateTime } from '@/components/DateTime';
+import { DateTimePicker } from '@/components/DateTimePicker';
 import { useDonationMutations } from '@/hooks/mutations/useDonationMutations';
 import { Controller, useForm } from 'react-hook-form';
 import { RelationInput } from '../../components/RelationInput';
@@ -31,9 +31,10 @@ export function DonationForm({ donation, formId, onClose }) {
             // o ItemRepeater precisa de 'idFieldName' para preencher o <select>
             productId: item.productId,
             quantity: parseFloat(item.quantity), // bom garantir que a quantidade seja tratada como número
-            validity: item.validity
-              ? item.validity.substring(0, 10) // pega apenas os primeiros 10 caracteres (YYYY-MM-DD)
-              : '',
+            // validity: item.validity
+            //   ? item.validity.substring(0, 10) // pega apenas os primeiros 10 caracteres (YYYY-MM-DD)
+            //   : '',
+            validity: item.validity ? new Date(item.validity) : null,
             // ,antém o id do item, se for necessário para operações futuras
             id: item.id,
           })),
@@ -45,7 +46,7 @@ export function DonationForm({ donation, formId, onClose }) {
           donorId: '',
           responsibleUserId: '',
           campaignId: '',
-          items: [{ productId: '', quantity: 1, validity: '' }],
+          items: [{ productId: '', quantity: 1, validity: null }],
         },
     mode: 'onBlur',
   });
@@ -106,7 +107,7 @@ export function DonationForm({ donation, formId, onClose }) {
           rules={{ required: 'A Data e Hora são obrigatórias.' }}
           render={({ field }) => (
             // DateTime recebe value e onChange do 'field'
-            <DateTime
+            <DateTimePicker
               value={field.value} // valor atual do formulário (string ISO)
               onChange={field.onChange} // função para atualizar o valor no formulário
               disabled={isPending}

@@ -1,8 +1,9 @@
-import { useFieldArray, useWatch } from 'react-hook-form';
+import { Controller, useFieldArray, useWatch } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { MinusCircle, PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { RelationInput } from './RelationInput';
+import { DatePicker } from './DatePicker';
 
 export function ItemRepeater({
   control,
@@ -97,7 +98,7 @@ export function ItemRepeater({
             </div>
 
             {/* validade (útil para itens alimentícios ou medicamentos) */}
-            <div className="w-32">
+            {/* <div className="w-32">
               <label className="text-sm font-medium leading-none">
                 Validade
               </label>
@@ -105,6 +106,23 @@ export function ItemRepeater({
                 type="date"
                 {...control.register(`${name}.${index}.validity`)}
                 disabled={isPending}
+              />
+            </div> */}
+            <div className="w-44">
+              <label className="text-sm font-medium leading-none">
+                Validade (Opcional)
+              </label>
+              <Controller
+                control={control}
+                name={`${name}.${index}.validity`}
+                render={({ field }) => (
+                  <DatePicker
+                    // O DatePicker deve aceitar um objeto Date e retornar a string YYYY-MM-DD ou o objeto Date
+                    value={field.value ? new Date(field.value) : null}
+                    onChange={(date) => field.onChange(date)}
+                    disabled={isPending}
+                  />
+                )}
               />
             </div>
 
