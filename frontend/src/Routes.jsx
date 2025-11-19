@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import { PrivateRoute } from '@/components/PrivateRoute';
 import LoginPage from './pages/LoginPage';
+import OTPPage from './pages/OtpPage';
 import ErrorPage from './pages/ErrorPage';
 import ContactPage from './pages/ContactPage';
 import HelpPage from './pages/HelpPage';
@@ -18,6 +19,7 @@ function AppRoutes() {
     <Routes>
       {/* rota pública */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/otp" element={<OTPPage />} />
 
       {/* rotas protegidas*/}
 

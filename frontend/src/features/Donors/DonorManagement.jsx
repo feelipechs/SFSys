@@ -20,15 +20,6 @@ const TABS_DATA = [
   { label: 'Todos os Doadores', value: 'all-donors' },
   { label: 'Pessoa Física (PF)', value: 'pf-donors' },
   { label: 'Pessoa Jurídica (PJ)', value: 'pj-donors' },
-  { label: 'Gráfico/Tendência', value: 'chart-trend' },
-];
-
-const donorExtraTabsContent = [
-  {
-    value: 'chart-trend',
-    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
-  },
-  // as abas PF e PJ não estão aqui, pois o conteúdo delas é a DataTable principal
 ];
 
 function DonorManagement() {
@@ -40,10 +31,9 @@ function DonorManagement() {
 
   const FORM_ID = 'donor-form';
 
-  // lógica de filtragem de dados
-  const allDonors = donors || [];
-
   const filteredData = React.useMemo(() => {
+    const allDonors = donors || [];
+
     if (activeTab === 'pf-donors') {
       return allDonors.filter((donor) => donor.type === 'individual');
     }
@@ -51,7 +41,7 @@ function DonorManagement() {
       return allDonors.filter((donor) => donor.type === 'legal');
     }
     return allDonors; // aba 'all-donors'
-  }, [allDonors, activeTab]);
+  }, [donors, activeTab]);
 
   // lógica de seleção de colunas
   const columnsToDisplay = React.useMemo(() => {
@@ -101,7 +91,6 @@ function DonorManagement() {
         data={filteredData} // passa os dados filtrados
         columns={columnsToDisplay} // passa as colunas corretas
         tabsData={TABS_DATA}
-        extraTabsContent={donorExtraTabsContent}
         mainActionComponent={createButton}
         // DataTable notifica qual aba foi clicada
         onTabChange={setActiveTab}

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { MinusCircle, PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { RelationInput } from './RelationInput';
-import { DatePicker } from './DatePicker';
+import { DatePickerExpiry } from './DatePicker';
 
 export function ItemRepeater({
   control,
@@ -108,7 +108,7 @@ export function ItemRepeater({
                 disabled={isPending}
               />
             </div> */}
-            <div className="w-44">
+            {/* <div className="w-44">
               <label className="text-sm font-medium leading-none">
                 Validade (Opcional)
               </label>
@@ -121,6 +121,25 @@ export function ItemRepeater({
                     value={field.value ? new Date(field.value) : null}
                     onChange={(date) => field.onChange(date)}
                     disabled={isPending}
+                  />
+                )}
+              />
+            </div> */}
+            <div className="w-44">
+              <label className="text-sm font-medium leading-none">
+                Validade (Opcional)
+              </label>
+              <Controller
+                control={control}
+                name={`${name}.${index}.validity`}
+                // 🔑 O defaultValue é importante para useFieldArray
+                defaultValue={field.validity}
+                render={({ field }) => (
+                  <DatePickerExpiry // ⬅️ Usando o DatePickerExpiry (datas futuras)
+                    {...field} // ⬅️ CHAVE: Passa value (Date|undefined) e onChange (função)
+                    disabled={isPending}
+                    // Você pode adicionar regras de ano aqui se quiser limitar o futuro
+                    // toYear={new Date().getFullYear() + 10}
                   />
                 )}
               />

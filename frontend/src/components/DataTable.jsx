@@ -51,12 +51,11 @@ import { Input } from '@/components/ui/input';
 export function DataTable({
   data: initialData,
   columns: externalColumns,
-  tabsData,
+  tabsData = [],
   mainActionLabel = 'Adicionar Seção',
   mainActionComponent,
-  extraTabsContent,
+  extraTabsContent = [],
   onSortingChange,
-  // props para comunicação com o componente pai
   onTabChange,
   initialTabValue,
 }) {

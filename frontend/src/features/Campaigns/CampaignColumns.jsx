@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CampaignEditCell } from './CampaignEditCell';
 import { Check, Loader2, XCircle, Clock } from 'lucide-react';
-import { formatDateTime } from '@/utils/dateTimeFormatters';
+import { formatDateTime } from '@/utils/formatters';
 
 // definição do tipo de dados (Schema)
 const CampaignSchema = {

@@ -12,27 +12,7 @@ import {
   NoContent,
 } from '@/components/LoadingContent';
 
-const campaignTabsData = [
-  { label: 'Outline', value: 'outline' },
-  { label: 'Past Performance', value: 'past-performance', badge: 3 },
-  { label: 'Key Personnel', value: 'key-personnel', badge: 2 },
-  { label: 'Focus Documents', value: 'focus-documents' },
-];
-
-const campaignExtraTabsContent = [
-  {
-    value: 'past-performance',
-    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
-  },
-  {
-    value: 'key-personnel',
-    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
-  },
-  {
-    value: 'focus-documents',
-    component: <div>Conteúdo da Aba: Lista de Documentos</div>,
-  },
-];
+const campaignTabsData = [{ label: 'Campanhas', value: 'first' }];
 
 function CampaignManagement() {
   const {
@@ -82,7 +62,6 @@ function CampaignManagement() {
         columns={campaignColumns}
         tabsData={campaignTabsData}
         mainActionComponent={createButton}
-        extraTabsContent={campaignExtraTabsContent}
       />
     </div>
   );

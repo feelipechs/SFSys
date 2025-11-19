@@ -52,18 +52,12 @@ export function RelationInput({
                 className={error ? 'border-red-500 flex-1' : 'flex-1'}
               />
             ) : (
-              // select (default)
-              // <Select
-              //   onValueChange={(value) => field.onChange(Number(value))}
-              //   value={field.value ? String(field.value) : ''}
-              //   disabled={disabled}
-              // >
               <Select
                 onValueChange={(value) => {
                   // Se o valor for 'none', envia null (ou undefined), senão, converte para Number
                   field.onChange(value === 'none' ? null : Number(value));
                 }}
-                // Se field.value for null ou undefined, usa 'none' para selecionar o item 'Nenhuma'
+                // se field.value for null ou undefined, usa 'none' para selecionar o item 'Nenhuma'
                 value={
                   field.value !== null && field.value !== undefined
                     ? String(field.value)

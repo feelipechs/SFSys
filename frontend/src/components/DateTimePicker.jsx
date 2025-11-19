@@ -2,11 +2,9 @@
 
 import * as React from 'react';
 import { ChevronDownIcon } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Popover,
   PopoverContent,
@@ -18,58 +16,65 @@ import {
   combineDateTimeToISO,
 } from '@/utils/dateTimeHandlers';
 
-export function DateTimePicker({ value, onChange, disabled }) {
+export function DateTimePicker({ value, onChange, disabled, onBlur }) {
   const [open, setOpen] = React.useState(false);
 
   // usando as funções para carregar o valor
   const dateObject = createDateObject(value);
-  const [time, setTime] = React.useState(extractTime(value));
+  // garante que o estado de time seja inicializado, senão 'time' será null/undefined
+  const [time, setTime] = React.useState(extractTime(value) || '00:00');
 
   // funções para combinar e notificar o Controller
   const handleCombinedChange = React.useCallback(
     (newDateObject, newTime) => {
-      // chama a função utilitária e passa o resultado para o Controller
       const newIsoString = combineDateTimeToISO(newDateObject, newTime);
-      if (newIsoString) {
-        onChange(newIsoString);
-      }
+      onChange(newIsoString); // RHF armazena a string ISO (ou string vazia)
+      if (onBlur) onBlur();
     },
-    [onChange]
+    [onChange, onBlur]
   );
 
   // handler para o calendário
   const handleDateSelect = (newDate) => {
     setOpen(false);
     if (newDate) {
-      // usa a data nova e a hora atual (time)
       handleCombinedChange(newDate, time);
+    } else {
+      // se a data for desmarcada (se permitido)
+      onChange('');
+      if (onBlur) onBlur();
     }
   };
 
   // handler para o input de hora
   const handleTimeChange = (e) => {
     const newTime = e.target.value;
-    setTime(newTime); // atualiza o estado visual da hora
+    setTime(newTime);
 
-    // usa a data atual (dateObject) e a nova hora
     if (dateObject) {
-      // cópia para garantir que o objeto Date não seja alterado antes da combinação
       handleCombinedChange(new Date(dateObject), newTime);
     }
+    // se não houver data, apenas atualiza a hora (o que não deve acontecer se o campo de data for obrigatório, mas é seguro tratar)
+  };
+
+  // handler para marcar o campo como tocado ao sair do input de hora
+  const handleTimeBlur = (e) => {
+    // se o RHF precisa de um onBlur separado para o input de hora
+    if (onBlur) onBlur(e);
   };
 
   return (
     <div className="flex gap-4">
+      {/* data */}
       <div className="flex flex-col gap-3">
-        <Label htmlFor="date-picker" className="px-1">
-          Data
-        </Label>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               id="date-picker"
               className="w-32 justify-between font-normal"
+              disabled={disabled}
+              onBlur={onBlur}
             >
               <span className="flex-1 overflow-hidden truncate text-left">
                 {dateObject
@@ -82,29 +87,27 @@ export function DateTimePicker({ value, onChange, disabled }) {
           <PopoverContent className="w-auto overflow-hidden p-0" align="start">
             <Calendar
               mode="single"
-              // selected={date}
               captionLayout="dropdown"
               selected={dateObject}
               onSelect={handleDateSelect}
-              // onSelect={(date) => {
-              //   setDate(date);
-              //   setOpen(false);
-              // }}
+              disabled={disabled}
+              initialFocus
             />
           </PopoverContent>
         </Popover>
       </div>
+
+      {/* hora */}
       <div className="flex flex-col gap-3">
-        <Label htmlFor="time-picker" className="px-1">
-          Hora
-        </Label>
         <Input
           type="time"
           id="time-picker"
           step="1"
           className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-          value={time} // usa o estado 'time'
+          value={time}
           onChange={handleTimeChange}
+          onBlur={handleTimeBlur}
+          disabled={disabled}
         />
       </div>
     </div>

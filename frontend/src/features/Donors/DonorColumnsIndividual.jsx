@@ -1,6 +1,7 @@
 import { createColumnHelper } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DonorEditCell } from './DonorEditCell';
+import { formatDocument, formatPhone } from '@/utils/formatters';
 
 const DonorSchema = {
   id: 0,
@@ -48,34 +49,32 @@ export const donorColumnsIndividual = [
     header: 'Nome',
   }),
 
-  columnHelper.accessor('document', {
+  columnHelper.accessor('individual.cpf', {
     header: 'CPF',
-    id: 'document',
+    id: 'cpf',
     cell: ({ row }) => {
       const documentValue = row.original.individual
         ? row.original.individual.cpf
         : '';
 
-      return <span>{documentValue || 'N/A'}</span>;
+      // verifica se o valor existe para evitar formatar 'N/A'
+      if (!documentValue) {
+        return <span>N/A</span>;
+      }
+
+      const formattedDocument = formatDocument(documentValue);
+
+      return <span>{formattedDocument}</span>;
     },
   }),
 
-  // exemplo quando aplicar formatador
-  // columnHelper.accessor('individual.cpf', {
-  //   header: 'CPF',
-  //   id: 'cpf',
-  //   cell: ({ getValue }) => {
-  //     // Pega o valor diretamente da estrutura aninhada (individual.cpf)
-  //     const cpfValue = getValue();
-
-  //     // Aplica a formatação
-  //     return <span>{formatCpf(cpfValue)}</span>;
-  //   },
-  //   size: 150,
-  // }),
-
   columnHelper.accessor('phone', {
     header: 'Telefone',
+    cell: ({ getValue }) => {
+      const rawPhone = getValue();
+
+      return formatPhone(rawPhone);
+    },
   }),
 
   columnHelper.accessor('email', {

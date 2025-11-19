@@ -12,27 +12,7 @@ import {
   NoContent,
 } from '@/components/LoadingContent';
 
-const distributionTabsData = [
-  { label: 'Outline', value: 'outline' },
-  { label: 'Past Performance', value: 'past-performance', badge: 3 },
-  { label: 'Key Personnel', value: 'key-personnel', badge: 2 },
-  { label: 'Focus Documents', value: 'focus-documents' },
-];
-
-const distributionExtraTabsContent = [
-  {
-    value: 'past-performance',
-    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
-  },
-  {
-    value: 'key-personnel',
-    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
-  },
-  {
-    value: 'focus-documents',
-    component: <div>Conteúdo da Aba: Lista de Documentos</div>,
-  },
-];
+const distributionTabsData = [{ label: 'Distribuições', value: 'first' }];
 
 function DistributionManagement() {
   const {
@@ -81,7 +61,6 @@ function DistributionManagement() {
         columns={distributionColumns}
         tabsData={distributionTabsData}
         mainActionComponent={createButton}
-        extraTabsContent={distributionExtraTabsContent}
       />
     </div>
   );
