@@ -15,27 +15,7 @@ import {
 // definição dos dados das abas
 const userTabsData = [
   // o value deve ser outline para a aba da tabela principal
-  { label: 'Outline', value: 'outline' },
-  { label: 'Past Performance', value: 'past-performance', badge: 3 }, // badge é opcional
-  { label: 'Key Personnel', value: 'key-personnel', badge: 2 },
-  { label: 'Focus Documents', value: 'focus-documents' },
-];
-
-// definição do conteúdo para abas extras
-const userExtraTabsContent = [
-  // define o que cada aba renderiza
-  {
-    value: 'past-performance',
-    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
-  },
-  {
-    value: 'key-personnel',
-    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
-  },
-  {
-    value: 'focus-documents',
-    component: <div>Conteúdo da Aba: Lista de Documentos</div>,
-  },
+  { label: 'Usuários', value: 'outline' },
 ];
 
 function UserManagement() {
@@ -87,7 +67,6 @@ function UserManagement() {
         columns={userColumns}
         tabsData={userTabsData}
         mainActionComponent={createButton}
-        extraTabsContent={userExtraTabsContent}
       />
     </div>
   );

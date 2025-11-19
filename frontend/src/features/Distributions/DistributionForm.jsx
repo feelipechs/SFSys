@@ -1,8 +1,7 @@
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { DateTimePicker } from '@/components/DateTimePicker';
 import { useDistributionMutations } from '@/hooks/mutations/useDistributionMutations';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { RelationInput } from '../../components/RelationInput';
 import { useUsersQuery } from '@/hooks/queries/useUsersQuery';
 import { useCampaignsQuery } from '@/hooks/queries/useCampaignsQuery';
@@ -10,33 +9,36 @@ import { useProductsQuery } from '@/hooks/queries/useProductsQuery';
 import { ItemRepeater } from '@/components/ItemRepeater';
 import { Textarea } from '@/components/ui/textarea';
 import { useBeneficiariesQuery } from '@/hooks/queries/useBeneficiariesQuery';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 
 export function DistributionForm({ distribution, formId, onClose }) {
   const { create, update, isPending } = useDistributionMutations();
 
-  // determina se estamos editando uma distribuição existente (update) ou criando uma nova
   const isUpdateMode = !!distribution;
 
   const form = useForm({
     defaultValues: distribution
       ? {
           // mapeamento dos campos de cabeçalho
-          dateTime: distribution.dateTime,
+          dateTime: distribution.dateTime || '',
           observation: distribution.observation || '',
           quantityBaskets: distribution.quantityBaskets || 0,
-          beneficiaryId: distribution.beneficiaryId,
-          responsibleUserId: distribution.responsibleUserId,
+          beneficiaryId: distribution.beneficiaryId || '',
+          responsibleUserId: distribution.responsibleUserId || '',
           campaignId: distribution.campaignId || '',
 
-          // mapeamento de items (productId -> itemId)
+          // mapeamento de items (garantindo Date para o DatePicker)
           items: distribution.items.map((item) => ({
-            // o ItemRepeater precisa de 'idFieldName' para preencher o <select>
             productId: item.productId,
-            quantity: parseFloat(item.quantity), // bom garantir que a quantidade seja tratada como número
-            validity: item.validity
-              ? item.validity.substring(0, 10) // pega apenas os primeiros 10 caracteres (YYYY-MM-DD)
-              : '',
-            // ,antém o id do item, se for necessário para operações futuras
+            quantity: parseFloat(item.quantity),
+            validity: item.validity ? new Date(item.validity) : null,
             id: item.id,
           })),
         }
@@ -48,10 +50,17 @@ export function DistributionForm({ distribution, formId, onClose }) {
           beneficiaryId: '',
           responsibleUserId: '',
           campaignId: '',
-          items: [{ productId: '', quantity: 1, validity: '' }],
+          items: [{ productId: '', quantity: 1, validity: null }],
         },
     mode: 'onBlur',
   });
+
+  const {
+    control,
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = form;
 
   // buscar dados
   const { data: beneficiaries = [], isLoading: loadingBeneficiaries } =
@@ -62,7 +71,7 @@ export function DistributionForm({ distribution, formId, onClose }) {
   const { data: products = [], isLoading: loadingProducts } =
     useProductsQuery();
 
-  // mapear para o formato { value: id, label: Nome }
+  // mapear para o formato { value: id, label: nome }
   const beneficiaryOptions = beneficiaries.map((b) => ({
     value: b.id,
     label: b.responsibleName,
@@ -84,135 +93,170 @@ export function DistributionForm({ distribution, formId, onClose }) {
 
     if (distribution && distribution.id) {
       // update
-
       const payload = { ...data };
-
       update.mutate({ id: distribution.id, ...payload }, mutationCallbacks);
     } else {
       // create
-      // para criação, envie todos os dados, incluindo os items
       create.mutate(data, mutationCallbacks);
     }
   };
 
-  const formControl = form.control;
   const isFormLoading = isPending || loadingProducts;
 
   return (
-    <form
-      id={formId}
-      onSubmit={form.handleSubmit(onSubmit)}
-      className="flex flex-col gap-6 p-4"
-    >
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="dateTime">Data e Hora</Label>
-
-        <Controller
+    <Form {...form}>
+      <form
+        id={formId}
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-6 p-4"
+      >
+        {/* data e hora */}
+        <FormField
           name="dateTime"
-          control={formControl}
+          control={control}
           rules={{ required: 'A Data e Hora são obrigatórias.' }}
           render={({ field }) => (
-            // DateTime recebe value e onChange do 'field'
-            <DateTimePicker
-              value={field.value} // valor atual do formulário (string ISO)
-              onChange={field.onChange} // função para atualizar o valor no formulário
-              disabled={isPending}
-            />
+            <FormItem>
+              <FormLabel>Data e Hora</FormLabel>
+              <FormControl>
+                <DateTimePicker {...field} disabled={isPending} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
         />
-        {form.formState.errors.dateTime && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.dateTime.message}
-          </p>
-        )}
-      </div>
 
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="beneficiaryId">Beneficiário</Label>
-        <RelationInput
+        {/* beneficiário */}
+        <FormField
           name="beneficiaryId"
-          control={formControl}
-          options={beneficiaryOptions}
-          placeholder={
-            loadingBeneficiaries
-              ? 'Carregando beneficiários...'
-              : 'Selecione ...'
-          }
-          disabled={isPending || loadingBeneficiaries}
+          control={control}
           rules={{ required: 'O beneficiário é obrigatório.' }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Beneficiário</FormLabel>
+              <FormControl>
+                <RelationInput
+                  options={beneficiaryOptions}
+                  placeholder={
+                    loadingBeneficiaries
+                      ? 'Carregando beneficiários...'
+                      : 'Selecione ...'
+                  }
+                  disabled={isPending || loadingBeneficiaries}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="responsibleUserId">Usuário Responsável</Label>
-        <RelationInput
+        {/* usuário responsável */}
+        <FormField
           name="responsibleUserId"
-          control={formControl}
-          options={userOptions}
-          placeholder={
-            loadingUsers ? 'Carregando usuários...' : 'Selecione ...'
-          }
-          disabled={isPending || loadingUsers}
+          control={control}
           rules={{ required: 'O usuário responsável é obrigatório.' }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Usuário Responsável</FormLabel>
+              <FormControl>
+                <RelationInput
+                  options={userOptions}
+                  placeholder={
+                    loadingUsers ? 'Carregando usuários...' : 'Selecione ...'
+                  }
+                  disabled={isPending || loadingUsers}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="campaignId">Campanha (Opcional)</Label>
-        <RelationInput
+        {/* campanha */}
+        <FormField
           name="campaignId"
-          control={formControl}
-          options={campaignOptions}
-          placeholder={
-            loadingCampaigns ? 'Carregando campanhas...' : 'Selecione ...'
-          }
-          disabled={isPending || loadingCampaigns}
-          rules={{ required: false }}
+          control={control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Campanha (Opcional)</FormLabel>
+              <FormControl>
+                <RelationInput
+                  options={campaignOptions}
+                  placeholder={
+                    loadingCampaigns
+                      ? 'Carregando campanhas...'
+                      : 'Selecione ...'
+                  }
+                  disabled={isPending || loadingCampaigns}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      <div className="flex flex-col gap-3">
-        <ItemRepeater
-          name="items" // nome do array no useForm
-          control={formControl}
-          itemOptions={productOptions} // lista de produtos disponíveis
-          itemLabel="Produto" // rótulo para esta transação
-          productsData={products}
-          idFieldName="productId"
-          isPending={isFormLoading}
-          disabled={isUpdateMode}
-        />
-        {isUpdateMode && (
-          <p className="text-sm text-yellow-600 mt-[-0.5rem]">
-            A lista de produtos e quantidades não pode ser alterada após a
-            distribuição ser registrada.
-          </p>
-        )}
-      </div>
 
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="quantityBaskets">Qtd. de Cestas(opcional)</Label>
-        <Input
-          type="number"
-          placeholder="..."
-          id="quantityBaskets"
-          {...form.register('quantityBaskets', {
-            required: false,
-          })}
-          disabled={isPending}
-        />
-      </div>
+        {/* ItemRepeater */}
+        <div className="flex flex-col gap-3">
+          <ItemRepeater
+            name="items"
+            control={control}
+            itemOptions={productOptions}
+            itemLabel="Produto"
+            productsData={products}
+            idFieldName="productId"
+            isPending={isFormLoading}
+            disabled={isUpdateMode}
+          />
+          {isUpdateMode && (
+            <p className="text-sm text-yellow-600 mt-[-0.5rem]">
+              A lista de produtos e quantidades não pode ser alterada após a
+              distribuição ser registrada.
+            </p>
+          )}
+          {errors.items && (
+            <FormMessage>Verifique os itens da distribuição.</FormMessage>
+          )}
+        </div>
 
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="observation">Observação (opcional)</Label>
-        <Textarea
-          placeholder="..."
-          id="observation"
-          {...form.register('observation', {
-            required: false,
-          })}
-          disabled={isPending}
+        {/* Qtd. de Cestas */}
+        <FormField
+          name="quantityBaskets"
+          control={control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Qtd. de Cestas (opcional)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="..."
+                  {...register('quantityBaskets')}
+                  disabled={isPending}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-    </form>
+
+        {/* observação */}
+        <FormField
+          name="observation"
+          control={control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Observação (opcional)</FormLabel>
+              <FormControl>
+                <Textarea placeholder="..." {...field} disabled={isPending} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </form>
+    </Form>
   );
 }

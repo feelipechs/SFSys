@@ -1,7 +1,6 @@
-import { Label } from '@/components/ui/label';
 import { DateTimePicker } from '@/components/DateTimePicker';
 import { useDonationMutations } from '@/hooks/mutations/useDonationMutations';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { RelationInput } from '../../components/RelationInput';
 import { useDonorsQuery } from '@/hooks/queries/useDonorsQuery';
 import { useUsersQuery } from '@/hooks/queries/useUsersQuery';
@@ -9,6 +8,14 @@ import { useCampaignsQuery } from '@/hooks/queries/useCampaignsQuery';
 import { useProductsQuery } from '@/hooks/queries/useProductsQuery';
 import { ItemRepeater } from '@/components/ItemRepeater';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 
 export function DonationForm({ donation, formId, onClose }) {
   const { create, update, isPending } = useDonationMutations();
@@ -31,9 +38,6 @@ export function DonationForm({ donation, formId, onClose }) {
             // o ItemRepeater precisa de 'idFieldName' para preencher o <select>
             productId: item.productId,
             quantity: parseFloat(item.quantity), // bom garantir que a quantidade seja tratada como número
-            // validity: item.validity
-            //   ? item.validity.substring(0, 10) // pega apenas os primeiros 10 caracteres (YYYY-MM-DD)
-            //   : '',
             validity: item.validity ? new Date(item.validity) : null,
             // ,antém o id do item, se for necessário para operações futuras
             id: item.id,
@@ -50,6 +54,12 @@ export function DonationForm({ donation, formId, onClose }) {
         },
     mode: 'onBlur',
   });
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = form;
 
   // buscar dados
   const { data: donors = [], isLoading: loadingDonors } = useDonorsQuery();
@@ -89,109 +99,139 @@ export function DonationForm({ donation, formId, onClose }) {
     }
   };
 
-  const formControl = form.control;
   const isFormLoading = isPending || loadingProducts;
 
   return (
-    <form
-      id={formId}
-      onSubmit={form.handleSubmit(onSubmit)}
-      className="flex flex-col gap-6 p-4"
-    >
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="dateTime">Data e Hora</Label>
-
-        <Controller
+    <Form {...form}>
+      <form
+        id={formId}
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-6 p-4"
+      >
+        <FormField
           name="dateTime"
-          control={formControl}
+          control={control}
           rules={{ required: 'A Data e Hora são obrigatórias.' }}
           render={({ field }) => (
-            // DateTime recebe value e onChange do 'field'
-            <DateTimePicker
-              value={field.value} // valor atual do formulário (string ISO)
-              onChange={field.onChange} // função para atualizar o valor no formulário
-              disabled={isPending}
-            />
+            <FormItem>
+              <FormLabel>Data e Hora</FormLabel>
+              <FormControl>
+                <DateTimePicker {...field} disabled={isPending} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
         />
-        {form.formState.errors.dateTime && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.dateTime.message}
-          </p>
-        )}
-      </div>
 
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="donorId">Doador</Label>
-        <RelationInput
+        {/* doador */}
+        <FormField
           name="donorId"
-          control={formControl}
-          options={donorOptions}
-          placeholder={
-            loadingDonors ? 'Carregando doadores...' : 'Selecione ...'
-          }
-          disabled={isPending || loadingDonors}
+          control={control}
           rules={{ required: 'O doador é obrigatório.' }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Doador</FormLabel>
+              <FormControl>
+                <RelationInput
+                  options={donorOptions}
+                  placeholder={
+                    loadingDonors ? 'Carregando doadores...' : 'Selecione ...'
+                  }
+                  disabled={isPending || loadingDonors}
+                  {...field} // passa value, onChange, onBlur
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="responsibleUserId">Usuário Responsável</Label>
-        <RelationInput
+        {/* usuário responsável */}
+        <FormField
           name="responsibleUserId"
-          control={formControl}
-          options={userOptions}
-          placeholder={
-            loadingUsers ? 'Carregando usuários...' : 'Selecione ...'
-          }
-          disabled={isPending || loadingUsers}
+          control={control}
           rules={{ required: 'O usuário responsável é obrigatório.' }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Usuário Responsável</FormLabel>
+              <FormControl>
+                <RelationInput
+                  options={userOptions}
+                  placeholder={
+                    loadingUsers ? 'Carregando usuários...' : 'Selecione ...'
+                  }
+                  disabled={isPending || loadingUsers}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="campaignId">Campanha (Opcional)</Label>
-        <RelationInput
+        {/* campanha */}
+        <FormField
           name="campaignId"
-          control={formControl}
-          options={campaignOptions}
-          placeholder={
-            loadingCampaigns ? 'Carregando campanhas...' : 'Selecione ...'
-          }
-          disabled={isPending || loadingCampaigns}
-          rules={{ required: false }}
+          control={control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Campanha (Opcional)</FormLabel>
+              <FormControl>
+                <RelationInput
+                  options={campaignOptions}
+                  placeholder={
+                    loadingCampaigns
+                      ? 'Carregando campanhas...'
+                      : 'Selecione ...'
+                  }
+                  disabled={isPending || loadingCampaigns}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      <div className="flex flex-col gap-3">
-        <ItemRepeater
-          name="items" // nome do array no useForm
-          control={formControl}
-          itemOptions={productOptions} // lista de produtos disponíveis
-          productsData={products}
-          itemLabel="Produto" // rótulo para esta transação
-          idFieldName="productId"
-          isPending={isFormLoading}
-          disabled={isUpdateMode}
-        />
-        {isUpdateMode && (
-          <p className="text-sm text-yellow-600 mt-[-0.5rem]">
-            A lista de produtos e quantidades não pode ser alterada após a
-            doação ser registrada.
-          </p>
-        )}
-      </div>
 
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="observation">Observação (opcional)</Label>
-        <Textarea
-          placeholder="..."
-          id="observation"
-          {...form.register('observation', {
-            required: false,
-          })}
-          disabled={isPending}
+        {/* ItemRepeater (Array), não usa FormField diretamente, mas está dentro do <form> */}
+        <div className="flex flex-col gap-3">
+          <ItemRepeater
+            name="items" // nome do array no useForm
+            control={control}
+            itemOptions={productOptions} // lista de produtos disponíveis
+            productsData={products}
+            itemLabel="Produto" // rótulo para esta transação
+            idFieldName="productId"
+            isPending={isFormLoading}
+            disabled={isUpdateMode}
+          />
+          {isUpdateMode && (
+            <p className="text-sm text-yellow-600 mt-[-0.5rem]">
+              A lista de produtos e quantidades não pode ser alterada após a
+              doação ser registrada.
+            </p>
+          )}
+          {/* exibe erro de array (se houver, ex: minLength) */}
+          {errors.items && (
+            <FormMessage>Verifique os itens da transação.</FormMessage>
+          )}
+        </div>
+
+        {/* observação */}
+        <FormField
+          name="observation"
+          control={control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Observação (opcional)</FormLabel>
+              <FormControl>
+                <Textarea placeholder="..." {...field} disabled={isPending} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-    </form>
+      </form>
+    </Form>
   );
 }

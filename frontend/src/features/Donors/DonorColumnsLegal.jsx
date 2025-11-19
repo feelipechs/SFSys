@@ -1,6 +1,7 @@
 import { createColumnHelper } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DonorEditCell } from './DonorEditCell';
+import { formatDocument, formatPhone } from '@/utils/formatters';
 
 const DonorSchema = {
   id: 0,
@@ -50,10 +51,17 @@ export const donorColumnsLegal = [
   columnHelper.accessor('legal.cnpj', {
     header: 'CNPJ',
     id: 'cnpj',
-    cell: ({ getValue }) => {
-      // valor já é legal.cnpj, só precisa de formatação futura
-      const cnpjValue = getValue();
-      return <span>{cnpjValue || 'N/A'}</span>;
+    cell: ({ row }) => {
+      const documentValue = row.original.legal ? row.original.legal.cnpj : '';
+
+      // verifica se o valor existe para evitar formatar 'N/A'
+      if (!documentValue) {
+        return <span>N/A</span>;
+      }
+
+      const formattedDocument = formatDocument(documentValue);
+
+      return <span>{formattedDocument}</span>;
     },
   }),
 
@@ -77,6 +85,11 @@ export const donorColumnsLegal = [
 
   columnHelper.accessor('phone', {
     header: 'Telefone',
+    cell: ({ getValue }) => {
+      const rawPhone = getValue();
+
+      return formatPhone(rawPhone);
+    },
   }),
 
   columnHelper.accessor('email', {

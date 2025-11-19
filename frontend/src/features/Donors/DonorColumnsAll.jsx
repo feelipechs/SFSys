@@ -1,6 +1,7 @@
 import { createColumnHelper } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DonorEditCell } from './DonorEditCell';
+import { formatPhone } from '@/utils/formatters';
 
 // mantém o DonorSchema original para tipagem
 const DonorSchema = {
@@ -67,6 +68,12 @@ export const donorColumnsAll = [
 
   columnHelper.accessor('phone', {
     header: 'Telefone',
+    cell: ({ getValue }) => {
+      const rawPhone = getValue(); // obtém o valor puro (ex: "85999998888")
+
+      // retorna o valor formatado (ex: "(85) 99999-8888")
+      return formatPhone(rawPhone);
+    },
   }),
 
   columnHelper.accessor('email', {

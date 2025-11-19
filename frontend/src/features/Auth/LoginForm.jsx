@@ -7,23 +7,33 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useLoginMutation } from '@/hooks/mutations/useLoginMutation';
 import { IconLoader2 } from '@tabler/icons-react';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 
 export function LoginForm({ className, ...props }) {
-  // inicializa hooks
   const navigate = useNavigate();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setError,
-  } = useForm();
-  const { mutate, isPending } = useLoginMutation(); // useLoginMutation já cuida do AuthContext e do Toast
+
+  const form = useForm({
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const { handleSubmit, setError, control } = form;
+
+  const { mutate, isPending } = useLoginMutation();
 
   const onSubmit = (data) => {
     mutate(data, {
@@ -34,12 +44,10 @@ export function LoginForm({ className, ...props }) {
         const statusCode = error.response?.status;
         const serverMessage = error.response?.data?.message;
 
-        // exemplo de injeção de erro
         if (
           statusCode === 401 ||
           (statusCode === 400 && serverMessage === 'Invalid credentials')
         ) {
-          // se a condição for atendida, injeta o erro no campo email
           setError(
             'email',
             {
@@ -48,9 +56,6 @@ export function LoginForm({ className, ...props }) {
             },
             { shouldFocus: true }
           );
-        } else {
-          // se não for o erro de credenciais, o erro deve ser tratado pelo Toast
-          // (useLoginMutation já deve fazer isso)
         }
       },
     });
@@ -73,60 +78,60 @@ export function LoginForm({ className, ...props }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* liga o formulário ao RHF */}
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="exemplo@exemplo.com"
-                  // RHF: registro e validação
-                  {...register('email', { required: 'O email é obrigatório.' })}
-                  disabled={isPending}
-                />
-                {/* feedback de erro */}
-                {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.email.message}
-                  </p>
+          <Form {...form}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* email */}
+              <FormField
+                name="email"
+                control={control}
+                rules={{ required: 'O email é obrigatório.' }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="exemplo@exemplo.com"
+                        disabled={isPending}
+                        {...field}
+                      />
+                    </FormControl>
+                    {/* exibe o erro de required OU o erro do server (401/400) */}
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </Field>
+              />
 
-              <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Senha</FieldLabel>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  // RHF: registro e validação
-                  {...register('password', {
-                    required: 'A senha é obrigatória.',
-                  })}
-                  disabled={isPending}
-                />
-                {/* feedback de erro */}
-                {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.password.message}
-                  </p>
+              {/* senha */}
+              <FormField
+                name="password"
+                control={control}
+                rules={{ required: 'A senha é obrigatória.' }}
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center">
+                      <FormLabel>Senha</FormLabel>
+                    </div>
+                    <FormControl>
+                      <Input type="password" disabled={isPending} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </Field>
+              />
 
-              <Field>
-                {/* isPending desabilita o botão e mostra o loading */}
-                <Button type="submit" disabled={isPending}>
+              {/* botão de submit */}
+              <FormItem className="pt-4">
+                <Button type="submit" className="w-full" disabled={isPending}>
                   {isPending ? (
                     <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
                     'Entrar'
                   )}
                 </Button>
-              </Field>
-            </FieldGroup>
-          </form>
+              </FormItem>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>

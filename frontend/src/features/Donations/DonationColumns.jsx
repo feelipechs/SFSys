@@ -1,7 +1,7 @@
 import { createColumnHelper } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DonationEditCell } from './DonationEditCell';
-import { formatDateTime } from '@/utils/dateTimeFormatters';
+import { formatDateTime } from '@/utils/formatters';
 import { MultiItemsCell } from '@/components/MultiItemsCell';
 import { TruncatedTextCell } from '@/components/TruncatedTextCell';
 

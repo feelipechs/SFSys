@@ -12,27 +12,7 @@ import {
   NoContent,
 } from '@/components/LoadingContent';
 
-const donationTabsData = [
-  { label: 'Outline', value: 'outline' },
-  { label: 'Past Performance', value: 'past-performance', badge: 3 },
-  { label: 'Key Personnel', value: 'key-personnel', badge: 2 },
-  { label: 'Focus Documents', value: 'focus-documents' },
-];
-
-const donationExtraTabsContent = [
-  {
-    value: 'past-performance',
-    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
-  },
-  {
-    value: 'key-personnel',
-    component: <div>Conteúdo da Aba: Lista de Pessoal Chave</div>,
-  },
-  {
-    value: 'focus-documents',
-    component: <div>Conteúdo da Aba: Lista de Documentos</div>,
-  },
-];
+const donationTabsData = [{ label: 'Doações', value: 'first' }];
 
 function DonationManagement() {
   const {
@@ -81,7 +61,6 @@ function DonationManagement() {
         columns={donationColumns}
         tabsData={donationTabsData}
         mainActionComponent={createButton}
-        extraTabsContent={donationExtraTabsContent}
       />
     </div>
   );

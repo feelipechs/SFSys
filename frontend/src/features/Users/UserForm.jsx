@@ -1,9 +1,17 @@
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useUserMutations } from '@/hooks/mutations/useUserMutations';
 import { useForm } from 'react-hook-form';
-import { FrontendValidators } from '@/utils/formValidator';
+import { FormValidators } from '@/utils/validators';
 import { RoleSelect } from './RoleSelect';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { PasswordInput } from '@/components/PasswordInput';
 
 export function UserForm({ user, formId, onClose }) {
   const { create, update, isPending } = useUserMutations();
@@ -11,21 +19,19 @@ export function UserForm({ user, formId, onClose }) {
   const form = useForm({
     defaultValues: user
       ? user
-      : // o role agora é inicializado como string vazia ou o valor do usuário
+      : // o role é inicializado como string vazia ou o valor do usuário
         { name: '', email: '', password: '', role: '' },
-    mode: 'onBlur', // ao clicar em outro local dispara o erro (ex: formato inválido)
+    mode: 'onBlur',
   });
 
-  // a função onSubmit agora usa o método .mutate para integração com TanStack Query
+  const { control, handleSubmit } = form;
+
   const onSubmit = (data) => {
-    // define a função de callback para sucesso (chamada após a invalidação do cache)
     const mutationCallbacks = {
       onSuccess: () => {
-        // fecha o Drawer após o sucesso real da operação.
         if (onClose) onClose();
         form.reset(user ? data : undefined);
       },
-      // o tratamento de erro é centralizado no useUserMutations
     };
 
     if (user && user.id) {
@@ -37,85 +43,108 @@ export function UserForm({ user, formId, onClose }) {
         delete payload.password;
       }
 
-      // chama o método .mutate (sem await)
       update.mutate({ id: user.id, ...payload }, mutationCallbacks);
     } else {
       // create
-
-      // chama o método .mutate (sem await)
       create.mutate(data, mutationCallbacks);
     }
   };
 
   return (
-    <form
-      id={formId}
-      onSubmit={form.handleSubmit(onSubmit)}
-      className="flex flex-col gap-6 p-4"
-    >
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="name">Nome</Label>
-        <Input
-          id="name"
-          placeholder="Nome Completo"
-          {...form.register('name', { required: 'O nome é obrigatório.' })}
-          disabled={isPending}
+    <Form {...form}>
+      <form
+        id={formId}
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-6 p-4"
+      >
+        {/* nome */}
+        <FormField
+          name="name"
+          control={control}
+          rules={{ required: 'O nome é obrigatório.' }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Nome Completo"
+                  disabled={isPending}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {/* feedback de erro */}
-        {form.formState.errors.name && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.name.message}
-          </p>
-        )}
-      </div>
 
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          placeholder="email@exemplo.com"
-          type="email"
-          {...form.register('email', {
+        {/* email */}
+        <FormField
+          name="email"
+          control={control}
+          rules={{
             required: 'O email é obrigatório.',
-            validate: FrontendValidators.email,
-          })}
-          disabled={isPending}
+            validate: FormValidators.email,
+          }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="email@exemplo.com"
+                  type="email"
+                  disabled={isPending}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {form.formState.errors.email && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.email.message}
-          </p>
-        )}
-      </div>
 
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="password">Senha</Label>
-        <Input
-          id="password"
-          placeholder={user ? 'Deixe em branco para não alterar' : 'Senha'}
-          type="password"
-          {...form.register('password', {
-            // mensagem de erro que só é ativada se for obrigatório (!user)
+        {/* senha */}
+        <FormField
+          name="password"
+          control={control}
+          rules={{
             required: !user
               ? 'A senha é obrigatória para novos usuários.'
               : false,
-          })}
-          disabled={isPending}
+            validate: FormValidators.password,
+          }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Senha</FormLabel>
+              <FormControl>
+                <PasswordInput
+                  maxLength={128}
+                  placeholder={
+                    user ? 'Deixe em branco para não alterar' : 'Senha'
+                  }
+                  disabled={isPending}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {form.formState.errors.password && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.password.message}
-          </p>
-        )}
-      </div>
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="role">Perfil</Label>
-        <RoleSelect
-          control={form.control} // passa o controle do formulário
+
+        {/* role */}
+        <FormField
+          name="role"
+          control={control}
           rules={{ required: 'O perfil é obrigatório' }}
-          disabled={isPending}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Perfil</FormLabel>
+              <FormControl>
+                <RoleSelect {...field} disabled={isPending} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-    </form>
+      </form>
+    </Form>
   );
 }
