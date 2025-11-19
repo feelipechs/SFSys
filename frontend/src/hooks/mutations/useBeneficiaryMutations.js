@@ -9,6 +9,7 @@ export const useBeneficiaryMutations = () => {
   const onSuccessHandler = (message) => {
     queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
     queryClient.invalidateQueries({ queryKey: ['global', 'stats'] });
+    queryClient.invalidateQueries({ queryKey: ['activity', 'trend'] });
     toast.success(message, { duration: 3000 });
   };
 
@@ -25,19 +26,19 @@ export const useBeneficiaryMutations = () => {
   const createMutation = useMutation({
     mutationFn: BeneficiaryService.create,
     onSuccess: () => onSuccessHandler('Beneficiário criado com sucesso!'),
-    onError: (error) => onErrorHandler(error, 'criar deneficiário'),
+    onError: (error) => onErrorHandler(error, 'criar beneficiário'),
   });
 
   const updateMutation = useMutation({
     mutationFn: BeneficiaryService.update,
     onSuccess: () => onSuccessHandler('Beneficiário atualizado com sucesso!'),
-    onError: (error) => onErrorHandler(error, 'atualizar deneficiário'),
+    onError: (error) => onErrorHandler(error, 'atualizar beneficiário'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: BeneficiaryService.delete,
     onSuccess: () => onSuccessHandler('Beneficiário removido.'),
-    onError: (error) => onErrorHandler(error, 'deletar deneficiário'),
+    onError: (error) => onErrorHandler(error, 'deletar beneficiário'),
   });
 
   return {

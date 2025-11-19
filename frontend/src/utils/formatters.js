@@ -36,6 +36,32 @@ export const formatDateTime = (isoString) => {
 };
 
 /**
+ * Formata a string ISO 8601 (incluindo data e hora) apenas para o padrão brasileiro
+ * de data DD/MM/YYYY, usando os métodos UTC para evitar o deslocamento de fuso horário.
+ *
+ * @param {string | null | undefined} isoString A string de data/hora ISO 8601 do banco de dados (ex: '2025-01-01T10:30:00.000Z').
+ * @returns {string} A data formatada (ex: '01/01/2025') ou '-'.
+ */
+export const formatDate = (isoString) => {
+  if (!isoString) return '-';
+
+  // Cria o objeto Date. Como a string geralmente é 'local-as-utc' (termina em 'Z' ou é tratada como UTC),
+  // a data é internamente UTC.
+  const date = new Date(isoString);
+
+  // Função auxiliar para garantir que o número tenha dois dígitos (e.g., '01' em vez de '1')
+  const pad = (num) => String(num).padStart(2, '0');
+
+  // Extrai as partes da data usando os métodos UTC (ignorando a hora)
+  const day = pad(date.getUTCDate());
+  const month = pad(date.getUTCMonth() + 1); // +1 pois getUTCMonth é 0-indexado
+  const year = date.getUTCFullYear();
+
+  // Constrói a string formatada: DD/MM/YYYY
+  return `${day}/${month}/${year}`;
+};
+
+/**
  * Remove todos os caracteres não numéricos de uma string.
  * @param {string | null | undefined} value
  * @returns {string} A string contendo apenas dígitos.

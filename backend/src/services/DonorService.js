@@ -49,6 +49,31 @@ class DonorService {
     }
   }
 
+  _validateMinimumAge(birthDateString, minAge = 14) {
+    if (!birthDateString) return; // se a data for opcional (mas aqui será obrigatória)
+
+    const today = new Date();
+    const birthDate = new Date(birthDateString);
+
+    // calcula a data de 14 anos atrás a partir da data de nascimento
+    const dateMinAge = new Date(birthDate);
+    dateMinAge.setFullYear(birthDate.getFullYear() + minAge);
+
+    // se a data que a pessoa completa a idade mínima ainda não chegou (ou seja, está no futuro), a pessoa é muito jovem
+    if (today < dateMinAge) {
+      // calcula a idade atual para a mensagem de erro (opcional, mas útil)
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+
+      throw new BadRequestError(
+        `O Doador PF deve ter no mínimo ${minAge} anos. Idade calculada: ${age} anos.`,
+      );
+    }
+  }
+
   // create
   async create(data) {
     const { type, individual, legal, ...donorBaseData } = data;
@@ -65,6 +90,7 @@ class DonorService {
 
       // validação de formato e documento (usando o validator)
       this._validateFormatsAndDocuments(data);
+      this._validateMinimumAge(individual.dateOfBirth);
 
       let nestedData;
       let ChildModel;
@@ -117,7 +143,7 @@ class DonorService {
             [this.Op.or]: uniqueChecks,
           },
           attributes: ['email', 'phone'],
-          // Não é necessário passar 'transaction' pois é apenas uma leitura
+          // não é necessário passar 'transaction' pois é apenas uma leitura
         });
 
         if (existingDonor) {
@@ -125,12 +151,10 @@ class DonorService {
           if (existingDonor.email === donorBaseData.email) {
             message = 'E-mail já cadastrado.';
           } else if (existingDonor.phone === donorBaseData.phone) {
-            // Usa 'else if' para priorizar a mensagem mais relevante,
-            // ou você pode lançar dois erros em uma lista.
+            // usa 'else if' para priorizar a mensagem mais relevante, ou pode lançar dois erros em uma lista
             message = 'Telefone já cadastrado.';
           }
 
-          // Lança o erro customizado que seu Controller já sabe tratar
           throw new BadRequestError(message);
         }
       }
@@ -280,6 +304,14 @@ class DonorService {
               'CPF e Data de Nascimento são obrigatórios.',
             );
           }
+
+          // validação de idade
+          const finalDateOfBirth =
+            childPayload.dateOfBirth !== undefined
+              ? childPayload.dateOfBirth
+              : currentIndividual.dateOfBirth;
+
+          this._validateMinimumAge(finalDateOfBirth);
         } else if (donor.type === 'legal') {
           const currentLegal = donor.legal.dataValues;
 

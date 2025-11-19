@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Controller } from 'react-hook-form';
 import {
   Select,
   SelectContent,
@@ -11,11 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Zap, ListChecks } from 'lucide-react';
 
+// recebe props de campo (field) diretamente do FormField, e outras props auxiliares. Ele não aceita 'control' ou 'rules'
 export function RelationInput({
-  control,
-  rules,
-  disabled,
+  value,
+  onChange,
+  onBlur,
   name,
+  disabled,
   options,
   placeholder,
   idModePlaceholder = 'Digite o ID diretamente',
@@ -27,87 +28,74 @@ export function RelationInput({
     setIsIDMode((prev) => !prev);
   };
 
+  // o valor do RHF é 'value'. Se for null/undefined, o Select deve usar 'none'
+  const selectValue =
+    value !== null && value !== undefined ? String(value) : 'none';
+
   return (
-    <Controller
-      name={name}
-      control={control}
-      rules={rules}
-      render={({ field, fieldState: { error } }) => (
-        <div className="flex flex-col gap-3">
-          <div className="flex gap-2">
-            {/* select ou input */}
-            {isIDMode ? (
-              // modo input id
-              <Input
-                type="number" // garante que o usuário só digite números
-                placeholder={idModePlaceholder}
-                // o valor precisa ser tratado como String para o input e depois convertido para Number no onChange
-                value={field.value !== '' ? String(field.value) : ''}
-                // onChange={(e) => field.onChange(Number(e.target.value))}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  field.onChange(value === '' ? null : Number(value));
-                }}
-                disabled={disabled}
-                className={error ? 'border-red-500 flex-1' : 'flex-1'}
-              />
-            ) : (
-              <Select
-                onValueChange={(value) => {
-                  // Se o valor for 'none', envia null (ou undefined), senão, converte para Number
-                  field.onChange(value === 'none' ? null : Number(value));
-                }}
-                // se field.value for null ou undefined, usa 'none' para selecionar o item 'Nenhuma'
-                value={
-                  field.value !== null && field.value !== undefined
-                    ? String(field.value)
-                    : 'none'
-                }
-                disabled={disabled}
-              >
-                <SelectTrigger
-                  id={name}
-                  className={error ? 'border-red-500' : ''}
-                >
-                  <SelectValue placeholder={placeholder} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem key="none" value="none">
-                    N/A
-                  </SelectItem>
-                  {options.map((option) => (
-                    <SelectItem key={option.value} value={String(option.value)}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+    <div className="flex flex-col gap-3">
+      <div className="flex gap-2">
+        {/* select ou input */}
+        {isIDMode ? (
+          // modo input id
+          <Input
+            type="number"
+            placeholder={idModePlaceholder}
+            // o valor precisa ser tratado como String para o input
+            value={value !== null && value !== undefined ? String(value) : ''}
+            // O RHF precisa ser notificado no 'onChange' e no 'onBlur'
+            onChange={(e) => {
+              const newValue = e.target.value;
+              onChange(newValue === '' ? null : Number(newValue));
+            }}
+            onBlur={onBlur}
+            name={name}
+            disabled={disabled}
+          />
+        ) : (
+          <Select
+            onValueChange={(newValue) => {
+              onChange(newValue === 'none' ? null : Number(newValue));
+            }}
+            value={selectValue}
+            name={name}
+            disabled={disabled}
+          >
+            <SelectTrigger id={name} onBlur={onBlur}>
+              <SelectValue placeholder={placeholder} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem key="none" value="none">
+                N/A
+              </SelectItem>
+              {options.map((option) => (
+                <SelectItem key={option.value} value={String(option.value)}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
-            {/* botão toggle*/}
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={toggleMode}
-              title={
-                isIDMode
-                  ? 'Voltar para seleção por nome'
-                  : 'Alternar para input de ID'
-              }
-            >
-              {isIDMode ? (
-                <ListChecks className="h-4 w-4" />
-              ) : (
-                <Zap className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-
-          {/* feedback de erro */}
-          {error && <p className="text-red-500 text-sm">{error.message}</p>}
-        </div>
-      )}
-    />
+        {/* botão toggle*/}
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={toggleMode}
+          title={
+            isIDMode
+              ? 'Voltar para seleção por nome'
+              : 'Alternar para input de ID'
+          }
+        >
+          {isIDMode ? (
+            <ListChecks className="h-4 w-4" />
+          ) : (
+            <Zap className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+    </div>
   );
 }

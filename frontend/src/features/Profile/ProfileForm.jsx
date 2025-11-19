@@ -30,24 +30,38 @@ export function ProfileForm({ formId, onClose }) {
   const isSaving = isPending;
 
   const donationsCount = statsLoading ? '...' : stats?.registeredDonations || 0;
-  const familiesCount = statsLoading
+  const distributionsCount = statsLoading
     ? '...'
     : stats?.registeredDistributions || 0;
 
   // inicialização do form
+  // const form = useForm({
+  //   defaultValues: authUser || { name: '', email: '', password: '', role: '' },
+  //   mode: 'onBlur',
+  // });
+  // ProfileForm.jsx
+
   const form = useForm({
-    defaultValues: authUser || { name: '', email: '', password: '', role: '' },
+    defaultValues: {
+      // usa o objeto authUser (se não for null/undefined)
+      // coloca o fallback vazio se authUser for null/undefined
+      ...(authUser ?? { name: '', email: '', role: '' }),
+
+      // garante que 'password' seja sempre uma string vazia ("")
+      // feito pra resolver o erro de "uncontrolled to controlled"
+      password: '',
+    },
     mode: 'onBlur',
   });
 
   const { control, handleSubmit } = form;
 
-  // carrega dados no formulário
-  React.useEffect(() => {
-    if (authUser) {
-      form.reset(authUser);
-    }
-  }, [authUser, form.reset]);
+  // // carrega dados no formulário
+  // React.useEffect(() => {
+  //   if (authUser) {
+  //     form.reset(authUser);
+  //   }
+  // }, [authUser, form.reset]);
 
   // funções de controle de estado
   const handleEdit = () => setIsEditing(true);
@@ -129,10 +143,10 @@ export function ProfileForm({ formId, onClose }) {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-primary">
-                    {statsLoading ? '...' : familiesCount}
+                    {statsLoading ? '...' : distributionsCount}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Famílías Atendidas
+                    Distribuições Registradas
                   </p>
                 </div>
               </div>
@@ -169,9 +183,9 @@ export function ProfileForm({ formId, onClose }) {
                           <FormLabel htmlFor="name">Nome</FormLabel>
                           <FormControl>
                             <Input
+                              {...field}
                               placeholder="Nome Completo"
                               disabled={!isEditing || isSaving}
-                              {...field}
                             />
                           </FormControl>
                           <FormMessage />
@@ -192,10 +206,10 @@ export function ProfileForm({ formId, onClose }) {
                           <FormLabel htmlFor="email">Email</FormLabel>
                           <FormControl>
                             <Input
+                              {...field}
                               placeholder="email@exemplo.com"
                               type="email"
                               disabled={!isEditing || isSaving}
-                              {...field}
                             />
                           </FormControl>
                           <FormMessage />
@@ -215,14 +229,14 @@ export function ProfileForm({ formId, onClose }) {
                           <FormLabel htmlFor="password">Nova Senha</FormLabel>
                           <FormControl>
                             <PasswordInput
+                              {...field}
                               maxLength={128}
                               placeholder={
                                 authUser
                                   ? 'Deixe em branco para não alterar'
                                   : 'Senha'
                               }
-                              disabled={isPending}
-                              {...field}
+                              disabled={!isEditing || isSaving}
                             />
                           </FormControl>
                           <FormMessage />

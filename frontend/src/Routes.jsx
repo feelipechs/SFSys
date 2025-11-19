@@ -8,6 +8,7 @@ import HelpPage from './pages/HelpPage';
 import ProfilePage from './pages/ProfilePage';
 import DashboardLayout from './layouts/DashboardLayout/DashboardLayout'; // Shell com Sidebar
 import DashboardOverview from './features/Dashboard/DashboardOverview';
+import BeneficiaryManagement from './features/Beneficiaries/BeneficiaryManagement';
 import CampaignManagement from './features/Campaigns/CampaignManagement';
 import DonationManagement from './features/Donations/DonationManagement';
 import DistributionManagement from './features/Distributions/DistributionManagement';
@@ -30,6 +31,7 @@ function AppRoutes() {
           {/* index: rota home (Protegida) */}
           <Route index element={<DashboardOverview />} />
 
+          <Route path="beneficiaries" element={<BeneficiaryManagement />} />
           <Route path="campaigns" element={<CampaignManagement />} />
           <Route path="donations" element={<DonationManagement />} />
           <Route path="distributions" element={<DistributionManagement />} />

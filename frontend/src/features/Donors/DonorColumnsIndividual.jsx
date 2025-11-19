@@ -1,7 +1,7 @@
 import { createColumnHelper } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DonorEditCell } from './DonorEditCell';
-import { formatDocument, formatPhone } from '@/utils/formatters';
+import { formatDate, formatDocument, formatPhone } from '@/utils/formatters';
 
 const DonorSchema = {
   id: 0,
@@ -65,6 +65,14 @@ export const donorColumnsIndividual = [
       const formattedDocument = formatDocument(documentValue);
 
       return <span>{formattedDocument}</span>;
+    },
+  }),
+
+  columnHelper.accessor('individual.dateOfBirth', {
+    header: 'Data de Nascimento',
+    cell: ({ getValue }) => {
+      const formattedDate = getValue();
+      return formatDate(formattedDate);
     },
   }),
 

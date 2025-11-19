@@ -20,7 +20,8 @@ export function ItemRepeater({
   });
 
   // valor inicial de um novo item
-  const defaultNewItem = { [idFieldName]: '', quantity: 1, validity: '' };
+  // usa null para o ID, que representa "nada selecionado"
+  const defaultNewItem = { [idFieldName]: null, quantity: 1, validity: null };
 
   const watchedItems = useWatch({
     control,
@@ -34,23 +35,20 @@ export function ItemRepeater({
 
       {fields.map((field, index) => {
         const currentItemValue = watchedItems?.[index];
+
+        // se o valor inicial é null, ele é tratado corretamente
         const rawSelectedId = currentItemValue
           ? currentItemValue[idFieldName]
           : field[idFieldName];
 
-        // se o valor é 0, nulo ou string vazia, não há produto selecionado
-        if (!rawSelectedId) {
-          // se não houver ID, o unitOfMeasure será '-' e a busca será ignorada
-          const unitOfMeasure = '-';
-        }
-
-        // garante que o id é um número (continua importante)
-        const selectedId = Number(rawSelectedId);
+        // tratar rawSelectedId como 0, null, ou undefined como "nada"
+        const selectedId = Number(rawSelectedId) || 0;
 
         // faz a busca na lista de produtos usando o id selecionado
-        const selectedProduct = productsData
-          ? productsData.find((p) => p.id === selectedId)
-          : null;
+        const selectedProduct =
+          selectedId > 0 && productsData
+            ? productsData.find((p) => p.id === selectedId)
+            : null;
 
         // acessa a propriedade corretamente
         const unitOfMeasure = selectedProduct?.unitOfMeasurement || '-';
@@ -63,13 +61,25 @@ export function ItemRepeater({
               <label className="text-sm font-medium leading-none">
                 {itemLabel}
               </label>
-              <RelationInput
-                name={`${name}.${index}.${idFieldName}`}
+
+              <Controller
                 control={control}
-                options={itemOptions}
-                placeholder={`Selecione o ${itemLabel}`}
-                rules={{ required: `${itemLabel} é obrigatório` }}
-                disabled={isPending}
+                name={`${name}.${index}.${idFieldName}`}
+                rules={{
+                  required: `${itemLabel} é obrigatório`,
+                  // validação extra para garantir que o valor não seja 'none'
+                  validate: (value) =>
+                    (value !== null && value !== 0) ||
+                    `${itemLabel} é obrigatório`,
+                }}
+                render={({ field }) => (
+                  <RelationInput
+                    {...field} // passa value, onChange, onBlur
+                    options={itemOptions}
+                    placeholder={`Selecione o ${itemLabel}`}
+                    disabled={isPending}
+                  />
+                )}
               />
             </div>
 
@@ -97,34 +107,7 @@ export function ItemRepeater({
               </p>
             </div>
 
-            {/* validade (útil para itens alimentícios ou medicamentos) */}
-            {/* <div className="w-32">
-              <label className="text-sm font-medium leading-none">
-                Validade
-              </label>
-              <Input
-                type="date"
-                {...control.register(`${name}.${index}.validity`)}
-                disabled={isPending}
-              />
-            </div> */}
-            {/* <div className="w-44">
-              <label className="text-sm font-medium leading-none">
-                Validade (Opcional)
-              </label>
-              <Controller
-                control={control}
-                name={`${name}.${index}.validity`}
-                render={({ field }) => (
-                  <DatePicker
-                    // O DatePicker deve aceitar um objeto Date e retornar a string YYYY-MM-DD ou o objeto Date
-                    value={field.value ? new Date(field.value) : null}
-                    onChange={(date) => field.onChange(date)}
-                    disabled={isPending}
-                  />
-                )}
-              />
-            </div> */}
+            {/* validade (Opcional) */}
             <div className="w-44">
               <label className="text-sm font-medium leading-none">
                 Validade (Opcional)
@@ -132,15 +115,9 @@ export function ItemRepeater({
               <Controller
                 control={control}
                 name={`${name}.${index}.validity`}
-                // 🔑 O defaultValue é importante para useFieldArray
                 defaultValue={field.validity}
                 render={({ field }) => (
-                  <DatePickerExpiry // ⬅️ Usando o DatePickerExpiry (datas futuras)
-                    {...field} // ⬅️ CHAVE: Passa value (Date|undefined) e onChange (função)
-                    disabled={isPending}
-                    // Você pode adicionar regras de ano aqui se quiser limitar o futuro
-                    // toYear={new Date().getFullYear() + 10}
-                  />
+                  <DatePickerExpiry {...field} disabled={isPending} />
                 )}
               />
             </div>

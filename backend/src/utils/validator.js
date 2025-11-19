@@ -11,8 +11,14 @@ const EMAIL_REGEX =
 // 10-11 dígitos (DDD + Número) ou 12-13 dígitos (55 + DDD + Número)
 const PHONE_RAW_REGEX = /^\d{10,13}$/;
 
-// 2. CLASSE DE VALIDAÇÃO
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MAX_LENGTH = 128;
+const PASSWORD_LOWERCASE_REGEX = /(?=.*[a-z])/; // Pelo menos uma minúscula
+const PASSWORD_UPPERCASE_REGEX = /(?=.*[A-Z])/; // Pelo menos uma maiúscula
+const PASSWORD_NUMBER_REGEX = /(?=.*\d)/; // Pelo menos um dígito
+const PASSWORD_SYMBOL_REGEX = /(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`])/; // Pelo menos um símbolo
 
+// 2. CLASSE DE VALIDAÇÃO
 export class DataValidator {
   // --- Validação de Formato Simples (Email/Telefone) ---
 
@@ -73,5 +79,52 @@ export class DataValidator {
     if (!cnpjNumber) return false;
     // A biblioteca cuida da limpeza da string e do cálculo algorítmico
     return cnpj.isValid(cnpjNumber);
+  }
+
+  /**
+   * Valida a complexidade da senha.
+   * @param {string} passwordValue - A senha a ser verificada.
+   * @param {boolean} isRequired - Indica se a senha é obrigatória (padrão: true).
+   * @returns {boolean} True se a senha é válida (ou vazia e opcional), false caso contrário.
+   */
+  static isValidPassword(passwordValue, isRequired = true) {
+    // 1. Lidar com campos vazios
+    if (!passwordValue || passwordValue.trim() === '') {
+      return !isRequired; // Retorna true se NÃO for obrigatório, ou false se for.
+    }
+
+    const password = passwordValue.trim();
+
+    // 2. Comprimento Mínimo
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      return false;
+    }
+
+    // 3. Comprimento Máximo
+    if (password.length > PASSWORD_MAX_LENGTH) {
+      return false;
+    }
+
+    // 4. Letra Minúscula
+    if (!PASSWORD_LOWERCASE_REGEX.test(password)) {
+      return false;
+    }
+
+    // 5. Letra Maiúscula
+    if (!PASSWORD_UPPERCASE_REGEX.test(password)) {
+      return false;
+    }
+
+    // 6. Número
+    if (!PASSWORD_NUMBER_REGEX.test(password)) {
+      return false;
+    }
+
+    // 7. Símbolo
+    if (!PASSWORD_SYMBOL_REGEX.test(password)) {
+      return false;
+    }
+
+    return true;
   }
 }

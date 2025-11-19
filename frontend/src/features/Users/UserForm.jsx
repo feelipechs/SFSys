@@ -67,9 +67,9 @@ export function UserForm({ user, formId, onClose }) {
               <FormLabel>Nome</FormLabel>
               <FormControl>
                 <Input
+                  {...field}
                   placeholder="Nome Completo"
                   disabled={isPending}
-                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -90,10 +90,10 @@ export function UserForm({ user, formId, onClose }) {
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input
+                  {...field}
                   placeholder="email@exemplo.com"
                   type="email"
                   disabled={isPending}
-                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -116,12 +116,12 @@ export function UserForm({ user, formId, onClose }) {
               <FormLabel>Senha</FormLabel>
               <FormControl>
                 <PasswordInput
+                  {...field}
                   maxLength={128}
                   placeholder={
                     user ? 'Deixe em branco para não alterar' : 'Senha'
                   }
                   disabled={isPending}
-                  {...field}
                 />
               </FormControl>
               <FormMessage />

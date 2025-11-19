@@ -33,10 +33,8 @@ export function DonorForm({ donor, formId, onClose }) {
 
           // campos PF (individual)
           cpf: donor.individual ? donor.individual.cpf : '',
-          dateOfBirth: donor.individual
-            ? donor.individual.dateOfBirth
-              ? donor.individual.dateOfBirth.substring(0, 10)
-              : ''
+          dateOfBirth: donor.individual?.dateOfBirth
+            ? new Date(donor.individual.dateOfBirth)
             : '',
 
           // campos PJ (legal)
@@ -115,8 +113,6 @@ export function DonorForm({ donor, formId, onClose }) {
     }
   };
 
-  const isFormLoading = isPending;
-
   const handleTypeChange = (value) => {
     if (isUpdateMode) return;
     setValue('type', value, { shouldValidate: true });
@@ -163,11 +159,11 @@ export function DonorForm({ donor, formId, onClose }) {
                 <FormControl>
                   {/* transfere as props de registro do RHF para o FormField, via {...field} */}
                   <Input
+                    {...field}
                     placeholder={
                       isIndividual ? 'Nome Completo' : 'Ex: Empresa Lorem Ipsum'
                     }
-                    disabled={isFormLoading}
-                    {...field}
+                    disabled={isPending}
                   />
                 </FormControl>
                 <FormMessage /> {/* exibe o erro de validação (regras acima) */}
@@ -188,10 +184,10 @@ export function DonorForm({ donor, formId, onClose }) {
                 <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input
+                    {...field}
                     type="email"
                     placeholder="email@exemplo.com"
-                    disabled={isFormLoading}
-                    {...field}
+                    disabled={isPending}
                   />
                 </FormControl>
                 <FormMessage />
@@ -207,15 +203,15 @@ export function DonorForm({ donor, formId, onClose }) {
             }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Telefone</FormLabel>
+                <FormLabel>Telefone (Opcional)</FormLabel>
                 <FormControl>
                   <Input
+                    {...field}
                     placeholder="(00) [0]0000-0000"
                     {...withMask('phone', '99 [9]9999-9999', {
                       removeMaskOnSubmit: true,
                     })}
-                    disabled={isFormLoading}
-                    {...field}
+                    disabled={isPending}
                   />
                 </FormControl>
                 <FormMessage />
@@ -241,12 +237,12 @@ export function DonorForm({ donor, formId, onClose }) {
                     <FormLabel>CPF</FormLabel>
                     <FormControl>
                       <Input
+                        {...field}
                         placeholder="000.000.000-00"
                         {...withMask('cpf', '999.999.999-99', {
                           removeMaskOnSubmit: true,
                         })}
-                        disabled={isFormLoading}
-                        {...field}
+                        disabled={isPending}
                       />
                     </FormControl>
                     <FormMessage />
@@ -258,7 +254,7 @@ export function DonorForm({ donor, formId, onClose }) {
               <FormField
                 control={control}
                 name="dateOfBirth"
-                rules={{ required: 'O campo é obrigatório.' }}
+                rules={{ required: 'A data de nascimento é obrigatória.' }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Data de Nascimento</FormLabel>
@@ -290,12 +286,12 @@ export function DonorForm({ donor, formId, onClose }) {
                     <FormLabel>CNPJ</FormLabel>
                     <FormControl>
                       <Input
+                        {...field}
                         placeholder="000.000.000-00"
                         {...withMask('cnpj', '99.999.999/9999-99', {
                           removeMaskOnSubmit: true,
                         })}
-                        disabled={isFormLoading}
-                        {...field}
+                        disabled={isPending}
                       />
                     </FormControl>
                     <FormMessage />
@@ -313,9 +309,9 @@ export function DonorForm({ donor, formId, onClose }) {
                     <FormLabel>Razão Social</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Ex: LoremIpsum"
-                        disabled={isFormLoading}
                         {...field}
+                        placeholder="Ex: LoremIpsum"
+                        disabled={isPending}
                       />
                     </FormControl>
                     <FormMessage />
@@ -332,9 +328,9 @@ export function DonorForm({ donor, formId, onClose }) {
                     <FormLabel>Nome Fantasia (Opcional)</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Nome Fantasia"
-                        disabled={isFormLoading}
                         {...field}
+                        placeholder="Nome Fantasia"
+                        disabled={isPending}
                       />
                     </FormControl>
                     <FormMessage />
