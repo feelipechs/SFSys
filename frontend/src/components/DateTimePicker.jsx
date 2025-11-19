@@ -74,7 +74,7 @@ export function DateTimePicker({ value, onChange, disabled, onBlur }) {
               id="date-picker"
               className="w-32 justify-between font-normal"
               disabled={disabled}
-              onBlur={onBlur}
+              // onBlur={onBlur}
             >
               <span className="flex-1 overflow-hidden truncate text-left">
                 {dateObject

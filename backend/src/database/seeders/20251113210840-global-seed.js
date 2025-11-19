@@ -63,7 +63,7 @@ export async function up(queryInterface, Sequelize) {
   /* ---------------------------
      1) USERS (3 managers, 7 volunteers)
      --------------------------- */
-  const pwd = await bcrypt.hash('senha123', 10);
+  const pwd = await bcrypt.hash('@Senha123', 10);
 
   const users = [
     {

@@ -66,9 +66,9 @@ export function CampaignForm({ campaign, formId, onClose }) {
               <FormLabel>Nome</FormLabel>
               <FormControl>
                 <Input
+                  {...field}
                   placeholder="Nome da Campanha"
                   disabled={isPending}
-                  {...field}
                 />
               </FormControl>
               <FormMessage />

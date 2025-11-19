@@ -17,8 +17,11 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { useAuth } from '@/context/AuthContext';
 
 export function DistributionForm({ distribution, formId, onClose }) {
+  const { user } = useAuth();
+  const currentUserId = user?.id;
   const { create, update, isPending } = useDistributionMutations();
 
   const isUpdateMode = !!distribution;
@@ -48,7 +51,7 @@ export function DistributionForm({ distribution, formId, onClose }) {
           observation: '',
           quantityBaskets: 0,
           beneficiaryId: '',
-          responsibleUserId: '',
+          responsibleUserId: currentUserId ?? '',
           campaignId: '',
           items: [{ productId: '', quantity: 1, validity: null }],
         },
@@ -71,17 +74,38 @@ export function DistributionForm({ distribution, formId, onClose }) {
   const { data: products = [], isLoading: loadingProducts } =
     useProductsQuery();
 
+  const availableProducts = products.filter((p) => {
+    // conversão para Float para garantir que a string "0.00" seja avaliada como 0
+    const stockValue = parseFloat(p.currentStock || '0');
+
+    // filtra apenas produtos com estoque maior que zero
+    return stockValue > 0;
+  });
+
   // mapear para o formato { value: id, label: nome }
   const beneficiaryOptions = beneficiaries.map((b) => ({
     value: b.id,
     label: b.responsibleName,
   }));
   const userOptions = users.map((u) => ({ value: u.id, label: u.name }));
-  const campaignOptions = campaigns.map((c) => ({
+  const activeCampaigns = campaigns.filter((c) => c.status === 'inProgress');
+  const campaignOptions = activeCampaigns.map((c) => ({
     value: c.id,
     label: c.name,
   }));
-  const productOptions = products.map((p) => ({ value: p.id, label: p.name }));
+  // mapear apenas os produtos disponíveis, adicionando o estoque no label
+  const productOptions = availableProducts.map((p) => {
+    const stockString = p.currentStock || '0.00';
+
+    // cria o rótulo: ex: "Arroz Tipo 1 (Estoque: 15.50 kg)"
+    const stockLabel = `${stockString} ${p.unitOfMeasurement}`;
+    const label = `${p.name} (Estoque: ${stockLabel})`;
+
+    return {
+      value: p.id,
+      label: label,
+    };
+  });
 
   const onSubmit = (data) => {
     const mutationCallbacks = {
@@ -136,6 +160,7 @@ export function DistributionForm({ distribution, formId, onClose }) {
               <FormLabel>Beneficiário</FormLabel>
               <FormControl>
                 <RelationInput
+                  {...field}
                   options={beneficiaryOptions}
                   placeholder={
                     loadingBeneficiaries
@@ -143,7 +168,6 @@ export function DistributionForm({ distribution, formId, onClose }) {
                       : 'Selecione ...'
                   }
                   disabled={isPending || loadingBeneficiaries}
-                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -161,12 +185,12 @@ export function DistributionForm({ distribution, formId, onClose }) {
               <FormLabel>Usuário Responsável</FormLabel>
               <FormControl>
                 <RelationInput
+                  {...field}
                   options={userOptions}
                   placeholder={
                     loadingUsers ? 'Carregando usuários...' : 'Selecione ...'
                   }
                   disabled={isPending || loadingUsers}
-                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -183,6 +207,7 @@ export function DistributionForm({ distribution, formId, onClose }) {
               <FormLabel>Campanha (Opcional)</FormLabel>
               <FormControl>
                 <RelationInput
+                  {...field}
                   options={campaignOptions}
                   placeholder={
                     loadingCampaigns
@@ -190,7 +215,6 @@ export function DistributionForm({ distribution, formId, onClose }) {
                       : 'Selecione ...'
                   }
                   disabled={isPending || loadingCampaigns}
-                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -230,11 +254,11 @@ export function DistributionForm({ distribution, formId, onClose }) {
               <FormLabel>Qtd. de Cestas (opcional)</FormLabel>
               <FormControl>
                 <Input
+                  {...field}
                   type="number"
                   placeholder="..."
                   {...register('quantityBaskets')}
                   disabled={isPending}
-                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -250,7 +274,7 @@ export function DistributionForm({ distribution, formId, onClose }) {
             <FormItem>
               <FormLabel>Observação (opcional)</FormLabel>
               <FormControl>
-                <Textarea placeholder="..." {...field} disabled={isPending} />
+                <Textarea {...field} placeholder="..." disabled={isPending} />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -7,7 +7,6 @@ import {
 } from '@/components/ui/select';
 
 const USER_ROLES = [
-  { value: 'admin', label: 'Administrador' },
   { value: 'manager', label: 'Gerente' },
   { value: 'volunteer', label: 'Voluntário' },
 ];

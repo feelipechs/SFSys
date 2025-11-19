@@ -15,7 +15,14 @@ import {
 } from '@/components/ui/popover';
 
 // aceita as props do RHF: value (Date | string | undefined), onChange, onBlur
-export function DatePicker({ value, onChange, disabled, className, ...props }) {
+export function DatePicker({
+  value,
+  onChange,
+  disabled,
+  className,
+  onBlur,
+  ...props
+}) {
   const [open, setOpen] = React.useState(false);
 
   // verifica se é uma instância de Date E se é válido
@@ -57,6 +64,9 @@ export function DatePicker({ value, onChange, disabled, className, ...props }) {
             // se o RHF espera null para desmarcar, usar 'selectedDate || null'
             onChange(selectedDate);
             setOpen(false); // fecha o popover após a seleção
+            if (onBlur) {
+              onBlur();
+            }
           }}
           captionLayout="dropdown"
           initialFocus
@@ -79,6 +89,7 @@ export function DatePickerExpiry({
   onChange,
   disabled,
   className,
+  onBlur,
   ...props
 }) {
   const [open, setOpen] = React.useState(false);
@@ -119,6 +130,9 @@ export function DatePickerExpiry({
             // chama o onChange do RHF com o objeto Date ou undefined
             onChange(selectedDate);
             setOpen(false); // fecha o popover após a seleção
+            if (onBlur) {
+              onBlur();
+            }
           }}
           captionLayout="dropdown"
           initialFocus

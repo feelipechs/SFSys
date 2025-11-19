@@ -32,12 +32,13 @@ class BeneficiaryService {
     // 1. Validação de campos obrigatórios
     if (
       !data.responsibleName ||
+      !data.responsibleCpf ||
+      !data.registrationDate ||
       !data.address ||
-      !data.familyMembersCount ||
-      !data.responsibleCpf
+      !data.familyMembersCount
     ) {
       throw new BadRequestError(
-        'Os campos Nome do Responsável, Endereço, Número de Membros e CPF são obrigatórios.',
+        'Os campos Nome do Responsável, CPF do Responsável, Data de Cadastro, Endereço, Número de Membros da Família são obrigatórios.',
       );
     }
 

@@ -38,6 +38,12 @@ class UserService {
       throw new BadRequestError('O formato do email fornecido é inválido.');
     }
 
+    if (!DataValidator.isValidPassword(data.password, true)) {
+      throw new BadRequestError(
+        'A senha não atende aos requisitos de segurança (min. 8 caracteres, maiúscula, minúscula, número e símbolo).',
+      );
+    }
+
     // validação de unicidade
     const existingUser = await this.User.findOne({
       where: { email: data.email },
@@ -123,6 +129,12 @@ class UserService {
         'Você não tem permissão para alterar a senha de outros usuários.',
       );
       throw error;
+    }
+
+    if (!DataValidator.isValidPassword(data.password, false)) {
+      throw new BadRequestError(
+        'A nova senha não atende aos requisitos de segurança.',
+      );
     }
 
     // bloqueio contra promoção de um novo admin (limite de 1)

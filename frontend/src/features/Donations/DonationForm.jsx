@@ -16,8 +16,11 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { useAuth } from '@/context/AuthContext';
 
 export function DonationForm({ donation, formId, onClose }) {
+  const { user } = useAuth();
+  const currentUserId = user?.id;
   const { create, update, isPending } = useDonationMutations();
 
   // determina se estamos editando uma doação existente (update) ou criando uma nova
@@ -48,7 +51,7 @@ export function DonationForm({ donation, formId, onClose }) {
           dateTime: '',
           observation: '',
           donorId: '',
-          responsibleUserId: '',
+          responsibleUserId: currentUserId ?? '',
           campaignId: '',
           items: [{ productId: '', quantity: 1, validity: null }],
         },
@@ -72,7 +75,8 @@ export function DonationForm({ donation, formId, onClose }) {
   // mapear para o formato { value: id, label: Nome }
   const donorOptions = donors.map((d) => ({ value: d.id, label: d.name }));
   const userOptions = users.map((u) => ({ value: u.id, label: u.name }));
-  const campaignOptions = campaigns.map((c) => ({
+  const activeCampaigns = campaigns.filter((c) => c.status === 'inProgress');
+  const campaignOptions = activeCampaigns.map((c) => ({
     value: c.id,
     label: c.name,
   }));
@@ -133,12 +137,12 @@ export function DonationForm({ donation, formId, onClose }) {
               <FormLabel>Doador</FormLabel>
               <FormControl>
                 <RelationInput
+                  {...field} // passa value, onChange, onBlur
                   options={donorOptions}
                   placeholder={
                     loadingDonors ? 'Carregando doadores...' : 'Selecione ...'
                   }
                   disabled={isPending || loadingDonors}
-                  {...field} // passa value, onChange, onBlur
                 />
               </FormControl>
               <FormMessage />
@@ -156,12 +160,12 @@ export function DonationForm({ donation, formId, onClose }) {
               <FormLabel>Usuário Responsável</FormLabel>
               <FormControl>
                 <RelationInput
+                  {...field}
                   options={userOptions}
                   placeholder={
                     loadingUsers ? 'Carregando usuários...' : 'Selecione ...'
                   }
                   disabled={isPending || loadingUsers}
-                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -178,6 +182,7 @@ export function DonationForm({ donation, formId, onClose }) {
               <FormLabel>Campanha (Opcional)</FormLabel>
               <FormControl>
                 <RelationInput
+                  {...field}
                   options={campaignOptions}
                   placeholder={
                     loadingCampaigns
@@ -185,7 +190,6 @@ export function DonationForm({ donation, formId, onClose }) {
                       : 'Selecione ...'
                   }
                   disabled={isPending || loadingCampaigns}
-                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -225,7 +229,7 @@ export function DonationForm({ donation, formId, onClose }) {
             <FormItem>
               <FormLabel>Observação (opcional)</FormLabel>
               <FormControl>
-                <Textarea placeholder="..." {...field} disabled={isPending} />
+                <Textarea {...field} placeholder="..." disabled={isPending} />
               </FormControl>
               <FormMessage />
             </FormItem>
