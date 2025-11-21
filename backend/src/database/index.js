@@ -11,6 +11,8 @@ import DonorIndividual from './models/DonorIndividual.js';
 import DonorLegal from './models/DonorLegal.js';
 import Product from './models/Product.js';
 import User from './models/User.js';
+import Notification from './models/Notification.js';
+import RefreshToken from './models/RefreshToken.js';
 
 const environment = process.env.NODE_ENV || 'development';
 const config = dbConfig[environment];
@@ -31,6 +33,8 @@ const models = [
   DonorLegal,
   Product,
   User,
+  Notification,
+  RefreshToken,
 ];
 
 models.forEach((model) => model.init(sequelize));

@@ -21,19 +21,19 @@ export function BeneficiaryForm({ beneficiary, formId, onClose }) {
       ? {
           registrationDate: beneficiary.registrationDate
             ? new Date(beneficiary.registrationDate)
-            : '',
+            : null,
 
           responsibleName: beneficiary.responsibleName || '',
           responsibleCpf: beneficiary.responsibleCpf || '',
           address: beneficiary.address || '',
-          familiyMembersCounts: beneficiary.familiyMembersCounts || 1,
+          familyMembersCount: beneficiary.familyMembersCount || 1,
         }
       : {
           responsibleName: '',
           responsibleCpf: '',
-          registrationDate: '',
+          registrationDate: null,
           address: '',
-          familiyMembersCounts: 1,
+          familyMembersCount: 1,
         },
     mode: 'onBlur',
   });
@@ -155,12 +155,20 @@ export function BeneficiaryForm({ beneficiary, formId, onClose }) {
         <FormField
           name="familyMembersCount"
           control={control}
-          rules={{ required: 'O número de membros da família é obrigatório.' }}
+          rules={{
+            valueAsNumber: true,
+            required: 'O número de membros da família é obrigatório.',
+          }}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Quantidade de Membros da Família</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="1" disabled={isPending} />
+                <Input
+                  {...field}
+                  placeholder="1"
+                  disabled={isPending}
+                  type="number"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

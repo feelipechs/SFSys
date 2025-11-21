@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url'; // utilitário para simular __dirname
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import routes from './routes/index.js';
 import { connectDB } from './database/index.js';
 
@@ -19,9 +20,11 @@ dotenv.config({ path: envPath });
 
 // express setup
 const app = express();
+app.use(cookieParser()); // ler cookies
 app.use(
   cors({
     origin: 'http://localhost:5173',
+    credentials: true, // permite envio de cookies
   }),
 );
 

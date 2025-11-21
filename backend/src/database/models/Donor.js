@@ -46,14 +46,14 @@ class Donor extends Model {
 
     // Pessoa Física
     this.hasOne(models.DonorIndividual, {
-      foreignKey: 'donor_id',
+      foreignKey: 'donorId',
       as: 'individual',
       onDelete: 'CASCADE',
     });
 
     // Pessoa Jurídica
     this.hasOne(models.DonorLegal, {
-      foreignKey: 'donor_id',
+      foreignKey: 'donorId',
       as: 'legal',
       onDelete: 'CASCADE',
     });
@@ -61,7 +61,7 @@ class Donor extends Model {
     // Associação com Doação (1:N)
 
     this.hasMany(models.Donation, {
-      foreignKey: 'donor_id',
+      foreignKey: 'donorId',
       as: 'donations',
     });
   }

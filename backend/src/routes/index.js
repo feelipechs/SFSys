@@ -8,6 +8,7 @@ import donationRoutes from './donation.routes.js';
 import distributionRoutes from './distribution.routes.js';
 import authRoutes from './auth.routes.js';
 import statRoutes from './stat.routes.js';
+import notificationRoutes from './notification.routes.js';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/api/donations', donationRoutes);
 router.use('/api/distributions', distributionRoutes);
 router.use('/api/auth', authRoutes);
 router.use('/api/stats', statRoutes);
+router.use('/api/notifications', notificationRoutes);
 
 export default router;

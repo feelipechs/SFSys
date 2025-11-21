@@ -54,19 +54,19 @@ class Donation extends Model {
 
     // 2. A Doação pertence a um User (FK: responsible_user_id)
     this.belongsTo(models.User, {
-      foreignKey: 'responsible_user_id',
+      foreignKey: 'responsibleUserId',
       as: 'responsibleUser',
     });
 
     // 3. A Doação pertence a uma Campanha (FK: campaign_id)
     this.belongsTo(models.Campaign, {
-      foreignKey: 'campaign_id',
+      foreignKey: 'campaignId',
       as: 'campaign',
     });
 
     // 4. A Doação tem MUITOS Itens de Doação (1:N)
     this.hasMany(models.DonationItem, {
-      foreignKey: 'donation_id',
+      foreignKey: 'donationId',
       as: 'items',
     });
   }

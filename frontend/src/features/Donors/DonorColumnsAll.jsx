@@ -10,8 +10,8 @@ const DonorSchema = {
   name: '',
   phone: '',
   email: '',
-  individual: { donorId: 0, cpf: 0, dateOfBirth: '' },
-  legal: { donorId: 0, cnpj: 0, tradeName: '', companyName: '' },
+  individual: { donorId: 0, cpf: '', dateOfBirth: '' },
+  legal: { donorId: 0, cnpj: '', tradeName: '', companyName: '' },
 };
 
 const columnHelper = createColumnHelper(DonorSchema);
@@ -44,11 +44,13 @@ export const donorColumnsAll = [
     ),
     enableSorting: false,
     enableHiding: false,
+    meta: {
+      exportable: false,
+    },
   }),
 
   columnHelper.accessor('id', {
     header: 'ID',
-    size: 40,
   }),
 
   columnHelper.accessor('name', {
@@ -64,6 +66,13 @@ export const donorColumnsAll = [
 
       return <span>{translatedType}</span>;
     },
+    meta: {
+      exportValue: (row) => {
+        const typeKey = row.type;
+        const translatedType = typeMap[typeKey] || typeKey;
+        return translatedType;
+      },
+    },
   }),
 
   columnHelper.accessor('phone', {
@@ -73,6 +82,11 @@ export const donorColumnsAll = [
 
       // retorna o valor formatado (ex: "(85) 99999-8888")
       return formatPhone(rawPhone);
+    },
+    meta: {
+      exportValue: (row) => {
+        return formatPhone(row.phone);
+      },
     },
   }),
 
@@ -88,5 +102,8 @@ export const donorColumnsAll = [
     },
     enableSorting: false,
     size: 60,
+    meta: {
+      exportable: false,
+    },
   }),
 ];

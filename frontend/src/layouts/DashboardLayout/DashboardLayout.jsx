@@ -2,8 +2,11 @@ import { AppSidebar } from '@/layouts/DashboardLayout/AppSidebar';
 import { SiteHeader } from '@/layouts/DashboardLayout/SiteHeader';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { Outlet } from 'react-router-dom';
+import { NotificationWatcher } from '@/features/Notifications/NotificationWatcher';
+import { useNotificationsQuery } from '@/hooks/queries/useNotificationsQuery';
 
 const DashboardLayout = () => {
+  useNotificationsQuery();
   return (
     <SidebarProvider
       style={{
@@ -14,6 +17,7 @@ const DashboardLayout = () => {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
+        <NotificationWatcher />
         <div className="flex flex-1 flex-col">
           {/* ponto de injeção do conteúdo dinâmico */}
           <Outlet />

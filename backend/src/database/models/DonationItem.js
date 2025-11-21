@@ -44,12 +44,12 @@ class DonationItem extends Model {
   static associate(models) {
     // 1. O Item pertence a UMA Doação
     this.belongsTo(models.Donation, {
-      foreignKey: 'donation_id',
+      foreignKey: 'donationId',
       as: 'donation',
     });
 
     // 2. O Item refere-se a UM Produto
-    this.belongsTo(models.Product, { foreignKey: 'product_id', as: 'product' });
+    this.belongsTo(models.Product, { foreignKey: 'productId', as: 'product' });
   }
 }
 

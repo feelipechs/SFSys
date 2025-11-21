@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Package } from 'lucide-react';
+import { formatDate } from '@/utils/formatters';
 
 export function MultiItemsCell({
   items,
@@ -69,11 +70,7 @@ export function MultiItemsCell({
                   {/* exibição condicional da validade */}
                   {item[validityKey] && (
                     <p className="text-xs text-gray-500">
-                      Válido até:{' '}
-                      {new Date(item[validityKey]).toLocaleDateString('pt-BR', {
-                        // garante que a data seja tratada como UTC, evitando a mudança de dia
-                        timeZone: 'UTC',
-                      })}
+                      Válido até: {formatDate(item[validityKey])}
                     </p>
                   )}
                 </li>

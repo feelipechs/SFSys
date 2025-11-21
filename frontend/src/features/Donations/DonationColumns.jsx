@@ -1,7 +1,7 @@
 import { createColumnHelper } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DonationEditCell } from './DonationEditCell';
-import { formatDateTime } from '@/utils/formatters';
+import { formatDate, formatDateTime } from '@/utils/formatters';
 import { MultiItemsCell } from '@/components/MultiItemsCell';
 import { TruncatedTextCell } from '@/components/TruncatedTextCell';
 
@@ -41,23 +41,27 @@ export const donationColumns = [
     ),
     enableSorting: false,
     enableHiding: false,
+    meta: {
+      exportable: false,
+    },
   }),
 
   columnHelper.accessor('id', {
     header: 'ID',
-    size: 50,
   }),
 
   columnHelper.accessor('dateTime', {
     header: 'Data e Hora',
     accessorFn: (row) => formatDateTime(row.dateTime),
     cell: ({ getValue }) => getValue(),
+    meta: {
+      exportValue: (row) => formatDateTime(row.dateTime),
+    },
   }),
 
   columnHelper.accessor('donor.name', {
     // acessa o nome para ordenação padrão
     header: 'Doador',
-    size: 50,
     cell: ({ row }) => {
       const donorName = row.original.donor?.name;
       const donorId = row.original.donorId;
@@ -66,6 +70,13 @@ export const donationColumns = [
           {donorName || 'Desconhecido'} (ID: {donorId})
         </span>
       );
+    },
+    meta: {
+      exportValue: (row) => {
+        const donorName = row.beneficiary?.name;
+        const donorId = row.donorId;
+        return `${donorName || 'Desconhecido'} (ID: ${donorId})`;
+      },
     },
   }),
 
@@ -86,7 +97,15 @@ export const donationColumns = [
         </div>
       );
     },
+    meta: {
+      exportValue: (row) => {
+        const userName = row.responsibleUser?.name || 'Desconhecido';
+        const userId = row.responsibleUserId;
+        return `${userName} (ID: ${userId})`;
+      },
+    },
   }),
+
   columnHelper.accessor('campaign.name', {
     header: 'Campanha',
     cell: ({ row }) => {
@@ -105,6 +124,14 @@ export const donationColumns = [
           </span>
         </div>
       );
+    },
+    meta: {
+      exportValue: (row) => {
+        const campaign = row.campaign;
+        const campaignName = campaign?.name || 'N/A';
+        const campaignId = campaign?.id;
+        return `${campaignName}${campaignId ? ` (ID: ${campaignId})` : ''}`;
+      },
     },
   }),
 
@@ -128,6 +155,27 @@ export const donationColumns = [
       );
     },
     enableSorting: true,
+    meta: {
+      exportValue: (row) => {
+        if (!row.items || row.items.length === 0) return 'Nenhum produto';
+
+        return row.items
+          .map((item) => {
+            const productName = item.product?.name || 'Produto desconhecido';
+            const quantity = item.quantity || 0;
+            const unit = item.product?.unitOfMeasurement || '';
+            const formattedValidity = item.validity
+              ? formatDate(item.validity)
+              : '';
+            const validity = formattedValidity
+              ? ` (Val: ${formattedValidity})`
+              : '';
+
+            return `${productName}: ${quantity}${unit}${validity}`;
+          })
+          .join('; ');
+      },
+    },
   }),
 
   columnHelper.accessor('observation', {
@@ -148,5 +196,8 @@ export const donationColumns = [
     },
     enableSorting: false,
     size: 60,
+    meta: {
+      exportable: false, // não exporta coluna de ações
+    },
   }),
 ];

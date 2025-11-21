@@ -56,25 +56,25 @@ class Distribution extends Model {
   static associate(models) {
     // 1. A Distribuição PERTENCE A UM User (N:1)
     this.belongsTo(models.User, {
-      foreignKey: 'responsible_user_id',
+      foreignKey: 'responsibleUserId',
       as: 'responsibleUser',
     });
 
     // 2. A Distribuição PERTENCE A UM Beneficiário (N:1)
     this.belongsTo(models.Beneficiary, {
-      foreignKey: 'beneficiary_id',
+      foreignKey: 'beneficiaryId',
       as: 'beneficiary',
     });
 
     // 3. A Distribuição pertence a uma Campanha (FK: campaign_id) ou não
     this.belongsTo(models.Campaign, {
-      foreignKey: 'campaign_id',
+      foreignKey: 'campaignId',
       as: 'campaign',
     });
 
     // 4. A Distribuição tem MUITOS Itens de Distribuição (1:N)
     this.hasMany(models.DistributionItem, {
-      foreignKey: 'distribution_id',
+      foreignKey: 'distributionId',
       as: 'items',
     });
   }

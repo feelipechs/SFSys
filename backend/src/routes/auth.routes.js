@@ -7,7 +7,7 @@ const router = express.Router();
 
 // instanciação do service, injetando a Model User
 // o AuthService precisa apenas da Model User
-const authServiceInstance = new AuthService(db.User);
+const authServiceInstance = new AuthService(db.User, db.RefreshToken);
 
 // instanciação do controller, injetando o service
 const authControllerInstance = new AuthController(authServiceInstance);
@@ -15,6 +15,8 @@ const authControllerInstance = new AuthController(authServiceInstance);
 // definição da rota de login (não precisa de middlewares de Auth/Authorize)
 // POST /login
 router.post('/login', authControllerInstance.login);
+router.post('/refresh', authControllerInstance.refresh); // ✅ nova rota
+router.post('/logout', authControllerInstance.logout);
 
 // rota opcional para teste rápido de um token (não necessária para o login, mas útil)
 // router.get('/validate', authenticate, (req, res) => res.status(200).json({ message: 'Token válido', user: req.user }));

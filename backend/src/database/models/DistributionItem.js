@@ -44,13 +44,13 @@ class DistributionItem extends Model {
   static associate(models) {
     // 1. O Item pertence a UMA Distribuição
     this.belongsTo(models.Distribution, {
-      foreignKey: 'distribution_id',
+      foreignKey: 'distributionId',
       as: 'distribution',
     });
 
     // 2. O Item refere-se a UM Produto
     this.belongsTo(models.Product, {
-      foreignKey: 'product_id',
+      foreignKey: 'productId',
       as: 'product',
     });
   }

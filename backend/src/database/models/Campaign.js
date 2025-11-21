@@ -45,13 +45,13 @@ class Campaign extends Model {
   static associate(models) {
     // 1. Uma campanha tem muitas doações
     this.hasMany(models.Donation, {
-      foreignKey: 'campaign_id',
+      foreignKey: 'campaignId',
       as: 'donations',
     });
 
     // 2. Uma campanha tem muitas distribuições ou não
     this.hasMany(models.Distribution, {
-      foreignKey: 'campaign_id',
+      foreignKey: 'campaignId',
       as: 'distributions',
     });
   }

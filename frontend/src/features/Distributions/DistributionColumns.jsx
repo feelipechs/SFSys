@@ -1,7 +1,7 @@
 import { createColumnHelper } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DistributionEditCell } from './DistributionEditCell';
-import { formatDateTime } from '@/utils/formatters';
+import { formatDate, formatDateTime } from '@/utils/formatters';
 import { MultiItemsCell } from '@/components/MultiItemsCell';
 import { TruncatedTextCell } from '@/components/TruncatedTextCell';
 
@@ -42,6 +42,9 @@ export const distributionColumns = [
     ),
     enableSorting: false,
     enableHiding: false,
+    meta: {
+      exportable: false, // não exporta coluna de seleção
+    },
   }),
 
   columnHelper.accessor('id', {
@@ -53,6 +56,9 @@ export const distributionColumns = [
     header: 'Data e Hora',
     accessorFn: (row) => formatDateTime(row.dateTime),
     cell: ({ getValue }) => getValue(),
+    meta: {
+      exportValue: (row) => formatDateTime(row.dateTime),
+    },
   }),
 
   columnHelper.accessor('beneficiary.responsibleName', {
@@ -66,6 +72,13 @@ export const distributionColumns = [
         </span>
       );
     },
+    meta: {
+      exportValue: (row) => {
+        const beneficiaryName = row.beneficiary?.responsibleName;
+        const beneficiaryId = row.beneficiaryId;
+        return `${beneficiaryName || 'Desconhecido'} (ID: ${beneficiaryId})`;
+      },
+    },
   }),
 
   columnHelper.accessor('responsibleUser.name', {
@@ -74,7 +87,7 @@ export const distributionColumns = [
       const userName = row.original.responsibleUser?.name || 'Desconhecido';
       const userId = row.original.responsibleUserId;
 
-      // Constrói a string completa para o tooltip
+      // constrói a string completa para o tooltip
       const fullText = `${userName} (ID: ${userId})`;
 
       return (
@@ -84,6 +97,13 @@ export const distributionColumns = [
           </span>
         </div>
       );
+    },
+    meta: {
+      exportValue: (row) => {
+        const userName = row.responsibleUser?.name || 'Desconhecido';
+        const userId = row.responsibleUserId;
+        return `${userName} (ID: ${userId})`;
+      },
     },
   }),
 
@@ -106,12 +126,19 @@ export const distributionColumns = [
         </div>
       );
     },
+    meta: {
+      exportValue: (row) => {
+        const campaign = row.campaign;
+        const campaignName = campaign?.name || 'N/A';
+        const campaignId = campaign?.id;
+        return `${campaignName}${campaignId ? ` (ID: ${campaignId})` : ''}`;
+      },
+    },
   }),
 
   columnHelper.accessor('items', {
     header: 'Produtos',
     id: 'itemsView',
-    size: 90,
     accessorFn: (row) => row.items?.length || 0,
     cell: ({ row }) => {
       // passa as chaves específicas do modelo 'DistributionItem'
@@ -128,6 +155,27 @@ export const distributionColumns = [
       );
     },
     enableSorting: true,
+    meta: {
+      exportValue: (row) => {
+        if (!row.items || row.items.length === 0) return 'Nenhum produto';
+
+        return row.items
+          .map((item) => {
+            const productName = item.product?.name || 'Produto desconhecido';
+            const quantity = item.quantity || 0;
+            const unit = item.product?.unitOfMeasurement || '';
+            const formattedValidity = item.validity
+              ? formatDate(item.validity)
+              : '';
+            const validity = formattedValidity
+              ? ` (Val: ${formattedValidity})`
+              : '';
+
+            return `${productName}: ${quantity}${unit}${validity}`;
+          })
+          .join('; ');
+      },
+    },
   }),
 
   columnHelper.accessor('quantityBaskets', {
@@ -152,5 +200,8 @@ export const distributionColumns = [
     },
     enableSorting: false,
     size: 60,
+    meta: {
+      exportable: false, // não exporta coluna de ações
+    },
   }),
 ];

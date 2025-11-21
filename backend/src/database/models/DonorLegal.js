@@ -51,7 +51,7 @@ class DonorLegal extends Model {
   static associate(models) {
     // O registro de PJ PERTENCE AO registro pai (Donor)
     this.belongsTo(models.Donor, {
-      foreignKey: 'donor_id',
+      foreignKey: 'donorId',
       as: 'donor',
     });
   }

@@ -6,13 +6,13 @@ import { toast } from 'sonner';
 export function PrivateRoute({ allowedRoles }) {
   const { isLoggedIn, user } = useAuth();
 
-  // 1. Checagem de Autenticação (Ação padrão)
+  // checagem de autenticação
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
 
   // checagem de autorização
-  // se allowedRoles foi fornecido E a role do usuário NÃO está na lista
+  // se allowedRoles foi fornecido e a role do usuário não está na lista
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     // feedback de erro (para o usuário saber por que foi bloqueado)
     toast.error('Acesso Negado', {

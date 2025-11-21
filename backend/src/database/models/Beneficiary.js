@@ -52,7 +52,7 @@ class Beneficiary extends Model {
 
   static associate(models) {
     this.hasMany(models.Distribution, {
-      foreignKey: 'beneficiary_id',
+      foreignKey: 'beneficiaryId',
       as: 'distributions',
     });
   }

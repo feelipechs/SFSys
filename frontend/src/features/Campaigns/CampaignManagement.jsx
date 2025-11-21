@@ -62,6 +62,9 @@ function CampaignManagement() {
         columns={campaignColumns}
         tabsData={campaignTabsData}
         mainActionComponent={createButton}
+        entityName="campaigns"
+        sheetName="Campanhas"
+        pdfTitle="Relatório de Campanhas"
       />
     </div>
   );

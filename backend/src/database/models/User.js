@@ -72,12 +72,18 @@ class User extends Model {
   // associações
   static associate(models) {
     this.hasMany(models.Donation, {
-      foreignKey: 'responsible_user_id',
+      foreignKey: 'responsibleUserId',
       as: 'responsibleDonations',
     });
+
     this.hasMany(models.Distribution, {
-      foreignKey: 'responsible_user_id',
+      foreignKey: 'responsibleUserId',
       as: 'deliveredDistributions',
+    });
+
+    this.hasMany(models.Notification, {
+      foreignKey: 'userId',
+      as: 'notifications',
     });
   }
 }

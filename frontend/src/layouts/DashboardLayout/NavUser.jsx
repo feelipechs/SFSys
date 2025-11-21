@@ -1,5 +1,4 @@
 import {
-  IconCreditCard,
   IconDotsVertical,
   IconLogout,
   IconNotification,
@@ -98,10 +97,12 @@ export function NavUser() {
                   Conta
                 </DropdownMenuItem>
               </Link>
-              <DropdownMenuItem>
-                <IconNotification />
-                Notificações
-              </DropdownMenuItem>
+              <Link to="/notifications">
+                <DropdownMenuItem>
+                  <IconNotification />
+                  Notificações
+                </DropdownMenuItem>
+              </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>

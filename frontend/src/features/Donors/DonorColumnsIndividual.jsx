@@ -9,8 +9,8 @@ const DonorSchema = {
   name: '',
   phone: '',
   email: '',
-  individual: { donorId: 0, cpf: 0, dateOfBirth: '' },
-  legal: { donorId: 0, cnpj: 0, tradeName: '', companyName: '' },
+  individual: { donorId: 0, cpf: '', dateOfBirth: '' },
+  legal: { donorId: 0, cnpj: '', tradeName: '', companyName: '' },
 };
 
 const columnHelper = createColumnHelper(DonorSchema);
@@ -38,11 +38,13 @@ export const donorColumnsIndividual = [
     ),
     enableSorting: false,
     enableHiding: false,
+    meta: {
+      exportable: false,
+    },
   }),
 
   columnHelper.accessor('id', {
     header: 'ID',
-    size: 40,
   }),
 
   columnHelper.accessor('name', {
@@ -52,27 +54,24 @@ export const donorColumnsIndividual = [
   columnHelper.accessor('individual.cpf', {
     header: 'CPF',
     id: 'cpf',
-    cell: ({ row }) => {
-      const documentValue = row.original.individual
-        ? row.original.individual.cpf
-        : '';
-
-      // verifica se o valor existe para evitar formatar 'N/A'
-      if (!documentValue) {
-        return <span>N/A</span>;
-      }
-
-      const formattedDocument = formatDocument(documentValue);
-
-      return <span>{formattedDocument}</span>;
+    cell: ({ getValue }) => {
+      const formattedDocument = getValue();
+      return formatDocument(formattedDocument);
+    },
+    meta: {
+      exportValue: (row) => formatDocument(row.individual.cpf),
     },
   }),
 
   columnHelper.accessor('individual.dateOfBirth', {
     header: 'Data de Nascimento',
+    id: 'dateOfBirth',
     cell: ({ getValue }) => {
       const formattedDate = getValue();
       return formatDate(formattedDate);
+    },
+    meta: {
+      exportValue: (row) => formatDate(row.individual.dateOfBirth),
     },
   }),
 
@@ -80,8 +79,12 @@ export const donorColumnsIndividual = [
     header: 'Telefone',
     cell: ({ getValue }) => {
       const rawPhone = getValue();
-
       return formatPhone(rawPhone);
+    },
+    meta: {
+      exportValue: (row) => {
+        return formatPhone(row.phone);
+      },
     },
   }),
 
@@ -97,5 +100,8 @@ export const donorColumnsIndividual = [
     },
     enableSorting: false,
     size: 60,
+    meta: {
+      exportable: false,
+    },
   }),
 ];

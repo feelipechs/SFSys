@@ -43,13 +43,13 @@ class Product extends Model {
 
     // Um Produto tem MUITOS Itens de Doação
     this.hasMany(models.DonationItem, {
-      foreignKey: 'product_id',
+      foreignKey: 'productId',
       as: 'donationItems',
     });
 
     // Um Produto tem MUITOS Itens de Distribuição
     this.hasMany(models.DistributionItem, {
-      foreignKey: 'product_id',
+      foreignKey: 'productId',
       as: 'distributionItems',
     });
   }

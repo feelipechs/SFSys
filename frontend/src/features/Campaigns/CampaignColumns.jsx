@@ -63,12 +63,14 @@ export const campaignColumns = [
     ),
     enableSorting: false,
     enableHiding: false,
+    meta: {
+      exportable: false,
+    },
   }),
 
   // coluna id
   columnHelper.accessor('id', {
     header: 'ID',
-    size: 50,
   }),
 
   columnHelper.accessor('name', {
@@ -81,12 +83,18 @@ export const campaignColumns = [
     accessorFn: (row) => formatDateTime(row.startDate),
     // a célula apenas exibe o valor retornado pelo accessorFn
     cell: ({ getValue }) => getValue(),
+    meta: {
+      exportValue: (row) => formatDateTime(row.startDate),
+    },
   }),
 
   columnHelper.accessor('endDate', {
     header: 'Data Final',
     accessorFn: (row) => formatDateTime(row.endDate),
     cell: ({ getValue }) => getValue(),
+    meta: {
+      exportValue: (row) => formatDateTime(row.endDate),
+    },
   }),
 
   columnHelper.accessor('status', {
@@ -119,6 +127,13 @@ export const campaignColumns = [
         </Badge>
       );
     },
+    meta: {
+      exportValue: (row) => {
+        const statusKey = row.status;
+        const config = statusMap[statusKey];
+        return config ? config.label : statusKey;
+      },
+    },
   }),
 
   columnHelper.display({
@@ -129,5 +144,8 @@ export const campaignColumns = [
     },
     enableSorting: false,
     size: 60,
+    meta: {
+      exportable: false,
+    },
   }),
 ];
