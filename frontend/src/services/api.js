@@ -1,112 +1,31 @@
-// import axios from 'axios';
-
-// const api = axios.create({
-//   baseURL: 'http://localhost:3000/api',
-// });
-
-// // variável para armazenar a função de logout que será injetada
-// let onUnauthorizedError = () => {
-//   // função padrão (fallback) que apenas loga um aviso
-//   console.warn(
-//     'Função de logout/redirecionamento não foi injetada no interceptor.'
-//   );
-// };
-
-// /**
-//  * Função para injetar a lógica de logout/redirecionamento de fora
-//  * @param {function} callback - A função que limpa o estado e redireciona
-//  */
-// export const setUnauthorizedErrorCallback = (callback) => {
-//   onUnauthorizedError = callback;
-// };
-
-// // interceptador de requisição (adiciona o token)
-// api.interceptors.request.use(
-//   (config) => {
-//     // tenta obter o token do local storage
-//     const token = localStorage.getItem('auth_token');
-
-//     if (token) {
-//       // se houver token, anexa-o ao cabeçalho Authorization
-//       config.headers.Authorization = `Bearer ${token}`;
-//     }
-
-//     return config;
-//   },
-//   (error) => {
-//     return Promise.reject(error);
-//   }
-// );
-
-// // interceptador de resposta (tratamento de erros)
-// api.interceptors.response.use(
-//   (response) => {
-//     return response;
-//   },
-//   (error) => {
-//     if (error.response) {
-//       if (error.response.status === 401) {
-//         // isso impede loops, mas é um bom lugar para forçar o logout
-//         // não podemos chamar useAuth() aqui, pois este é um módulo JS puro
-//         // o logout deve ser manipulado pelo contexto
-//         console.error(
-//           'Token expirado ou inválido. Considere forçar logout no componente principal.'
-//         );
-
-//         // chamada da função injetada
-//         onUnauthorizedError();
-
-//         // não é necessário retornar o erro para o componente se já estamos forçando o logout
-//         // se retornar, o componente fará um tratamento de erro que não é mais necessário
-//         // opcional: abortar a promise após o redirecionamento
-//         return new Promise(() => {}); // retorna uma promise que nunca resolve/rejeita
-//       }
-
-//       // retorna o objeto de erro original do Axios
-//       // permite que o `LoginForm` verifique `error.response.status`
-//       return Promise.reject(error);
-//     }
-
-//     // erros sem resposta (rede, timeout, etc.)
-//     return Promise.reject(error);
-//   }
-// );
-
-// export default api;
-
 import axios from 'axios';
 
 const api = axios.create({
   baseURL: 'http://localhost:3000/api',
+  withCredentials: true, // envia cookies automaticamente
 });
 
-// variável para armazenar a função de logout que será injetada
 let onUnauthorizedError = () => {
-  // função padrão (fallback) que apenas loga um aviso, caso a função de logout não seja injetada
   console.warn(
     'Função de logout/redirecionamento não foi injetada no interceptor.'
   );
 };
 
-/**
- * Função para injetar a lógica de logout/redirecionamento de fora
- * @param {function} callback - A função que limpa o estado e redireciona
- */
 export const setUnauthorizedErrorCallback = (callback) => {
   onUnauthorizedError = callback;
 };
 
-// interceptador de requisição (adiciona o token)
+// variável para evitar múltiplas tentativas simultâneas de refresh
+let isRefreshing = false;
+let failedRequestsQueue = [];
+
+// interceptador de requisição (adiciona o access token)
 api.interceptors.request.use(
   (config) => {
-    // tenta obter o token do local storage
-    const token = localStorage.getItem('auth_token');
-
-    // se houver token, anexa-o ao cabeçalho Authorization
+    const token = localStorage.getItem('auth_token'); // access token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
     return config;
   },
   (error) => {
@@ -114,38 +33,74 @@ api.interceptors.request.use(
   }
 );
 
-// interceptador de resposta (tratamento de erros)
+// interceptador de resposta
 api.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
-    if (error.response) {
-      // verifica se o erro é 401
-      if (error.response.status === 401) {
-        // verifica se a requisição que falhou é a de login
-        const isLoginAttempt = error.config.url.includes('/auth/login');
+  async (error) => {
+    const originalRequest = error.config;
 
+    if (error.response) {
+      // se for 401 e não for a rota de login
+      if (error.response.status === 401) {
+        const isLoginAttempt = originalRequest.url.includes('/auth/login');
+        const isRefreshAttempt = originalRequest.url.includes('/auth/refresh');
+
+        // se for falha no login, apenas rejeita
         if (isLoginAttempt) {
-          // se for uma falha de login (credenciais incorretas), apenas rejeitamos a Promise para que o componente mostre o erro
           return Promise.reject(error);
         }
 
-        // se NÃO for a rota de login, o token expirou ou é inválido
-        // força o logout
-        onUnauthorizedError();
+        // se for falha no refresh, faz logout
+        if (isRefreshAttempt) {
+          onUnauthorizedError();
+          return new Promise(() => {});
+        }
 
-        // retorna uma Promise que nunca resolve/rejeita para abortar a requisição original
-        return new Promise(() => {});
+        // evita múltiplas requisições de refresh simultâneas
+        if (!isRefreshing) {
+          isRefreshing = true;
+
+          try {
+            const { data } = await api.post('/auth/refresh');
+
+            // salva o novo access token
+            localStorage.setItem('auth_token', data.accessToken);
+            // atualiza o header da requisição original
+            originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+
+            // processa todas as requisições que estavam esperando
+            failedRequestsQueue.forEach((callback) =>
+              callback(data.accessToken)
+            );
+            failedRequestsQueue = [];
+
+            // refaz a requisição original
+            return api(originalRequest);
+          } catch (refreshError) {
+            // refresh falhou, faz logout
+            failedRequestsQueue = [];
+            onUnauthorizedError();
+            return new Promise(() => {});
+          } finally {
+            isRefreshing = false;
+          }
+        }
+
+        // enfileira requisições enquanto está renovando o token
+        return new Promise((resolve, reject) => {
+          failedRequestsQueue.push((newToken) => {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            resolve(api(originalRequest));
+          });
+        });
       }
 
-      // retorna o objeto de erro original do Axios (para outros erros 4xx, 5xx)
       return Promise.reject(error);
     }
 
-    // erros sem resposta (rede, timeout, etc.)
     return Promise.reject(error);
   }
 );
-
 export default api;

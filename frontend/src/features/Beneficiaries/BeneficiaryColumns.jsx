@@ -36,6 +36,9 @@ export const beneficiaryColumns = [
     ),
     enableSorting: false,
     enableHiding: false,
+    meta: {
+      exportable: false,
+    },
   }),
 
   columnHelper.accessor('id', {
@@ -52,6 +55,9 @@ export const beneficiaryColumns = [
       const formattedDocument = getValue();
       return formatDocument(formattedDocument);
     },
+    meta: {
+      exportValue: (row) => formatDocument(row.responsibleCpf),
+    },
   }),
 
   columnHelper.accessor('registrationDate', {
@@ -59,6 +65,9 @@ export const beneficiaryColumns = [
     cell: ({ getValue }) => {
       const formattedDate = getValue();
       return formatDate(formattedDate);
+    },
+    meta: {
+      exportValue: (row) => formatDate(row.registrationDate),
     },
   }),
 
@@ -89,5 +98,8 @@ export const beneficiaryColumns = [
     },
     enableSorting: false,
     size: 60,
+    meta: {
+      exportable: false,
+    },
   }),
 ];

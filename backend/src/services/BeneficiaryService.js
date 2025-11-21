@@ -26,10 +26,23 @@ class BeneficiaryService {
       );
     }
     // adicionar validação de email etc caso necessário
+
+    if (
+      data.familyMembersCount !== undefined &&
+      data.familyMembersCount !== null
+    ) {
+      const count = Number(data.familyMembersCount);
+
+      if (isNaN(count) || count < 1 || !Number.isInteger(count)) {
+        throw new BadRequestError(
+          'O Número de Membros da Família deve ser um número inteiro, positivo e no mínimo 1 (um).',
+        );
+      }
+    }
   }
 
   async create(data) {
-    // 1. Validação de campos obrigatórios
+    // validação de campos obrigatórios
     if (
       !data.responsibleName ||
       !data.responsibleCpf ||
@@ -42,10 +55,9 @@ class BeneficiaryService {
       );
     }
 
-    // 2. CHAMADA AO VALIDADOR DE FORMATO/ALGORITMO
-    this._validateData(data); // <-- Novo
+    this._validateData(data);
 
-    // 3. Validação de unicidade (checa se o CPF já existe no banco)
+    // validação de unicidade (checa se o CPF já existe no banco)
     const existingBeneficiary = await this.Beneficiary.findOne({
       where: { responsibleCpf: data.responsibleCpf },
     });
@@ -103,7 +115,7 @@ class BeneficiaryService {
   }
 
   async update(id, data) {
-    // 1. Validação de payload vazio
+    // validação de payload vazio
     if (Object.keys(data).length === 0) {
       throw new BadRequestError(
         'Nenhum dado de atualização válido foi fornecido.',
@@ -112,10 +124,9 @@ class BeneficiaryService {
 
     const beneficiary = await this.findById(id);
 
-    // 2. CHAMADA AO VALIDADOR DE FORMATO/ALGORITMO (se o campo estiver no payload)
-    this._validateData(data); // <-- Novo
+    this._validateData(data);
 
-    // 3. Validação de unicidade de CPF (se o CPF estiver sendo alterado)
+    // validação de unicidade de CPF (se o CPF estiver sendo alterado)
     if (
       data.responsibleCpf &&
       data.responsibleCpf !== beneficiary.responsibleCpf
@@ -139,7 +150,7 @@ class BeneficiaryService {
     const transaction = await this.sequelize.transaction();
     try {
       // reusa findById (para a checagem 404)
-      const beneficiary = await this.findById(id, transaction); // Passa transaction
+      const beneficiary = await this.findById(id, transaction); // passa transaction
 
       // checagem de histórico: o beneficiário não pode ser excluído se tiver distribuições associadas
       const hasDistributions = await this.Distribution.count({

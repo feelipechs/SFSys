@@ -89,7 +89,7 @@ export function BeneficiaryDetailDrawer({ beneficiary, triggerContent }) {
 
   return (
     <EntityDetailDrawer
-      title={`Editar Beneficiário: ${beneficiary.name} (ID: ${beneficiary.id})`}
+      title={`Editar Beneficiário: ${beneficiary.responsibleName} (ID: ${beneficiary.id})`}
       formId={FORM_ID}
       open={isEditDrawerOpen}
       onOpenChange={setIsEditDrawerOpen}

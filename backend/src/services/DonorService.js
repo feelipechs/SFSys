@@ -190,7 +190,10 @@ class DonorService {
         ['updated_at', 'updatedAt'],
       ],
       // inclui ambos os lados para trazer todos os detalhes de todos os doadores.
-      include: [{ association: 'individual' }, { association: 'legal' }],
+      include: [
+        { association: 'individual', attributes: { exclude: ['donor_id'] } },
+        { association: 'legal', attributes: { exclude: ['donor_id'] } },
+      ],
       order: [['name', 'ASC']],
     });
   }

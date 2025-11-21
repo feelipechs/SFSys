@@ -6,6 +6,7 @@ import ErrorPage from './pages/ErrorPage';
 import ContactPage from './pages/ContactPage';
 import HelpPage from './pages/HelpPage';
 import ProfilePage from './pages/ProfilePage';
+import NotificationsPage from './pages/NotificationsPage';
 import DashboardLayout from './layouts/DashboardLayout/DashboardLayout'; // Shell com Sidebar
 import DashboardOverview from './features/Dashboard/DashboardOverview';
 import BeneficiaryManagement from './features/Beneficiaries/BeneficiaryManagement';
@@ -45,6 +46,7 @@ function AppRoutes() {
           <Route path="contact" element={<ContactPage />} />
           <Route path="help" element={<HelpPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
         </Route>
       </Route>
 

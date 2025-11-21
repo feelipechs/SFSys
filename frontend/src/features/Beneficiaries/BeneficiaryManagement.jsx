@@ -61,6 +61,9 @@ function BeneficiaryManagement() {
         columns={beneficiaryColumns}
         tabsData={beneficiaryTabsData}
         mainActionComponent={createButton}
+        entityName="beneficiaries"
+        sheetName="Beneficiários"
+        pdfTitle="Relatório de Beneficiários"
       />
     </div>
   );

@@ -1,5 +1,5 @@
 class BeneficiaryController {
-  // Recebe o Service no construtor (Injeção de Dependência)
+  // recebe o Service no construtor (Injeção de Dependência)
   constructor(service) {
     this.service = service;
 
@@ -27,7 +27,7 @@ class BeneficiaryController {
   // POST /api/beneficiaries
   async create(req, res) {
     try {
-      // Chama o Service da instância
+      // chama o Service da instância
       const newBeneficiary = await this.service.create(req.body);
       return res.status(201).json(newBeneficiary);
     } catch (error) {

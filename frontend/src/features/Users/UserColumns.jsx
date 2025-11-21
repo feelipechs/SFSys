@@ -45,12 +45,14 @@ export const userColumns = [
     ),
     enableSorting: false,
     enableHiding: false,
+    meta: {
+      exportable: false,
+    },
   }),
 
   // coluna id
   columnHelper.accessor('id', {
     header: 'ID',
-    size: 50,
   }),
 
   // coluna nome
@@ -82,6 +84,12 @@ export const userColumns = [
         </span>
       );
     },
+    meta: {
+      exportValue: (row) => {
+        const role = row.role;
+        return roleMap[role] || roleMap.default(role);
+      },
+    },
   }),
 
   columnHelper.display({
@@ -93,5 +101,8 @@ export const userColumns = [
     },
     enableSorting: false,
     size: 60,
+    meta: {
+      exportable: false,
+    },
   }),
 ];

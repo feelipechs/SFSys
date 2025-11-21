@@ -95,6 +95,9 @@ function DonorManagement() {
         // DataTable notifica qual aba foi clicada
         onTabChange={setActiveTab}
         initialTabValue={activeTab}
+        entityName="donors"
+        sheetName="Doadores"
+        pdfTitle="Relatório de Doadores"
       />
     </div>
   );

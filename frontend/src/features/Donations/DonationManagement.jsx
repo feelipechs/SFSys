@@ -61,6 +61,9 @@ function DonationManagement() {
         columns={donationColumns}
         tabsData={donationTabsData}
         mainActionComponent={createButton}
+        entityName="donations"
+        sheetName="Doações"
+        pdfTitle="Relatório de Doações"
       />
     </div>
   );

@@ -1,15 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import {
-  AudioWaveform,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-} from 'lucide-react';
+import { AudioWaveform, Command, GalleryVerticalEnd } from 'lucide-react';
 
+import { BiSolidReport } from 'react-icons/bi';
 import { GiCannedFish } from 'react-icons/gi';
 import { GoPackageDependents } from 'react-icons/go';
 import { MdFamilyRestroom } from 'react-icons/md';
@@ -23,8 +17,8 @@ import {
 } from 'react-icons/fa';
 
 import { NavMain } from '@/layouts/DashboardLayout/NavMain';
-import { NavSecondary } from '@/layouts/DashboardLayout/NavSecondary';
-import { NavProjects } from '@/layouts/DashboardLayout/NavProjects';
+import { NavSecondary } from './NavSecondary';
+import { NavTertiary } from './NavTertiary';
 import { NavUser } from '@/layouts/DashboardLayout/NavUser';
 import { TeamSwitcher } from '@/layouts/DashboardLayout/TeamSwitcher';
 import {
@@ -65,157 +59,39 @@ const data = {
       title: 'Beneficiários',
       url: '/beneficiaries',
       icon: MdFamilyRestroom,
-      items: [
-        {
-          title: 'History',
-          url: '#',
-        },
-        {
-          title: 'Starred',
-          url: '#',
-        },
-        {
-          title: 'Settings',
-          url: '#',
-        },
-      ],
     },
     {
       title: 'Campanhas',
       url: '/campaigns',
       icon: FaHandsHelping,
-      items: [
-        {
-          title: 'Genesis',
-          url: '#',
-        },
-        {
-          title: 'Explorer',
-          url: '#',
-        },
-        {
-          title: 'Quantum',
-          url: '#',
-        },
-      ],
     },
     {
       title: 'Distribuições',
       url: '/distributions',
       icon: GoPackageDependents,
-      items: [
-        {
-          title: 'Introduction',
-          url: '#',
-        },
-        {
-          title: 'Get Started',
-          url: '#',
-        },
-        {
-          title: 'Tutorials',
-          url: '#',
-        },
-        {
-          title: 'Changelog',
-          url: '#',
-        },
-      ],
     },
     {
       title: 'Doações',
       url: '/donations',
       icon: FaHandHoldingHeart,
-      items: [
-        {
-          title: 'General',
-          url: '#',
-        },
-        {
-          title: 'Team',
-          url: '#',
-        },
-        {
-          title: 'Billing',
-          url: '#',
-        },
-        {
-          title: 'Limits',
-          url: '#',
-        },
-      ],
     },
     {
       title: 'Doadores',
       url: '/donors',
       icon: FaPeopleCarry,
-      items: [
-        {
-          title: 'General',
-          url: '#',
-        },
-        {
-          title: 'Team',
-          url: '#',
-        },
-        {
-          title: 'Billing',
-          url: '#',
-        },
-        {
-          title: 'Limits',
-          url: '#',
-        },
-      ],
     },
     {
       title: 'Produtos',
       url: '/products',
       icon: GiCannedFish,
-      items: [
-        {
-          title: 'General',
-          url: '#',
-        },
-        {
-          title: 'Team',
-          url: '#',
-        },
-        {
-          title: 'Billing',
-          url: '#',
-        },
-        {
-          title: 'Limits',
-          url: '#',
-        },
-      ],
     },
     {
       title: 'Usuários',
       url: '/users',
       icon: FaUser,
-      items: [
-        {
-          title: 'General',
-          url: '#',
-        },
-        {
-          title: 'Team',
-          url: '#',
-        },
-        {
-          title: 'Billing',
-          url: '#',
-        },
-        {
-          title: 'Limits',
-          url: '#',
-        },
-      ],
     },
   ],
-  navSecondary: [
+  navTertiary: [
     {
       title: 'Contato',
       url: '/contact',
@@ -225,23 +101,6 @@ const data = {
       title: 'Ajuda',
       url: '/help',
       icon: FaQuestion,
-    },
-  ],
-  projects: [
-    {
-      name: 'Design Engineering',
-      url: '#',
-      icon: Frame,
-    },
-    {
-      name: 'Sales & Marketing',
-      url: '#',
-      icon: PieChart,
-    },
-    {
-      name: 'Travel',
-      url: '#',
-      icon: Map,
     },
   ],
 };
@@ -273,8 +132,7 @@ export function AppSidebar({ ...props }) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={filteredNavMain} />
-        {/* <NavProjects projects={data.projects} /> */}
-        <NavSecondary items={data.navSecondary} />
+        <NavTertiary items={data.navTertiary} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

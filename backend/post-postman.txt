@@ -92,3 +92,11 @@ distribuição:
     }
   ]
 }
+
+notificações:
+{
+  "recipientIds": [2, 5, 7, 8],
+  "title": "Cadastro de Beneficiários",
+  "message": "Ao cadastrarem beneficiários, todos os campos são obrigatórios.",
+  "type": "info"
+}

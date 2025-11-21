@@ -67,6 +67,9 @@ function UserManagement() {
         columns={userColumns}
         tabsData={userTabsData}
         mainActionComponent={createButton}
+        entityName="users"
+        sheetName="Usuários"
+        pdfTitle="Relatório de Usuários"
       />
     </div>
   );

@@ -33,6 +33,7 @@ export const authenticate = (req, res, next) => {
       id: decoded.id,
       email: decoded.email,
       role: decoded.role,
+      name: decoded.name,
     };
 
     // se tudo estiver correto, prosseguir para o próximo middleware/controller

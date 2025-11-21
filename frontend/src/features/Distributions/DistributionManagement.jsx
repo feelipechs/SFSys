@@ -61,6 +61,9 @@ function DistributionManagement() {
         columns={distributionColumns}
         tabsData={distributionTabsData}
         mainActionComponent={createButton}
+        entityName="distributions"
+        sheetName="Distribuições"
+        pdfTitle="Relatório de Distribuições"
       />
     </div>
   );
