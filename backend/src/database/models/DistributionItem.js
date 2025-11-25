@@ -10,7 +10,6 @@ class DistributionItem extends Model {
           autoIncrement: true,
           allowNull: false,
         },
-        // foreign keys
         distributionId: {
           type: DataTypes.INTEGER,
           allowNull: false,
@@ -42,13 +41,13 @@ class DistributionItem extends Model {
   }
 
   static associate(models) {
-    // 1. O Item pertence a UMA Distribuição
+    // o item pertence a uma distribuição
     this.belongsTo(models.Distribution, {
       foreignKey: 'distributionId',
       as: 'distribution',
     });
 
-    // 2. O Item refere-se a UM Produto
+    // o item refere-se a um produto
     this.belongsTo(models.Product, {
       foreignKey: 'productId',
       as: 'product',

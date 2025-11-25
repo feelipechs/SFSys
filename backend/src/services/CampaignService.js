@@ -1,4 +1,4 @@
-import { BadRequestError, NotFoundError } from '../utils/api-error.js';
+import { BadRequestError, NotFoundError } from '../utils/errorUtils.js';
 
 const formatDate = (date) => {
   if (!(date instanceof Date) || isNaN(date)) return 'Data Inválida';
@@ -26,9 +26,15 @@ class CampaignService {
   }
 
   async create(data) {
-    if (!data.name || !data.startDate || !data.endDate || !data.status) {
+    if (
+      !data.name ||
+      !data.startDate ||
+      !data.endDate ||
+      !data.status ||
+      !data.category
+    ) {
       throw new BadRequestError(
-        'Todos os campos obrigatórios (nome, data de início, data de fim e status) devem ser preenchidos.',
+        'Todos os campos obrigatórios (nome, data de início, data de fim, status e categoria) devem ser preenchidos.',
       );
     }
 
@@ -231,7 +237,7 @@ class CampaignService {
       // bloqueio
       if (hasDonations > 0 || hasDistributions > 0) {
         throw new BadRequestError(
-          'Não é possível excluir esta campanha. Ela já possui histórico de doações ou distribuições e deve ser mantida para auditoria histórica.',
+          'Não é possível excluir esta campanha. Ela já possui histórico de doações ou distribuições e deve ser mantida para auditoria.',
         );
       }
 

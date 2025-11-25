@@ -44,7 +44,7 @@ async function startServer() {
       console.log(`Ambiente: ${nodeEnv}`);
     });
   } catch (error) {
-    console.error('Falha Crítica ao Iniciar o Servidor:', error.message);
+    console.error('Falha ao Iniciar o Servidor:', error.message);
     process.exit(1);
   }
 }

@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { ForbiddenError, UnauthorizedError } from '../utils/api-error.js';
+import { ForbiddenError, UnauthorizedError } from '../utils/errorUtils.js';
 
 // deve ser a mesma chave usada para assinar o JWT no AuthService
 const JWT_SECRET = process.env.JWT_SECRET;

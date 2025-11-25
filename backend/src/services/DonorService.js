@@ -1,4 +1,4 @@
-import { BadRequestError, NotFoundError } from '../utils/api-error.js';
+import { BadRequestError, NotFoundError } from '../utils/errorUtils.js';
 import { DataValidator } from '../utils/validator.js';
 
 class DonorService {

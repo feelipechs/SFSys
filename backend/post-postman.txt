@@ -11,6 +11,7 @@ campanha:
     "name": "campanha de arrecadação de alimentos",
     "startDate": "2025-11-01",
     "endDate": "2025-11-30"
+    "status": "inProgress"
 }
 
 produto:

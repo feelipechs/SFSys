@@ -1,14 +1,26 @@
 import { createColumnHelper } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { BeneficiaryEditCell } from './BeneficiaryEditCell';
-import { formatDate, formatDocument } from '@/utils/formatters';
+import {
+  formatDate,
+  formatDocument,
+  formatFullAddress,
+} from '@/utils/formatters';
 
 const BeneficiarySchema = {
   id: 0,
   responsibleName: '',
   responsibleCpf: '',
   registrationDate: '',
-  address: '',
+  address: {
+    cep: '',
+    state: '',
+    city: '',
+    neighborhood: '',
+    street: '',
+    number: '',
+    complement: '',
+  },
   familyMembersCount: 0,
 };
 
@@ -71,18 +83,26 @@ export const beneficiaryColumns = [
     },
   }),
 
-  columnHelper.accessor('address', {
+  columnHelper.accessor((row) => formatFullAddress(row.address), {
+    id: 'address',
     header: 'Endereço',
-    cell: ({ getValue }) => {
-      const address = getValue();
+
+    cell: ({ row }) => {
+      const fullAddress = formatFullAddress(row.original.address);
 
       return (
         <div className="flex max-w-[250px] items-center">
-          <span className="truncate" title={address}>
-            {address}
+          <span className="truncate" title={fullAddress}>
+            {fullAddress}
           </span>
         </div>
       );
+    },
+
+    enableColumnFilter: true,
+    filterFn: 'includesString',
+    meta: {
+      exportValue: (row) => formatFullAddress(row.address),
     },
   }),
 

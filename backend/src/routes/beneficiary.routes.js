@@ -1,16 +1,18 @@
 import express from 'express';
 import db from '../database/index.js';
+import AddressService from '../services/AddressService.js';
 import BeneficiaryService from '../services/BeneficiaryService.js';
 import BeneficiaryController from '../controllers/BeneficiaryController.js';
 import { authenticate, authorize } from '../middlewares/AuthMiddleware.js';
 
 const router = express.Router();
-// injeção de dependência e instanciação
 
-// prepara o que será injetado no service (removi a model)
+const addressServiceInstance = new AddressService(db);
 
-// cria a instância do service, injetando o Modelo do Sequelize (todas)
-const beneficiaryServiceInstance = new BeneficiaryService(db);
+const beneficiaryServiceInstance = new BeneficiaryService(
+  db,
+  addressServiceInstance,
+);
 
 // cria a instância do controller, injetando o service
 const beneficiaryControllerInstance = new BeneficiaryController(

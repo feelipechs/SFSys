@@ -1,19 +1,17 @@
 import bcrypt from 'bcryptjs';
 
 /**
- * Seed global para MySQL + Sequelize (ES Modules)
- * Nome sugerido do arquivo: 202502010001-global-seed.js
- *
- * Observações:
- * - Não cria admin (conforme solicitado).
- * - Assume que o backend/triggers atualizam product.current_stock ao inserir donation_item / distribution_item.
- * - Gera CPFs e CNPJs válidos (algoritmos implementados abaixo).
+ * Global seed atualizado:
+ * - Adiciona table `address` antes de `beneficiary` e usa address_id.
+ * - Senha padrão: @Senha123
+ * - Unidades permitidas: ['kg','l','un'] (aplicadas coerentemente por produto)
+ * - Mantém validação de CPF/CNPJ (geradores)
+ * - Compatível com MySQL (usa SELECT pós-bulkInsert)
  */
 
 function pad(n, width = 2) {
   return String(n).padStart(width, '0');
 }
-
 function addDays(date, days) {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
@@ -21,8 +19,6 @@ function addDays(date, days) {
 }
 
 /* ----- Geradores de CPF e CNPJ válidos ----- */
-/* Algoritmos baseados nas regras oficiais (dígitos verificadores) */
-
 function generateCPF() {
   const n = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10));
   const calcDigit = (arr, factor) => {
@@ -49,13 +45,26 @@ function generateCNPJ() {
   return [...n, d1, d2].join('');
 }
 
-/* ----- Helpers de escolha ----- */
 function pick(arr, idx) {
   return arr[idx % arr.length];
 }
 
-/* ----- Unidades de medida permitidas (exemplos) ----- */
+/* unidades permitidas */
 const units = ['kg', 'l', 'un'];
+
+/* Mapas de produto => unidade + perishable */
+const productCatalog = [
+  { name: 'Arroz Tipo 1', unit: 'kg', perishable: false },
+  { name: 'Feijão Carioca', unit: 'kg', perishable: false },
+  { name: 'Óleo de Soja 900ml', unit: 'l', perishable: false },
+  { name: 'Açúcar Cristal', unit: 'kg', perishable: false },
+  { name: 'Macarrão Espaguete 500g', unit: 'kg', perishable: false },
+  { name: 'Leite UHT 1L', unit: 'l', perishable: true },
+  { name: 'Farinha de Trigo 1kg', unit: 'kg', perishable: false },
+  { name: 'Café Torrado 250g', unit: 'kg', perishable: false },
+  { name: 'Enlatados Mix 400g', unit: 'un', perishable: false },
+  { name: 'Sabonete Glicerinado', unit: 'un', perishable: false },
+];
 
 export async function up(queryInterface, Sequelize) {
   const now = new Date();
@@ -151,7 +160,6 @@ export async function up(queryInterface, Sequelize) {
 
   await queryInterface.bulkInsert('user', users);
 
-  // recuperar users inseridos
   const userEmails = users.map((u) => u.email);
   const usersInserted = await queryInterface.sequelize.query(
     `SELECT id, email, role FROM user WHERE email IN (:emails)`,
@@ -256,15 +264,166 @@ export async function up(queryInterface, Sequelize) {
   );
 
   /* ---------------------------
-     3) BENEFICIARIES (10)
+     3) ADDRESS (10 realistic addresses)
+     --------------------------- */
+  // Realistic CEPs / cities / lat-long (examples)
+  const addresses = [
+    {
+      cep: '01001000',
+      state: 'SP',
+      city: 'São Paulo',
+      neighborhood: 'Sé',
+      street: 'Praça da Sé',
+      number: 's/n',
+      complement: null,
+      latitude: -23.55052,
+      longitude: -46.633309,
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      cep: '20040002',
+      state: 'RJ',
+      city: 'Rio de Janeiro',
+      neighborhood: 'Centro',
+      street: 'Rua Uruguaiana',
+      number: '100',
+      complement: 'Sala 12',
+      latitude: -22.90556,
+      longitude: -43.17778,
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      cep: '30140071',
+      state: 'MG',
+      city: 'Belo Horizonte',
+      neighborhood: 'Centro',
+      street: 'Rua da Bahia',
+      number: '200',
+      complement: null,
+      latitude: -19.9245,
+      longitude: -43.9354,
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      cep: '80010000',
+      state: 'PR',
+      city: 'Curitiba',
+      neighborhood: 'Centro',
+      street: 'Rua XV de Novembro',
+      number: '150',
+      complement: null,
+      latitude: -25.4284,
+      longitude: -49.2733,
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      cep: '90010000',
+      state: 'RS',
+      city: 'Porto Alegre',
+      neighborhood: 'Centro Histórico',
+      street: 'Rua dos Andradas',
+      number: '400',
+      complement: null,
+      latitude: -30.0277,
+      longitude: -51.2287,
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      cep: '50010100',
+      state: 'PE',
+      city: 'Recife',
+      neighborhood: 'Boa Viagem',
+      street: 'Av. Boa Viagem',
+      number: '42',
+      complement: null,
+      latitude: -8.1221,
+      longitude: -34.9081,
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      cep: '40110010',
+      state: 'BA',
+      city: 'Salvador',
+      neighborhood: 'Barra',
+      street: 'Av. Sete de Setembro',
+      number: '512',
+      complement: null,
+      latitude: -12.9714,
+      longitude: -38.5014,
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      cep: '88010001',
+      state: 'SC',
+      city: 'Florianópolis',
+      neighborhood: 'Centro',
+      street: 'Rua Felipe Schmidt',
+      number: '208',
+      complement: null,
+      latitude: -27.597,
+      longitude: -48.5495,
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      cep: '58039200',
+      state: 'PB',
+      city: 'João Pessoa',
+      neighborhood: 'Tambaú',
+      street: 'Rua das Acácias',
+      number: '77',
+      complement: null,
+      latitude: -7.1195,
+      longitude: -34.845,
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      cep: '69005010',
+      state: 'AM',
+      city: 'Manaus',
+      neighborhood: 'Centro',
+      street: 'Rua das Mangueiras',
+      number: '210',
+      complement: null,
+      latitude: -3.11866,
+      longitude: -60.0212,
+      created_at: now,
+      updated_at: now,
+    },
+  ];
+
+  await queryInterface.bulkInsert('address', addresses);
+
+  const addressCeps = addresses.map((a) => a.cep);
+  const addressesInserted = await queryInterface.sequelize.query(
+    `SELECT id, cep FROM address WHERE cep IN (:ceps)`,
+    { replacements: { ceps: addressCeps }, type: Sequelize.QueryTypes.SELECT },
+  );
+
+  // map cep -> id for quick lookup
+  const addressIdByCep = addressesInserted.reduce((acc, a) => {
+    acc[a.cep] = a.id;
+    return acc;
+  }, {});
+
+  /* ---------------------------
+     4) BENEFICIARIES (10) using address_id
      --------------------------- */
   const beneficiaries = [
     {
       responsible_name: 'Maria Aparecida de Souza',
       responsible_cpf: generateCPF(),
       registration_date: new Date('2024-01-10'),
-      address: 'Rua das Flores, 123 - Jardim Primavera, São Paulo - SP',
       family_members_count: 4,
+      address_id: addressIdByCep['01001000'],
       created_at: now,
       updated_at: now,
     },
@@ -272,8 +431,8 @@ export async function up(queryInterface, Sequelize) {
       responsible_name: 'José Carlos dos Santos',
       responsible_cpf: generateCPF(),
       registration_date: new Date('2024-02-05'),
-      address: 'Av. Brasil, 450 - Centro, Rio de Janeiro - RJ',
       family_members_count: 3,
+      address_id: addressIdByCep['20040002'],
       created_at: now,
       updated_at: now,
     },
@@ -281,8 +440,8 @@ export async function up(queryInterface, Sequelize) {
       responsible_name: 'Ana Paula Ferreira',
       responsible_cpf: generateCPF(),
       registration_date: new Date('2024-03-18'),
-      address: 'Rua Belo Horizonte, 88 - Santa Luzia, Belo Horizonte - MG',
       family_members_count: 5,
+      address_id: addressIdByCep['30140071'],
       created_at: now,
       updated_at: now,
     },
@@ -290,8 +449,8 @@ export async function up(queryInterface, Sequelize) {
       responsible_name: 'Marcos Vinícius Oliveira',
       responsible_cpf: generateCPF(),
       registration_date: new Date('2024-04-22'),
-      address: 'Rua Imperatriz Leopoldina, 900 - Boa Vista, Curitiba - PR',
       family_members_count: 2,
+      address_id: addressIdByCep['80010000'],
       created_at: now,
       updated_at: now,
     },
@@ -299,8 +458,8 @@ export async function up(queryInterface, Sequelize) {
       responsible_name: 'Camila Rodrigues Dias',
       responsible_cpf: generateCPF(),
       registration_date: new Date('2024-05-14'),
-      address: 'Rua Rio Negro, 301 - Harmonia, Porto Alegre - RS',
       family_members_count: 4,
+      address_id: addressIdByCep['90010000'],
       created_at: now,
       updated_at: now,
     },
@@ -308,8 +467,8 @@ export async function up(queryInterface, Sequelize) {
       responsible_name: 'Paulo Henrique Moreira',
       responsible_cpf: generateCPF(),
       registration_date: new Date('2024-06-11'),
-      address: 'Rua do Sol, 42 - Boa Viagem, Recife - PE',
       family_members_count: 3,
+      address_id: addressIdByCep['50010100'],
       created_at: now,
       updated_at: now,
     },
@@ -317,8 +476,8 @@ export async function up(queryInterface, Sequelize) {
       responsible_name: 'Rita de Cássia Almeida',
       responsible_cpf: generateCPF(),
       registration_date: new Date('2024-07-27'),
-      address: 'Av. Sete de Setembro, 512 - Barra, Salvador - BA',
       family_members_count: 6,
+      address_id: addressIdByCep['40110010'],
       created_at: now,
       updated_at: now,
     },
@@ -326,8 +485,8 @@ export async function up(queryInterface, Sequelize) {
       responsible_name: 'Gustavo Martins Ribeiro',
       responsible_cpf: generateCPF(),
       registration_date: new Date('2024-08-19'),
-      address: 'Rua Independência, 208 - Centro, Florianópolis - SC',
       family_members_count: 2,
+      address_id: addressIdByCep['88010001'],
       created_at: now,
       updated_at: now,
     },
@@ -335,8 +494,8 @@ export async function up(queryInterface, Sequelize) {
       responsible_name: 'Luciana Mendes da Silva',
       responsible_cpf: generateCPF(),
       registration_date: new Date('2024-09-30'),
-      address: 'Rua das Acácias, 77 - Tambaú, João Pessoa - PB',
       family_members_count: 4,
+      address_id: addressIdByCep['58039200'],
       created_at: now,
       updated_at: now,
     },
@@ -344,8 +503,8 @@ export async function up(queryInterface, Sequelize) {
       responsible_name: 'Fábio Torres Lima',
       responsible_cpf: generateCPF(),
       registration_date: new Date('2024-10-25'),
-      address: 'Rua das Mangueiras, 210 - Centro, Manaus - AM',
       family_members_count: 3,
+      address_id: addressIdByCep['69005010'],
       created_at: now,
       updated_at: now,
     },
@@ -363,7 +522,7 @@ export async function up(queryInterface, Sequelize) {
   );
 
   /* ---------------------------
-     4) DONORS (5 individual + 5 legal)
+     5) DONORS (5 individual + 5 legal)
      --------------------------- */
   const donors = [
     // individuals
@@ -462,22 +621,19 @@ export async function up(queryInterface, Sequelize) {
     },
   );
 
-  // separar por tipo
   const individualDonors = donorsInserted.filter(
     (d) => d.type === 'individual',
   );
   const legalDonors = donorsInserted.filter((d) => d.type === 'legal');
 
-  // donor_individual
   const donorIndividuals = individualDonors.map((d, i) => ({
     donor_id: d.id,
     cpf: generateCPF(),
-    date_of_birth: addDays(new Date('1980-01-01'), i * 365), // datas variadas
+    date_of_birth: addDays(new Date('1980-01-01'), i * 365),
     created_at: now,
     updated_at: now,
   }));
 
-  // donor_legal
   const donorLegals = legalDonors.map((d, i) => ({
     donor_id: d.id,
     trade_name: `${d.email.split('@')[0].replace(/\W/g, '')} LTDA`,
@@ -491,24 +647,11 @@ export async function up(queryInterface, Sequelize) {
   await queryInterface.bulkInsert('donor_legal', donorLegals);
 
   /* ---------------------------
-     5) PRODUCTS (10) - current_stock = 0.00 (backend updates later)
+     6) PRODUCTS (10) - current_stock = 0.00 (backend updates later)
      --------------------------- */
-  const productNames = [
-    'Arroz Tipo 1',
-    'Feijão Carioca',
-    'Óleo de Soja',
-    'Açúcar Cristal',
-    'Macarrão Espaguete',
-    'Leite UHT',
-    'Farinha de Trigo',
-    'Café Torrado',
-    'Enlatados Mix',
-    'Sabonete Glicerinado',
-  ];
-
-  const products = productNames.map((name, i) => ({
-    name,
-    unit_of_measurement: pick(units, i),
+  const products = productCatalog.map((p) => ({
+    name: p.name,
+    unit_of_measurement: p.unit,
     current_stock: 0.0,
     created_at: now,
     updated_at: now,
@@ -516,6 +659,7 @@ export async function up(queryInterface, Sequelize) {
 
   await queryInterface.bulkInsert('product', products);
 
+  const productNames = products.map((p) => p.name);
   const productsInserted = await queryInterface.sequelize.query(
     `SELECT id, name FROM product WHERE name IN (:names)`,
     {
@@ -525,24 +669,21 @@ export async function up(queryInterface, Sequelize) {
   );
 
   /* ---------------------------
-     6) DONATIONS (20) + DONATION_ITEMS (1-3 items)
+     7) DONATIONS (20) + DONATION_ITEMS (1-3 items)
      --------------------------- */
-  // Preparo lista de donation observations únicas para recuperar ids depois
   const donationRecords = [];
   const donationObsList = [];
 
-  // arrays fonte para escolhas
   const donorIds = donorsInserted.map((d) => d.id);
   const userIds = usersInserted.map((u) => u.id);
   const campaignIds = campaignsInserted.map((c) => c.id);
   const productIds = productsInserted.map((p) => p.id);
   const beneficiaryIds = beneficiariesInserted.map((b) => b.id);
 
-  // criar 20 doações
   for (let i = 0; i < 20; i++) {
     const donorId = pick(donorIds, i);
-    const responsibleUserId = pick(userIds, i + 1); // evitar sempre o mesmo
-    const campaignId = i % 5 === 0 ? null : pick(campaignIds, i); // algumas sem campanha
+    const responsibleUserId = pick(userIds, i + 1);
+    const campaignId = i % 5 === 0 ? null : pick(campaignIds, i);
     const dt = addDays(new Date('2025-01-01'), i * 3);
     const obs = `seed_donation_${pad(i)}_${Date.now()}`;
 
@@ -560,7 +701,6 @@ export async function up(queryInterface, Sequelize) {
 
   await queryInterface.bulkInsert('donation', donationRecords);
 
-  // recuperar donations inseridas
   const donationsInserted = await queryInterface.sequelize.query(
     `SELECT id, observation FROM donation WHERE observation IN (:obs)`,
     {
@@ -569,17 +709,18 @@ export async function up(queryInterface, Sequelize) {
     },
   );
 
-  // map donation items (1-3 items por doação)
   const donationItems = [];
   for (let i = 0; i < donationsInserted.length; i++) {
     const donation = donationsInserted[i];
     const itemsCount = 1 + (i % 3); // 1..3
-    // escolher produtos distintos para cada donation
     for (let j = 0; j < itemsCount; j++) {
       const product = pick(productIds, i + j);
-      const qty = (1 + ((i + j) % 5)) * (j === 0 ? 2 : 1); // quantidades variadas
-      const valid =
-        (i + j) % 2 === 0 ? addDays(addDays(new Date(), 90), i + j) : null; // validade opcional
+      // find product meta to decide validity chance
+      const prodMeta = productCatalog[(i + j) % productCatalog.length];
+      const qty = (1 + ((i + j) % 5)) * (j === 0 ? 2 : 1);
+      const valid = prodMeta.perishable
+        ? addDays(new Date(), 180 + i + j)
+        : null;
 
       donationItems.push({
         quantity: qty,
@@ -595,7 +736,7 @@ export async function up(queryInterface, Sequelize) {
   await queryInterface.bulkInsert('donation_item', donationItems);
 
   /* ---------------------------
-     7) DISTRIBUTIONS (20) + DISTRIBUTION_ITEMS (1-2 items)
+     8) DISTRIBUTIONS (20) + DISTRIBUTION_ITEMS (1-2 items)
      --------------------------- */
   const distributionRecords = [];
   const distributionObsList = [];
@@ -609,7 +750,7 @@ export async function up(queryInterface, Sequelize) {
 
     distributionRecords.push({
       date_time: dt,
-      quantity_baskets: 1 + (i % 3), // 1..3
+      quantity_baskets: 1 + (i % 3),
       observation: obs,
       beneficiary_id: beneficiaryId,
       responsible_user_id: responsibleUserId,
@@ -622,7 +763,6 @@ export async function up(queryInterface, Sequelize) {
 
   await queryInterface.bulkInsert('distribution', distributionRecords);
 
-  // recuperar distributions inseridas
   const distributionsInserted = await queryInterface.sequelize.query(
     `SELECT id, observation FROM distribution WHERE observation IN (:obs)`,
     {
@@ -631,15 +771,17 @@ export async function up(queryInterface, Sequelize) {
     },
   );
 
-  // distribution items (1-2 por distribuição), escolhendo produtos que provavelmente tem estoque (mas lembrando: backend atualiza estoque)
   const distributionItems = [];
   for (let i = 0; i < distributionsInserted.length; i++) {
     const dist = distributionsInserted[i];
     const itemsCount = 1 + (i % 2); // 1..2
     for (let j = 0; j < itemsCount; j++) {
       const product = pick(productIds, i + j + 2);
+      const prodMeta = productCatalog[(i + j + 2) % productCatalog.length];
       const qty = 1 + ((i + j) % 3);
-      const valid = (i + j) % 2 === 1 ? addDays(new Date(), 60 + i + j) : null;
+      const valid = prodMeta.perishable
+        ? addDays(new Date(), 90 + i + j)
+        : null;
 
       distributionItems.push({
         distribution_id: dist.id,
@@ -654,14 +796,13 @@ export async function up(queryInterface, Sequelize) {
 
   await queryInterface.bulkInsert('distribution_item', distributionItems);
 
-  // FIM
   console.log(
-    'Global seed executed: users, campaigns, beneficiaries, donors, products, donations, and distributions inserted.',
+    'Global seed (updated) executed: users, campaigns, addresses, beneficiaries, donors, products, donations, and distributions inserted.',
   );
 }
 
 export async function down(queryInterface, Sequelize) {
-  // Apagar em ordem inversa para não violar FKs
+  // Order inverted to avoid FK violations
   await queryInterface.bulkDelete('distribution_item', null, {});
   await queryInterface.bulkDelete('distribution', null, {});
   await queryInterface.bulkDelete('donation_item', null, {});
@@ -671,6 +812,7 @@ export async function down(queryInterface, Sequelize) {
   await queryInterface.bulkDelete('donor_legal', null, {});
   await queryInterface.bulkDelete('donor', null, {});
   await queryInterface.bulkDelete('beneficiary', null, {});
+  await queryInterface.bulkDelete('address', null, {}); // remove addresses after beneficiaries
   await queryInterface.bulkDelete('campaign', null, {});
   await queryInterface.bulkDelete('user', null, {});
 }

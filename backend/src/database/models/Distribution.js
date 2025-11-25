@@ -24,7 +24,6 @@ class Distribution extends Model {
           type: DataTypes.TEXT,
           allowNull: true, // TEXT geralmente permite null, a menos que especificado
         },
-        // foreign keys (mapeamento explícito para evitar conflito de nomes no JS)
         beneficiaryId: {
           type: DataTypes.INTEGER,
           allowNull: false,
@@ -54,13 +53,13 @@ class Distribution extends Model {
   }
 
   static associate(models) {
-    // 1. A Distribuição PERTENCE A UM User (N:1)
+    // a distribuição pertence a um user
     this.belongsTo(models.User, {
       foreignKey: 'responsibleUserId',
       as: 'responsibleUser',
     });
 
-    // 2. A Distribuição PERTENCE A UM Beneficiário (N:1)
+    // a distribuição pertence a um beneficiário
     this.belongsTo(models.Beneficiary, {
       foreignKey: 'beneficiaryId',
       as: 'beneficiary',

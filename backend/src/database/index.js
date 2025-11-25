@@ -13,6 +13,7 @@ import Product from './models/Product.js';
 import User from './models/User.js';
 import Notification from './models/Notification.js';
 import RefreshToken from './models/RefreshToken.js';
+import Address from './models/Address.js';
 
 const environment = process.env.NODE_ENV || 'development';
 const config = dbConfig[environment];
@@ -35,6 +36,7 @@ const models = [
   User,
   Notification,
   RefreshToken,
+  Address,
 ];
 
 models.forEach((model) => model.init(sequelize));

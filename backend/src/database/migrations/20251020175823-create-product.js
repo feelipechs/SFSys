@@ -19,6 +19,10 @@ export async function up(queryInterface, Sequelize) {
       allowNull: false,
       defaultValue: 0.0, // É uma boa prática inicializar estoques
     },
+    category: {
+      type: Sequelize.ENUM('food', 'clothing', 'hygiene', 'others'),
+      allowNull: false,
+    },
     created_at: { type: Sequelize.DATE, allowNull: false },
     updated_at: { type: Sequelize.DATE, allowNull: false },
   });

@@ -2,7 +2,7 @@ import {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
-} from '../utils/api-error.js';
+} from '../utils/errorUtils.js';
 import { DataValidator } from '../utils/validator.js';
 
 class UserService {

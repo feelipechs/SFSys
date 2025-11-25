@@ -1,4 +1,4 @@
-import { UnauthorizedError, BadRequestError } from '../utils/api-error.js';
+import { UnauthorizedError, BadRequestError } from '../utils/errorUtils.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET;

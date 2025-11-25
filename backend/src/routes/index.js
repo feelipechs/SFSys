@@ -9,6 +9,7 @@ import distributionRoutes from './distribution.routes.js';
 import authRoutes from './auth.routes.js';
 import statRoutes from './stat.routes.js';
 import notificationRoutes from './notification.routes.js';
+import addressRoutes from './address.routes.js';
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/api/distributions', distributionRoutes);
 router.use('/api/auth', authRoutes);
 router.use('/api/stats', statRoutes);
 router.use('/api/notifications', notificationRoutes);
+router.use('/api/addresses', addressRoutes);
 
 export default router;

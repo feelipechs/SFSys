@@ -107,7 +107,7 @@ export function ItemRepeater({
               </p>
             </div>
 
-            {/* validade (Opcional) */}
+            {/* validade (opcional) */}
             <div className="w-44">
               <label className="text-sm font-medium leading-none">
                 Validade (Opcional)

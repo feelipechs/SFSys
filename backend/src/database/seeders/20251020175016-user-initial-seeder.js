@@ -1,4 +1,4 @@
-import bcrypt from 'bcryptjs';
+import { hashPassword } from '../../utils/security.js';
 
 const ADMIN_PASSWORD = process.env.ADMIN_INITIAL_PASSWORD;
 const ADMIN_EMAIL = process.env.ADMIN_INITIAL_EMAIL;
@@ -11,7 +11,7 @@ export async function up(queryInterface) {
     return;
   }
 
-  const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 10);
+  const hashedPassword = await hashPassword(ADMIN_PASSWORD);
 
   await queryInterface.bulkInsert(
     'user',

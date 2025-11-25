@@ -1,4 +1,4 @@
-import { BadRequestError, NotFoundError } from '../utils/api-error.js';
+import { BadRequestError, NotFoundError } from '../utils/errorUtils.js';
 
 class ProductService {
   constructor(models) {
@@ -24,7 +24,11 @@ class ProductService {
     // filtrar currentStock para impedir alteração manual na criação
     const { currentStock, ...productBaseData } = data;
 
-    if (!productBaseData.name || !productBaseData.unitOfMeasurement) {
+    if (
+      !productBaseData.name ||
+      !productBaseData.unitOfMeasurement ||
+      !productBaseData.category
+    ) {
       throw new BadRequestError(
         'Todos os campos obrigatórios devem ser preenchidos.',
       );
@@ -53,6 +57,7 @@ class ProductService {
         'id',
         'name',
         'unitOfMeasurement',
+        'category',
         'currentStock',
         ['created_at', 'createdAt'],
         ['updated_at', 'updatedAt'],
@@ -63,7 +68,13 @@ class ProductService {
 
   async findById(id, transaction = null) {
     const product = await this.Product.findByPk(id, {
-      attributes: ['id', 'name', 'unitOfMeasurement', 'currentStock'],
+      attributes: [
+        'id',
+        'name',
+        'unitOfMeasurement',
+        'category',
+        'currentStock',
+      ],
       transaction, // permite que a busca ocorra dentro de uma transação
     });
 
@@ -132,70 +143,6 @@ class ProductService {
       await transaction.rollback();
       throw error;
     }
-  }
-
-  // gestão de estoque (requerem transaction)
-
-  /**
-   * Adiciona uma quantidade ao estoque do produto (Entrada, Doação).
-   * @param {number} productId O ID do produto.
-   * @param {number} quantity A quantidade a ser adicionada.
-   * @param {object} transaction A transação ativa do Sequelize (obrigatória).
-   */
-  async incrementStock(productId, quantity, transaction) {
-    if (!transaction) {
-      throw new Error(
-        'Uma transação (transaction) é obrigatória para movimentação de estoque.',
-      );
-    }
-
-    // incrementa o estoque. O Sequelize lida com a concorrência na coluna
-    await this.Product.increment('current_stock', {
-      by: quantity,
-      where: { id: productId },
-      transaction: transaction,
-    });
-    return true;
-  }
-
-  /**
-   * Remove uma quantidade do estoque do produto (Saída, Distribuição) após verificação.
-   * @param {number} productId O ID do produto.
-   * @param {number} quantity A quantidade a ser removida.
-   * @param {object} transaction A transação ativa do Sequelize (obrigatória).
-   */
-  async decrementStock(productId, quantity, transaction) {
-    if (!transaction) {
-      throw new Error(
-        'Uma transação (transaction) é obrigatória para movimentação de estoque.',
-      );
-    }
-
-    // bloqueia a linha para leitura e verifica o saldo
-    const product = await this.Product.findByPk(productId, {
-      attributes: ['name', 'currentStock'],
-      // bloqueia a linha no db para que outro processo não altere o saldo antes do decremento
-      lock: transaction.LOCK.UPDATE,
-      transaction: transaction,
-    });
-
-    if (!product) {
-      throw new NotFoundError(`Produto com ID ${productId} não encontrado.`);
-    }
-
-    if (product.currentStock < quantity) {
-      throw new BadRequestError(
-        `Estoque insuficiente para o Produto ${product.name}, com ID ${productId}. Disponível: ${product.currentStock}.`,
-      );
-    }
-
-    // decrementa o estoque
-    await this.Product.decrement('current_stock', {
-      by: quantity,
-      where: { id: productId },
-      transaction: transaction,
-    });
-    return true;
   }
 }
 

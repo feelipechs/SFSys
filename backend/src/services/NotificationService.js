@@ -2,7 +2,7 @@ import {
   NotFoundError,
   BadRequestError,
   ForbiddenError,
-} from '../utils/api-error.js';
+} from '../utils/errorUtils.js';
 
 class NotificationService {
   constructor(models) {

@@ -14,14 +14,14 @@ import {
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { useNotificationMutations } from '@/hooks/mutations/useNotificationMutations';
-import { formatDateTime } from '@/utils/formatters';
+import { formatCompensatedDateTime } from '@/utils/formatters';
 
 export default function NotificationItem({ notification }) {
   const { markAsRead, deleteOne: deleteNotification } =
     useNotificationMutations();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const formattedDateTime = formatDateTime(notification.created_at);
+  const formattedDateTime = formatCompensatedDateTime(notification.created_at);
 
   const getIcon = (size = 'w-5 h-5') => {
     switch (notification.type) {
@@ -94,6 +94,7 @@ export default function NotificationItem({ notification }) {
                   </div>
                   <time className="text-xs text-muted-foreground mt-2 block">
                     {formattedDateTime}
+                    {/* {notification.created_at} */}
                   </time>
                 </div>
 
@@ -127,7 +128,7 @@ export default function NotificationItem({ notification }) {
                 De: {notification.sender.name || 'Sistema'}
               </span>
             )}
-            Em: {formatDateTime(notification.created_at)}
+            Em: {formattedDateTime}
           </DialogDescription>
         </DialogHeader>
         <Separator className="my-2" />
