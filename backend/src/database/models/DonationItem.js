@@ -10,7 +10,6 @@ class DonationItem extends Model {
           autoIncrement: true,
           allowNull: false,
         },
-        // foreign keys
         donationId: {
           type: DataTypes.INTEGER,
           allowNull: false,
@@ -42,13 +41,13 @@ class DonationItem extends Model {
   }
 
   static associate(models) {
-    // 1. O Item pertence a UMA Doação
+    // o item pertence a uma doação
     this.belongsTo(models.Donation, {
       foreignKey: 'donationId',
       as: 'donation',
     });
 
-    // 2. O Item refere-se a UM Produto
+    // o item refere-se a um produto
     this.belongsTo(models.Product, { foreignKey: 'productId', as: 'product' });
   }
 }

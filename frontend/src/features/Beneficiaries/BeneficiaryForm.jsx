@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { useBeneficiaryMutations } from '@/hooks/mutations/useBeneficiaryMutations';
+import { useCepQuery } from '@/hooks/queries/useCepQuery';
 import { useForm } from 'react-hook-form';
 import { FormValidators } from '@/utils/validators';
 import {
@@ -9,9 +10,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { useHookFormMask } from 'use-mask-input';
 import { DatePicker } from '@/components/DatePicker';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
 
 export function BeneficiaryForm({ beneficiary, formId, onClose }) {
   const { create, update, isPending } = useBeneficiaryMutations();
@@ -22,24 +26,36 @@ export function BeneficiaryForm({ beneficiary, formId, onClose }) {
           registrationDate: beneficiary.registrationDate
             ? new Date(beneficiary.registrationDate)
             : null,
-
           responsibleName: beneficiary.responsibleName || '',
           responsibleCpf: beneficiary.responsibleCpf || '',
-          address: beneficiary.address || '',
+          cep: beneficiary.address?.cep || '',
+          number: beneficiary.address?.number || '',
+          complement: beneficiary.address?.complement || '',
           familyMembersCount: beneficiary.familyMembersCount || 1,
         }
       : {
           responsibleName: '',
           responsibleCpf: '',
           registrationDate: null,
-          address: '',
+          cep: '',
+          number: '',
+          complement: '',
           familyMembersCount: 1,
         },
     mode: 'onBlur',
   });
 
-  const { control, handleSubmit, register } = form;
+  const { control, handleSubmit, register, watch } = form;
   const withMask = useHookFormMask(register);
+  const cepValue = watch('cep');
+
+  // React Query para buscar CEP
+  const {
+    data: addressData,
+    isLoading: isLoadingCEP,
+    isError: isCEPError,
+    error: cepError,
+  } = useCepQuery(cepValue);
 
   const onSubmit = (data) => {
     const mutationCallbacks = {
@@ -52,7 +68,6 @@ export function BeneficiaryForm({ beneficiary, formId, onClose }) {
     if (beneficiary && beneficiary.id) {
       // update
       const payload = { ...data };
-
       update.mutate({ id: beneficiary.id, ...payload }, mutationCallbacks);
     } else {
       // create
@@ -131,18 +146,89 @@ export function BeneficiaryForm({ beneficiary, formId, onClose }) {
           )}
         />
 
-        {/* endereço */}
+        {/* CEP */}
         <FormField
-          name="address"
+          name="cep"
           control={control}
-          rules={{ required: 'O endereço é obrigatório' }}
+          rules={{
+            required: 'O CEP é obrigatório',
+            validate: (value) => {
+              const clean = value?.replace(/\D/g, '');
+              return clean?.length === 8 || 'CEP deve ter 8 dígitos';
+            },
+          }}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Endereço</FormLabel>
+              <FormLabel>CEP</FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  placeholder="Rua Exemplo, 00 - Bairro Exemplo, Cidade Exemplo - UF"
+                  placeholder="00000-000"
+                  {...withMask('cep', '99999-999', {
+                    removeMaskOnSubmit: true,
+                  })}
+                  disabled={isPending || isLoadingCEP}
+                />
+              </FormControl>
+              <FormMessage />
+
+              {/* Feedback do CEP */}
+              {isLoadingCEP && (
+                <FormDescription className="text-blue-600">
+                  Buscando endereço...
+                </FormDescription>
+              )}
+
+              {addressData && !isLoadingCEP && (
+                <Alert className="mt-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <AlertDescription>
+                    {addressData.street}
+                    {addressData.neighborhood &&
+                      `, ${addressData.neighborhood}`}
+                    {` - ${addressData.city}/${addressData.state}`}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {isCEPError && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    CEP não encontrado. Verifique e tente novamente.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </FormItem>
+          )}
+        />
+
+        {/* Número */}
+        <FormField
+          name="number"
+          control={control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Número</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="123" disabled={isPending} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Complemento */}
+        <FormField
+          name="complement"
+          control={control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Complemento (opcional)</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="Apto 101, Bloco A, etc."
                   disabled={isPending}
                 />
               </FormControl>
@@ -168,6 +254,7 @@ export function BeneficiaryForm({ beneficiary, formId, onClose }) {
                   placeholder="1"
                   disabled={isPending}
                   type="number"
+                  min="1"
                 />
               </FormControl>
               <FormMessage />

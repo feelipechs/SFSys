@@ -1,7 +1,7 @@
-import { BadRequestError, NotFoundError } from '../utils/api-error.js';
+import { BadRequestError, NotFoundError } from '../utils/errorUtils.js';
 
 class DonationService {
-  constructor(models, productService) {
+  constructor(models, stockService) {
     if (
       !models ||
       !models.Donation ||
@@ -20,7 +20,7 @@ class DonationService {
     this.Product = models.Product;
     this.Campaign = models.Campaign;
     this.sequelize = models.sequelize;
-    this.productService = productService;
+    this.stockService = stockService;
   }
 
   async create(data) {
@@ -75,7 +75,7 @@ class DonationService {
 
       // usa o método centralizado do ProductService (INCREMENT)
       const stockUpdates = itemsToCreate.map((item) => {
-        return this.productService.incrementStock(
+        return this.stockService.incrementStock(
           // usar 'item.productId' (que foi definido no mapeamento acima)
           item.productId,
           item.quantity,
@@ -250,7 +250,7 @@ class DonationService {
       // usa o método centralizado do ProductService (DECREMENT)
       // o método decrementStock já faz a checagem de saldo e o bloqueio da linha.
       const stockUpdates = itemsToRevert.map((item) => {
-        return this.productService.decrementStock(
+        return this.stockService.decrementStock(
           item.productId, // id do Produto
           item.quantity, // quantidade a decrementar (reverter)
           transaction, // transação ativa

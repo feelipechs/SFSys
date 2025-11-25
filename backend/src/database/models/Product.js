@@ -25,6 +25,10 @@ class Product extends Model {
           defaultValue: 0.0,
           field: 'current_stock',
         },
+        category: {
+          type: DataTypes.ENUM('food', 'clothing', 'hygiene', 'others'),
+          allowNull: false,
+        },
       },
       {
         sequelize,
@@ -39,15 +43,14 @@ class Product extends Model {
   }
 
   static associate(models) {
-    // M:N com Donation, via a tabela intermediária DonationItem
-
-    // Um Produto tem MUITOS Itens de Doação
+    // M:N com donation, via a tabela intermediária DonationItem
+    // um produto tem muitos itens de doação
     this.hasMany(models.DonationItem, {
       foreignKey: 'productId',
       as: 'donationItems',
     });
 
-    // Um Produto tem MUITOS Itens de Distribuição
+    // um produto tem muitos itens de distribuição
     this.hasMany(models.DistributionItem, {
       foreignKey: 'productId',
       as: 'distributionItems',

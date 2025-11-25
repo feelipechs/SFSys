@@ -67,26 +67,25 @@ export const userColumns = [
 
   // coluna perfil
   columnHelper.accessor('role', {
-    header: 'Perfil', // Header em português
+    header: 'Perfil',
     id: 'role',
 
-    // a célula é responsável por traduzir e renderizar o valor
-    cell: ({ getValue }) => {
-      const role = getValue(); // pega o valor original (ex: 'admin')
-      const translatedRole = roleMap[role] || roleMap.default(role);
+    // accessorFn para obter o valor traduzido
+    accessorFn: (row) => {
+      const role = row.role;
+      return roleMap[role] || roleMap.default(role);
+    },
 
-      return (
-        <span
-        // opcional:  estilo para destacar a role
-        // className={role === 'admin' ? 'font-semibold text-blue-600' : ''}
-        >
-          {translatedRole}
-        </span>
-      );
+    // a célula agora pode simplesmente pegar o valor processado pelo accessorFn
+    cell: ({ getValue }) => {
+      const translatedRole = getValue(); // pega o valor traduzido do accessorFn
+
+      return <span>{translatedRole}</span>;
     },
     meta: {
       exportValue: (row) => {
         const role = row.role;
+        // retorna o valor traduzido para o arquivo de exportação
         return roleMap[role] || roleMap.default(role);
       },
     },

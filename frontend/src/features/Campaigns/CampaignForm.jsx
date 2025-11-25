@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { CategorySelect } from './CategorySelect';
 
 export function CampaignForm({ campaign, formId, onClose }) {
   const { create, update, isPending } = useCampaignMutations();
@@ -23,8 +24,9 @@ export function CampaignForm({ campaign, formId, onClose }) {
           startDate: campaign.startDate || '',
           endDate: campaign.endDate || '',
           status: campaign.status || '',
+          category: campaign.category || '',
         }
-      : { name: '', startDate: '', endDate: '', status: '' },
+      : { name: '', startDate: '', endDate: '', status: '', category: '' },
     mode: 'onBlur',
   });
 
@@ -127,6 +129,22 @@ export function CampaignForm({ campaign, formId, onClose }) {
               <FormLabel>Status</FormLabel>
               <FormControl>
                 <StatusSelect {...field} disabled={isPending} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* categoria */}
+        <FormField
+          name="category"
+          control={control}
+          rules={{ required: 'A categoria é obrigatória' }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Categoria</FormLabel>
+              <FormControl>
+                <CategorySelect {...field} disabled={isPending} />
               </FormControl>
               <FormMessage />
             </FormItem>

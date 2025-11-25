@@ -1,13 +1,12 @@
 import { DataTypes, Model } from 'sequelize';
+import { hashPassword } from '../../utils/security.js';
 import bcrypt from 'bcryptjs';
 
 class User extends Model {
-  // método para comparação de senha (usado no login)
   async comparePassword(candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
   }
 
-  // método estático de inicialização (padrão moderno)
   static init(sequelize) {
     super.init(
       {
@@ -50,18 +49,16 @@ class User extends Model {
           },
         },
 
-        // criptografar senha (fornecido pelo gemini, não tenho certeza do quão adequado tá)
+        // criptografar senha (bcrypt atualmente)
         hooks: {
           beforeCreate: async (user) => {
             if (user.password) {
-              const salt = await bcrypt.genSalt(10);
-              user.password = await bcrypt.hash(user.password, salt);
+              user.password = await hashPassword(user.password);
             }
           },
           beforeUpdate: async (user) => {
             if (user.changed('password')) {
-              const salt = await bcrypt.genSalt(10);
-              user.password = await bcrypt.hash(user.password, salt);
+              user.password = await hashPassword(user.password);
             }
           },
         },

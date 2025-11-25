@@ -1,7 +1,7 @@
-import { BadRequestError, NotFoundError } from '../utils/api-error.js';
+import { BadRequestError, NotFoundError } from '../utils/errorUtils.js';
 
 class DistributionService {
-  constructor(models, productService) {
+  constructor(models, stockService) {
     if (
       !models ||
       !models.Distribution ||
@@ -20,7 +20,7 @@ class DistributionService {
     this.Product = models.Product;
     this.Campaign = models.Campaign;
     this.sequelize = models.sequelize;
-    this.productService = productService;
+    this.stockService = stockService;
   }
 
   async create(data) {
@@ -56,7 +56,7 @@ class DistributionService {
       // usando o método centralizado do ProductService (DECREMENT)
       // decrementStock vai checar o saldo e decrementar a linha, tudo dentro da transação
       const stockUpdates = itemsToInsert.map((item) => {
-        return this.productService.decrementStock(
+        return this.stockService.decrementStock(
           item.productId, // usa o campo mapeado 'productId'
           item.quantity,
           transaction,
@@ -210,7 +210,7 @@ class DistributionService {
 
       // usando o método centralizado do ProductService (INCREMENT)
       const stockUpdates = itemsToRestore.map((item) => {
-        return this.productService.incrementStock(
+        return this.stockService.incrementStock(
           item.productId,
           item.quantity,
           transaction, // transação ativa

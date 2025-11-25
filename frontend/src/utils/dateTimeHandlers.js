@@ -6,7 +6,7 @@ export const createDateObject = (isoString) => {
 
 // 2. Extrai HH:MM:SS de string ISO (para o Input Time)
 export const extractTime = (isoString) => {
-  if (!isoString) return '10:30:00';
+  if (!isoString) return '10:00:00';
   try {
     const date = new Date(isoString);
     // ... (Seu código de extração usando getUTCHours(), etc.)
@@ -15,7 +15,7 @@ export const extractTime = (isoString) => {
     const seconds = String(date.getUTCSeconds()).padStart(2, '0');
     return `${hours}:${minutes}:${seconds}`;
   } catch (error) {
-    return '10:30:00';
+    return '10:00:00';
   }
 };
 

@@ -121,3 +121,103 @@ export const formatPhone = (phone) => {
   // Se não corresponder a 10 ou 11 dígitos, retorna o valor limpo
   return cleaned;
 };
+
+/**
+ * Formata um objeto de endereço completo
+ * @param {Object} address - Objeto com dados do endereço
+ * @returns {string} Endereço formatado
+ */
+export const formatFullAddress = (address) => {
+  if (!address) return '';
+
+  const formattedCep = formatCEP(address.cep); // Chama sua função formatCEP
+
+  const parts = [
+    address.street,
+    address.number && `nº ${address.number}`,
+    address.complement,
+    address.neighborhood,
+    address.city,
+    address.state,
+    formattedCep, // 👈 INCLUÍDO AQUI
+  ].filter(Boolean);
+
+  return parts.join(', ');
+};
+
+/**
+ * Formata CEP no padrão brasileiro
+ * @param {string} cep - CEP sem formatação
+ * @returns {string} CEP formatado (00000-000)
+ */
+export const formatCEP = (cep) => {
+  if (!cep) return '';
+
+  const cleanCEP = cep.replace(/\D/g, '');
+
+  if (cleanCEP.length !== 8) return cep;
+
+  return cleanCEP.replace(/(\d{5})(\d{3})/, '$1-$2');
+};
+
+/**
+ * Formata endereço resumido (rua + número)
+ * @param {Object} address - Objeto com dados do endereço
+ * @returns {string} Endereço resumido
+ */
+export const formatShortAddress = (address) => {
+  if (!address) return '';
+
+  const parts = [
+    address.street,
+    address.number && `nº ${address.number}`,
+  ].filter(Boolean);
+
+  return parts.join(', ');
+};
+
+/**
+ * Formata cidade e estado
+ * @param {Object} address - Objeto com dados do endereço
+ * @returns {string} Cidade - Estado
+ */
+export const formatCityState = (address) => {
+  if (!address) return '';
+
+  const parts = [address.city, address.state].filter(Boolean);
+
+  return parts.join(' - ');
+};
+
+/**
+ * Corrige a exibição da hora da notificação subtraindo 3 horas (offset de Brasília)
+ * do valor UTC que foi incorretamente salvo (Ex: 13:39Z deve ser exibido como 10:39).
+ * Replicamos a lógica de formatação de formatters.js, mas com o ajuste.
+ *
+ * @param {string | null | undefined} isoString A string de data/hora ISO 8601.
+ * @returns {string} A data e hora formatadas (ex: '01/01/2025 10:30') ou '-'.
+ */
+export const formatCompensatedDateTime = (isoString) => {
+  if (!isoString) return '-';
+
+  const date = new Date(isoString);
+
+  // Subtração de 3 horas em milissegundos (3h * 60m * 60s * 1000ms)
+  const BRASILIA_OFFSET_MS = 3 * 60 * 60 * 1000;
+
+  // Cria uma nova data compensada (-3 horas)
+  const compensatedDate = new Date(date.getTime() - BRASILIA_OFFSET_MS);
+
+  // Função auxiliar (copiada do seu formatDateTime)
+  const pad = (num) => String(num).padStart(2, '0');
+
+  // Extrai as partes da data usando os métodos UTC da data COMPENSADA.
+  const day = pad(compensatedDate.getUTCDate());
+  const month = pad(compensatedDate.getUTCMonth() + 1);
+  const year = compensatedDate.getUTCFullYear();
+
+  const hours = pad(compensatedDate.getUTCHours());
+  const minutes = pad(compensatedDate.getUTCMinutes());
+
+  return `${day}/${month}/${year}, ${hours}:${minutes}`;
+};

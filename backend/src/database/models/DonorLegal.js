@@ -4,15 +4,12 @@ class DonorLegal extends Model {
   static init(sequelize) {
     super.init(
       {
-        // CAMPO CHAVE PRIMÁRIA/ESTRANGEIRA (não auto-increment)
         donorId: {
           type: DataTypes.INTEGER,
           primaryKey: true,
           allowNull: false,
           field: 'donor_id',
         },
-
-        // CAMPOS DE DADOS DA PESSOA JURÍDICA
         tradeName: {
           type: DataTypes.STRING(100),
           allowNull: false,
@@ -25,7 +22,7 @@ class DonorLegal extends Model {
         },
         companyName: {
           type: DataTypes.STRING(100),
-          allowNull: true, // assumindo que pode ser nulo
+          allowNull: true,
           field: 'company_name',
         },
       },
@@ -37,7 +34,6 @@ class DonorLegal extends Model {
         createdAt: 'created_at',
         updatedAt: 'updated_at',
         underscored: true,
-        // id: false é removida, pois donorId já está definido como PK
       },
     );
   }
@@ -49,7 +45,7 @@ class DonorLegal extends Model {
   }
 
   static associate(models) {
-    // O registro de PJ PERTENCE AO registro pai (Donor)
+    // o registro de PJ pertence ao registro pai (donor)
     this.belongsTo(models.Donor, {
       foreignKey: 'donorId',
       as: 'donor',

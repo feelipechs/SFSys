@@ -29,6 +29,10 @@ class Campaign extends Model {
           allowNull: false,
           defaultValue: 'pending',
         },
+        category: {
+          type: DataTypes.ENUM('food', 'clothing', 'hygiene', 'others'),
+          allowNull: false,
+        },
       },
       {
         sequelize,
@@ -43,13 +47,13 @@ class Campaign extends Model {
   }
 
   static associate(models) {
-    // 1. Uma campanha tem muitas doações
+    // uma campanha tem muitas doações
     this.hasMany(models.Donation, {
       foreignKey: 'campaignId',
       as: 'donations',
     });
 
-    // 2. Uma campanha tem muitas distribuições ou não
+    // uma campanha tem muitas distribuições ou não
     this.hasMany(models.Distribution, {
       foreignKey: 'campaignId',
       as: 'distributions',

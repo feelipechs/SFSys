@@ -40,7 +40,7 @@ class RefreshToken extends Model {
     this.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
   }
 
-  // método para verificar se o token expirou
+  // verificar se o token expirou
   isExpired() {
     return new Date() > this.expiresAt;
   }

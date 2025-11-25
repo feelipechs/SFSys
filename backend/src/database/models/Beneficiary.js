@@ -28,14 +28,15 @@ class Beneficiary extends Model {
           allowNull: false,
           field: 'registration_date',
         },
-        address: {
-          type: DataTypes.STRING,
-          allowNull: false,
-        },
         familyMembersCount: {
           type: DataTypes.INTEGER,
           allowNull: false,
           field: 'family_members_count',
+        },
+        addressId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          field: 'address_id',
         },
       },
       {
@@ -54,6 +55,11 @@ class Beneficiary extends Model {
     this.hasMany(models.Distribution, {
       foreignKey: 'beneficiaryId',
       as: 'distributions',
+    });
+
+    this.belongsTo(models.Address, {
+      foreignKey: 'addressId',
+      as: 'address',
     });
   }
 }

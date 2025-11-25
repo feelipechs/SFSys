@@ -19,7 +19,6 @@ class Donation extends Model {
           type: DataTypes.TEXT,
           allowNull: true,
         },
-        // foreign keys
         donorId: {
           type: DataTypes.INTEGER,
           allowNull: false,
@@ -49,22 +48,22 @@ class Donation extends Model {
   }
 
   static associate(models) {
-    // 1. A Doação pertence a um Doador (FK: donor_id)
+    // a doação pertence a um doador
     this.belongsTo(models.Donor, { foreignKey: 'donor_id', as: 'donor' });
 
-    // 2. A Doação pertence a um User (FK: responsible_user_id)
+    // a doação pertence a um user
     this.belongsTo(models.User, {
       foreignKey: 'responsibleUserId',
       as: 'responsibleUser',
     });
 
-    // 3. A Doação pertence a uma Campanha (FK: campaign_id)
+    // a doação pertence a uma campanha
     this.belongsTo(models.Campaign, {
       foreignKey: 'campaignId',
       as: 'campaign',
     });
 
-    // 4. A Doação tem MUITOS Itens de Doação (1:N)
+    // a doação tem muitos itens de doação
     this.hasMany(models.DonationItem, {
       foreignKey: 'donationId',
       as: 'items',

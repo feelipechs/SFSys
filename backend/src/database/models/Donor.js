@@ -10,7 +10,7 @@ class Donor extends Model {
           autoIncrement: true,
           allowNull: false,
         },
-        // CAMPO DISCRIMINADOR (não requer mapeamento, pois é 'type')
+        // não requer mapeamento, pois é type
         type: {
           type: DataTypes.ENUM('individual', 'legal'), // PF ou PJ
           allowNull: false,
@@ -21,7 +21,7 @@ class Donor extends Model {
         },
         phone: {
           type: DataTypes.STRING(20),
-          allowNull: true, // assumindo que o phone pode ser nulo
+          allowNull: true,
         },
         email: {
           type: DataTypes.STRING(100),
@@ -42,24 +42,23 @@ class Donor extends Model {
   }
 
   static associate(models) {
-    // Associações de Herança (Table per Subclass)
+    // associações de herança
 
-    // Pessoa Física
+    // pessoa física
     this.hasOne(models.DonorIndividual, {
       foreignKey: 'donorId',
       as: 'individual',
       onDelete: 'CASCADE',
     });
 
-    // Pessoa Jurídica
+    // pessoa jurídica
     this.hasOne(models.DonorLegal, {
       foreignKey: 'donorId',
       as: 'legal',
       onDelete: 'CASCADE',
     });
 
-    // Associação com Doação (1:N)
-
+    // associação com doação
     this.hasMany(models.Donation, {
       foreignKey: 'donorId',
       as: 'donations',

@@ -4,15 +4,13 @@ class DonorIndividual extends Model {
   static init(sequelize) {
     super.init(
       {
-        // CAMPO CHAVE PRIMÁRIA/ESTRANGEIRA (não auto-increment)
+        // campo pk/fk (não auto-increment)
         donorId: {
           type: DataTypes.INTEGER,
           primaryKey: true,
           allowNull: false,
           field: 'donor_id',
         },
-
-        // CAMPOS DE DADOS DA PESSOA FÍSICA
         cpf: {
           type: DataTypes.STRING(11),
           allowNull: false,
@@ -47,7 +45,7 @@ class DonorIndividual extends Model {
   }
 
   static associate(models) {
-    // O registro de PF PERTENCE AO registro pai (Donor)
+    // o registro de PF pertence ao registro pai (donor)
     this.belongsTo(models.Donor, {
       foreignKey: 'donorId',
       as: 'donor',

@@ -19,14 +19,20 @@ export async function up(queryInterface, Sequelize) {
       type: Sequelize.DATE,
       allowNull: false,
     },
-    address: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
     family_members_count: {
       type: Sequelize.INTEGER,
       allowNull: false,
       defaultValue: 1,
+    },
+    address_id: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'address',
+        key: 'id',
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'RESTRICT',
     },
     created_at: { type: Sequelize.DATE, allowNull: false },
     updated_at: { type: Sequelize.DATE, allowNull: false },

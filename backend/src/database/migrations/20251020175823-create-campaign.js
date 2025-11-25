@@ -23,6 +23,10 @@ export async function up(queryInterface, Sequelize) {
       allowNull: false,
       defaultValue: 'pending',
     },
+    category: {
+      type: Sequelize.ENUM('food', 'clothing', 'hygiene', 'others'),
+      allowNull: false,
+    },
     created_at: { type: Sequelize.DATE, allowNull: false },
     updated_at: { type: Sequelize.DATE, allowNull: false },
   });

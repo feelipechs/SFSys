@@ -41,6 +41,25 @@ const statusMap = {
   },
 };
 
+const categoryTranslations = {
+  food: 'Alimento',
+  clothing: 'Vestimenta',
+  hygiene: 'Higiene',
+  others: 'Outros',
+};
+
+// função para traduzir a categoria, com fallback para capitalização
+const translateCategory = (category) => {
+  if (!category) return 'N/A';
+  const lowerCategory = category.toLowerCase();
+
+  // retorna a tradução ou o original capitalizado se não encontrar
+  return (
+    categoryTranslations[lowerCategory] ||
+    category.charAt(0).toUpperCase() + category.slice(1)
+  );
+};
+
 export const campaignColumns = [
   columnHelper.display({
     id: 'select',
@@ -75,6 +94,23 @@ export const campaignColumns = [
 
   columnHelper.accessor('name', {
     header: 'Nome da Campanha',
+  }),
+
+  columnHelper.accessor('category', {
+    header: 'Categoria',
+    id: 'category',
+    // usa accessorFn para retornar o valor já traduzido, auxiliando no filtro global
+    accessorFn: (row) => translateCategory(row.category),
+
+    cell: ({ getValue }) => {
+      const translatedCategory = getValue();
+      return <span>{translatedCategory}</span>;
+    },
+
+    meta: {
+      // garante que o valor exportado seja a tradução
+      exportValue: (row) => translateCategory(row.category),
+    },
   }),
 
   columnHelper.accessor('startDate', {
