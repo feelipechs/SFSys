@@ -1,12 +1,16 @@
-import bcrypt from 'bcryptjs';
+import { hashPassword } from '../../utils/security.js';
+import bcrypt from 'bcryptjs'; // mantive caso queira fallback, mas usamos hashPassword
 
 /**
- * Global seed atualizado:
- * - Adiciona table `address` antes de `beneficiary` e usa address_id.
- * - Senha padrão: @Senha123
- * - Unidades permitidas: ['kg','l','un'] (aplicadas coerentemente por produto)
- * - Mantém validação de CPF/CNPJ (geradores)
- * - Compatível com MySQL (usa SELECT pós-bulkInsert)
+ * Seed global (ES Modules) — versão atualizada com:
+ * - product.category (food, clothing, hygiene, others)
+ * - campaign.category (food, clothing, hygiene, others)
+ * - password hashing via hashPassword()
+ * - address table + beneficiaries referencing address_id
+ * - products have unit and perishable flag (validity only for food)
+ * - MySQL compatibility (bulkInsert then SELECT for IDs)
+ *
+ * NÃO cria admin (seed admin fica separada em outro arquivo).
  */
 
 function pad(n, width = 2) {
@@ -49,35 +53,67 @@ function pick(arr, idx) {
   return arr[idx % arr.length];
 }
 
-/* unidades permitidas */
-const units = ['kg', 'l', 'un'];
-
-/* Mapas de produto => unidade + perishable */
+/* ----- Product catalog with category, unit and perishable flag ----- */
 const productCatalog = [
-  { name: 'Arroz Tipo 1', unit: 'kg', perishable: false },
-  { name: 'Feijão Carioca', unit: 'kg', perishable: false },
-  { name: 'Óleo de Soja 900ml', unit: 'l', perishable: false },
-  { name: 'Açúcar Cristal', unit: 'kg', perishable: false },
-  { name: 'Macarrão Espaguete 500g', unit: 'kg', perishable: false },
-  { name: 'Leite UHT 1L', unit: 'l', perishable: true },
-  { name: 'Farinha de Trigo 1kg', unit: 'kg', perishable: false },
-  { name: 'Café Torrado 250g', unit: 'kg', perishable: false },
-  { name: 'Enlatados Mix 400g', unit: 'un', perishable: false },
-  { name: 'Sabonete Glicerinado', unit: 'un', perishable: false },
+  { name: 'Arroz Tipo 1', category: 'food', unit: 'kg', perishable: false },
+  { name: 'Feijão Carioca', category: 'food', unit: 'kg', perishable: false },
+  {
+    name: 'Óleo de Soja',
+    category: 'food',
+    unit: 'l',
+    perishable: false,
+  },
+  { name: 'Açúcar Cristal', category: 'food', unit: 'kg', perishable: false },
+  {
+    name: 'Macarrão Espaguete',
+    category: 'food',
+    unit: 'kg',
+    perishable: false,
+  },
+  { name: 'Leite UHT', category: 'food', unit: 'l', perishable: true },
+  {
+    name: 'Farinha de Trigo',
+    category: 'food',
+    unit: 'kg',
+    perishable: false,
+  },
+  {
+    name: 'Café Torrado',
+    category: 'food',
+    unit: 'kg',
+    perishable: false,
+  },
+  {
+    name: 'Kit Higiene Pessoal',
+    category: 'hygiene',
+    unit: 'un',
+    perishable: false,
+  },
+  {
+    name: 'Cobertor (Adulto)',
+    category: 'clothing',
+    unit: 'un',
+    perishable: false,
+  },
 ];
+
+/* ----- Campaign categories (will assign categories to campaigns) ----- */
+const campaignCategories = ['food', 'clothing', 'hygiene', 'others'];
 
 export async function up(queryInterface, Sequelize) {
   const now = new Date();
 
   /* ---------------------------
-     1) USERS (3 managers, 7 volunteers)
+     1) USERS (3 managers, 7 volunteers) — use hashPassword()
      --------------------------- */
-  const pwd = await bcrypt.hash('@Senha123', 10);
+  const plainPwd = '@Senha123;'; // conforme solicitado
+  // generate hashed password via project's hashPassword
+  const hashedPwd = await hashPassword(plainPwd);
 
   const users = [
     {
       email: 'marina.silva@example.com',
-      password: pwd,
+      password: hashedPwd,
       name: 'Marina Silva',
       role: 'manager',
       created_at: now,
@@ -85,7 +121,7 @@ export async function up(queryInterface, Sequelize) {
     },
     {
       email: 'paulo.santana@example.com',
-      password: pwd,
+      password: hashedPwd,
       name: 'Paulo Santana',
       role: 'manager',
       created_at: now,
@@ -93,7 +129,7 @@ export async function up(queryInterface, Sequelize) {
     },
     {
       email: 'renata.martins@example.com',
-      password: pwd,
+      password: hashedPwd,
       name: 'Renata Martins',
       role: 'manager',
       created_at: now,
@@ -102,7 +138,7 @@ export async function up(queryInterface, Sequelize) {
 
     {
       email: 'joao.pereira@example.com',
-      password: pwd,
+      password: hashedPwd,
       name: 'João Pereira',
       role: 'volunteer',
       created_at: now,
@@ -110,7 +146,7 @@ export async function up(queryInterface, Sequelize) {
     },
     {
       email: 'larissa.almeida@example.com',
-      password: pwd,
+      password: hashedPwd,
       name: 'Larissa Almeida',
       role: 'volunteer',
       created_at: now,
@@ -118,7 +154,7 @@ export async function up(queryInterface, Sequelize) {
     },
     {
       email: 'felipe.rodrigues@example.com',
-      password: pwd,
+      password: hashedPwd,
       name: 'Felipe Rodrigues',
       role: 'volunteer',
       created_at: now,
@@ -126,7 +162,7 @@ export async function up(queryInterface, Sequelize) {
     },
     {
       email: 'camila.ferreira@example.com',
-      password: pwd,
+      password: hashedPwd,
       name: 'Camila Ferreira',
       role: 'volunteer',
       created_at: now,
@@ -134,7 +170,7 @@ export async function up(queryInterface, Sequelize) {
     },
     {
       email: 'gustavo.oliveira@example.com',
-      password: pwd,
+      password: hashedPwd,
       name: 'Gustavo Oliveira',
       role: 'volunteer',
       created_at: now,
@@ -142,7 +178,7 @@ export async function up(queryInterface, Sequelize) {
     },
     {
       email: 'sabrina.dias@example.com',
-      password: pwd,
+      password: hashedPwd,
       name: 'Sabrina Dias',
       role: 'volunteer',
       created_at: now,
@@ -150,7 +186,7 @@ export async function up(queryInterface, Sequelize) {
     },
     {
       email: 'thiago.monteiro@example.com',
-      password: pwd,
+      password: hashedPwd,
       name: 'Thiago Monteiro',
       role: 'volunteer',
       created_at: now,
@@ -167,22 +203,24 @@ export async function up(queryInterface, Sequelize) {
   );
 
   /* ---------------------------
-     2) CAMPAIGNS (10)
+     2) CAMPAIGNS (10) with categories
      --------------------------- */
   const campaigns = [
     {
-      name: 'Campanha Inverno Solidário',
+      name: 'Campanha Inverno Solidário - Alimentos',
       start_date: '2025-06-01',
       end_date: '2025-08-01',
-      status: 'finished',
+      status: 'inProgress',
+      category: 'food',
       created_at: now,
       updated_at: now,
     },
     {
-      name: 'Natal com Esperança',
+      name: 'Natal com Esperança - Vestuário',
       start_date: '2025-11-10',
       end_date: '2025-12-26',
-      status: 'inProgress',
+      status: 'pending',
+      category: 'clothing',
       created_at: now,
       updated_at: now,
     },
@@ -191,6 +229,7 @@ export async function up(queryInterface, Sequelize) {
       start_date: '2025-04-01',
       end_date: '2025-04-30',
       status: 'finished',
+      category: 'food',
       created_at: now,
       updated_at: now,
     },
@@ -199,14 +238,16 @@ export async function up(queryInterface, Sequelize) {
       start_date: '2025-01-15',
       end_date: '2025-02-20',
       status: 'finished',
+      category: 'food',
       created_at: now,
       updated_at: now,
     },
     {
-      name: 'Crianças Primeiro',
+      name: 'Crianças Primeiro - Kits',
       start_date: '2025-03-01',
       end_date: '2025-06-30',
-      status: 'finished',
+      status: 'inProgress',
+      category: 'others',
       created_at: now,
       updated_at: now,
     },
@@ -214,7 +255,8 @@ export async function up(queryInterface, Sequelize) {
       name: 'Bem-Estar Comunitário',
       start_date: '2025-05-10',
       end_date: '2025-07-20',
-      status: 'finished',
+      status: 'inProgress',
+      category: 'hygiene',
       created_at: now,
       updated_at: now,
     },
@@ -223,22 +265,25 @@ export async function up(queryInterface, Sequelize) {
       start_date: '2025-02-01',
       end_date: '2025-05-01',
       status: 'canceled',
+      category: 'others',
       created_at: now,
       updated_at: now,
     },
     {
-      name: 'Mãos Que Ajudam',
+      name: 'Mãos Que Ajudam - Distribuição de Cobertores',
       start_date: '2025-07-01',
       end_date: '2025-09-30',
-      status: 'finished',
+      status: 'pending',
+      category: 'clothing',
       created_at: now,
       updated_at: now,
     },
     {
-      name: 'Juntos Por Amor',
+      name: 'Juntos Por Amor - Higiene',
       start_date: '2025-08-15',
       end_date: '2025-10-10',
-      status: 'finished',
+      status: 'pending',
+      category: 'hygiene',
       created_at: now,
       updated_at: now,
     },
@@ -247,6 +292,7 @@ export async function up(queryInterface, Sequelize) {
       start_date: '2025-12-01',
       end_date: '2025-12-15',
       status: 'pending',
+      category: 'food',
       created_at: now,
       updated_at: now,
     },
@@ -256,7 +302,7 @@ export async function up(queryInterface, Sequelize) {
 
   const campaignNames = campaigns.map((c) => c.name);
   const campaignsInserted = await queryInterface.sequelize.query(
-    `SELECT id, name FROM campaign WHERE name IN (:names)`,
+    `SELECT id, name, category FROM campaign WHERE name IN (:names)`,
     {
       replacements: { names: campaignNames },
       type: Sequelize.QueryTypes.SELECT,
@@ -266,7 +312,6 @@ export async function up(queryInterface, Sequelize) {
   /* ---------------------------
      3) ADDRESS (10 realistic addresses)
      --------------------------- */
-  // Realistic CEPs / cities / lat-long (examples)
   const addresses = [
     {
       cep: '01001000',
@@ -408,7 +453,6 @@ export async function up(queryInterface, Sequelize) {
     { replacements: { ceps: addressCeps }, type: Sequelize.QueryTypes.SELECT },
   );
 
-  // map cep -> id for quick lookup
   const addressIdByCep = addressesInserted.reduce((acc, a) => {
     acc[a.cep] = a.id;
     return acc;
@@ -525,7 +569,6 @@ export async function up(queryInterface, Sequelize) {
      5) DONORS (5 individual + 5 legal)
      --------------------------- */
   const donors = [
-    // individuals
     {
       type: 'individual',
       name: 'Carlos Pereira',
@@ -567,7 +610,6 @@ export async function up(queryInterface, Sequelize) {
       updated_at: now,
     },
 
-    // legal
     {
       type: 'legal',
       name: 'TechCorp Ltda',
@@ -647,10 +689,11 @@ export async function up(queryInterface, Sequelize) {
   await queryInterface.bulkInsert('donor_legal', donorLegals);
 
   /* ---------------------------
-     6) PRODUCTS (10) - current_stock = 0.00 (backend updates later)
+     6) PRODUCTS (10) - current_stock = 0.00, with category + unit + perishable
      --------------------------- */
   const products = productCatalog.map((p) => ({
     name: p.name,
+    category: p.category,
     unit_of_measurement: p.unit,
     current_stock: 0.0,
     created_at: now,
@@ -709,18 +752,19 @@ export async function up(queryInterface, Sequelize) {
     },
   );
 
+  // donation items
   const donationItems = [];
   for (let i = 0; i < donationsInserted.length; i++) {
     const donation = donationsInserted[i];
     const itemsCount = 1 + (i % 3); // 1..3
     for (let j = 0; j < itemsCount; j++) {
-      const product = pick(productIds, i + j);
-      // find product meta to decide validity chance
-      const prodMeta = productCatalog[(i + j) % productCatalog.length];
+      const productIdx = (i + j) % productCatalog.length;
+      const product = productIds[productIdx];
+      const prodMeta = productCatalog[productIdx];
+
       const qty = (1 + ((i + j) % 5)) * (j === 0 ? 2 : 1);
-      const valid = prodMeta.perishable
-        ? addDays(new Date(), 180 + i + j)
-        : null;
+      const valid =
+        prodMeta.category === 'food' ? addDays(new Date(), 180 + i + j) : null;
 
       donationItems.push({
         quantity: qty,
@@ -776,12 +820,13 @@ export async function up(queryInterface, Sequelize) {
     const dist = distributionsInserted[i];
     const itemsCount = 1 + (i % 2); // 1..2
     for (let j = 0; j < itemsCount; j++) {
-      const product = pick(productIds, i + j + 2);
-      const prodMeta = productCatalog[(i + j + 2) % productCatalog.length];
+      const productIdx = (i + j + 2) % productCatalog.length;
+      const product = productIds[productIdx];
+      const prodMeta = productCatalog[productIdx];
+
       const qty = 1 + ((i + j) % 3);
-      const valid = prodMeta.perishable
-        ? addDays(new Date(), 90 + i + j)
-        : null;
+      const valid =
+        prodMeta.category === 'food' ? addDays(new Date(), 90 + i + j) : null;
 
       distributionItems.push({
         distribution_id: dist.id,
@@ -796,9 +841,7 @@ export async function up(queryInterface, Sequelize) {
 
   await queryInterface.bulkInsert('distribution_item', distributionItems);
 
-  console.log(
-    'Global seed (updated) executed: users, campaigns, addresses, beneficiaries, donors, products, donations, and distributions inserted.',
-  );
+  console.log('Global seed (categories + hashed passwords) executed.');
 }
 
 export async function down(queryInterface, Sequelize) {
@@ -812,7 +855,7 @@ export async function down(queryInterface, Sequelize) {
   await queryInterface.bulkDelete('donor_legal', null, {});
   await queryInterface.bulkDelete('donor', null, {});
   await queryInterface.bulkDelete('beneficiary', null, {});
-  await queryInterface.bulkDelete('address', null, {}); // remove addresses after beneficiaries
+  await queryInterface.bulkDelete('address', null, {});
   await queryInterface.bulkDelete('campaign', null, {});
   await queryInterface.bulkDelete('user', null, {});
 }

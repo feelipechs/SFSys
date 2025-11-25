@@ -10,13 +10,13 @@ backend/
 │   │   └── index.js         # Ponto de entrada da Conexão e Associações
 │   │
 │   ├── controllers/         # Lógica de Requisição/Resposta
-│   │   └── DoadorController.js
+│   │   └── DonorController.js
 │   │
 │   ├── services/            # Lógica de Negócio (Onde vai a complexidade)
-│   │   └── DoadorService.js
+│   │   └── DonorService.js
 │   │
 │   ├── routes/              # Mapeamento de rotas
-│   │   └── doador.routes.js
+│   │   └── donor.routes.js
 │   │   └── index.js         # Agregador de rotas simples
 │   │
 │   └── server.js            # Ponto de Entrada, Express e Início do Servidor

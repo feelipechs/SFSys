@@ -11,10 +11,11 @@ import DashboardLayout from './layouts/DashboardLayout/DashboardLayout'; // Shel
 import DashboardOverview from './features/Dashboard/DashboardOverview';
 import BeneficiaryManagement from './features/Beneficiaries/BeneficiaryManagement';
 import CampaignManagement from './features/Campaigns/CampaignManagement';
-import DonationManagement from './features/Donations/DonationManagement';
 import DistributionManagement from './features/Distributions/DistributionManagement';
-import UserManagement from './features/Users/UserManagement';
+import DonationManagement from './features/Donations/DonationManagement';
 import DonorManagement from './features/Donors/DonorManagement';
+import ProductManagement from './features/Products/ProductManagement';
+import UserManagement from './features/Users/UserManagement';
 
 function AppRoutes() {
   return (
@@ -37,6 +38,7 @@ function AppRoutes() {
           <Route path="donations" element={<DonationManagement />} />
           <Route path="distributions" element={<DistributionManagement />} />
           <Route path="donors" element={<DonorManagement />} />
+          <Route path="products" element={<ProductManagement />} />
 
           {/* users: rota de gestão (Protegida) */}
           <Route element={<PrivateRoute allowedRoles={['admin', 'manager']} />}>

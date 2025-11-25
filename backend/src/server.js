@@ -6,6 +6,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import routes from './routes/index.js';
 import { connectDB } from './database/index.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './swagger.js';
 
 // funções auxiliares para ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -29,6 +31,7 @@ app.use(
 );
 
 app.use(express.json()); // middleware para ler body JSON
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(routes); // carrega todas as rotas
 
 const PORT = process.env.PORT || 3000;

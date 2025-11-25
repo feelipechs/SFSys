@@ -88,10 +88,11 @@ export function ItemRepeater({
               <label className="text-sm font-medium leading-none">Qtd.</label>
               <Input
                 type="number"
+                step="0.01"
                 {...control.register(`${name}.${index}.quantity`, {
                   valueAsNumber: true,
                   required: 'Qtd. é obrigatória',
-                  min: { value: 1, message: 'Mínimo 1' },
+                  min: { value: 0.001, message: 'Mínimo 0.001' },
                 })}
                 disabled={isPending}
                 placeholder="1"
