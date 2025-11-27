@@ -1,17 +1,17 @@
 import express from 'express';
 import db from '../database/index.js';
-import ProductService from '../services/ProductService.js';
+import StockService from '../services/StockService.js';
 import DistributionController from '../controllers/DistributionController.js';
 import DistributionService from '../services/DistributionService.js';
 import { authenticate } from '../middlewares/AuthMiddleware.js';
 
 const router = express.Router();
 
-const productServiceInstance = new ProductService(db);
+const stockServiceInstance = new StockService(db);
 
 const distributionServiceInstance = new DistributionService(
   db,
-  productServiceInstance,
+  stockServiceInstance,
 );
 
 const distributionControllerInstance = new DistributionController(

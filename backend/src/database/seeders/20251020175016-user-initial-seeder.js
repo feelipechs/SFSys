@@ -30,6 +30,5 @@ export async function up(queryInterface) {
 }
 
 export async function down(queryInterface) {
-  // ajustar a exclusão para usar o campo 'email'
   await queryInterface.bulkDelete('user', { email: ADMIN_EMAIL }, {});
 }

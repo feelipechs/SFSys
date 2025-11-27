@@ -6,7 +6,7 @@ Este guia detalha os passos necessários para configurar e rodar o SFSys Backend
 
 Certifique-se de que os seguintes programas estão instalados no seu sistema:
 
-    Node.js e NPM (Versão 18+ ou 20+).
+    Node.js e NPM (Versão 22+).
 
     Git (Para clonar o repositório).
 

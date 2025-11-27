@@ -32,11 +32,11 @@ export async function up(queryInterface, Sequelize) {
   });
 
   // adiciona uma restrição de unicidade composta
-  // Garante que um produto não seja listado duas vezes na mesma doação.
+  // garante que um produto não seja listado duas vezes na mesma doação
   await queryInterface.addConstraint('donation_item', {
     fields: ['donation_id', 'product_id'],
     type: 'unique',
-    name: 'unique_donation_product_constraint', // Nome descritivo
+    name: 'unique_donation_product_constraint',
   });
 }
 

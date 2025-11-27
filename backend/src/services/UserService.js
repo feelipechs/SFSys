@@ -123,7 +123,7 @@ class UserService {
     // bloqueia update de senhas de outros
     const isEditingSelf = editor.id === id;
 
-    // se a senha estiver presente no payload e o editor NÃO for o próprio usuário e o editor NÃO for um 'admin'
+    // se a senha estiver presente no payload e o editor NÃO for o próprio usuário e o editor não for um 'admin'
     if (data.password && !isEditingSelf && editor.role !== 'admin') {
       const error = new ForbiddenError(
         'Você não tem permissão para alterar a senha de outros usuários.',
@@ -153,7 +153,7 @@ class UserService {
     // bloqueio contra rebaixamento do único admin
     // se o usuário atual é o admin e a atualização tenta mudar a role dele para outra coisa
     if (originalRole === 'admin' && updatedRole && updatedRole !== 'admin') {
-      // como o sistema só permite 1 admin, se o "user" que estamos atualizando é 'admin', ele é, por definição, o único. Mas checar a contagem é a forma mais segura de garantir que o sistema nunca fique sem admin (embora redundante aqui).
+      // como o sistema só permite 1 admin, se o "user" que estamos atualizando é 'admin', ele é, por definição, o único. Mas checar a contagem é a forma mais segura de garantir que o sistema nunca fique sem admin (embora redundante aqui)
       const adminCount = await this.User.count({
         where: { role: 'admin' },
       });
@@ -180,7 +180,7 @@ class UserService {
       }
     }
 
-    // o hook beforeUpdate no modelo user hasheará a senha SE o campo password estiver presente no data e for diferente do valor atual
+    // o hook beforeUpdate no modelo user hasheará a senha se o campo password estiver presente no data e for diferente do valor atual
     await user.update(data);
 
     // otimização: retornar o objeto limpo
@@ -190,7 +190,7 @@ class UserService {
   async delete(id) {
     const transaction = await this.sequelize.transaction();
     try {
-      const user = await this.findById(id, transaction); // assumindo findById passa a transação
+      const user = await this.findById(id, transaction);
 
       // bloqueio de exclusão de admin
       if (user.role === 'admin') {

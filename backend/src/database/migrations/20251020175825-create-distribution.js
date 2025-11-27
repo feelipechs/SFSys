@@ -27,7 +27,6 @@ export async function up(queryInterface, Sequelize) {
     },
     responsible_user_id: {
       type: Sequelize.INTEGER,
-      // Usar SET NULL aqui é recomendado para manter o histórico
       allowNull: false,
       references: { model: 'user', key: 'id' },
       onUpdate: 'CASCADE',
@@ -35,11 +34,10 @@ export async function up(queryInterface, Sequelize) {
     },
     campaign_id: {
       type: Sequelize.INTEGER,
-      // Se nem toda distribuição for resultado de uma campanha, use allowNull: true
       allowNull: true,
       references: { model: 'campaign', key: 'id' },
       onUpdate: 'CASCADE',
-      // Se a campanha for excluída, desassocia a distribuição, mantendo o histórico
+      // se a campanha for excluída, desassocia a distribuição, mantendo o histórico
       onDelete: 'SET NULL',
     },
     created_at: { type: Sequelize.DATE, allowNull: false },

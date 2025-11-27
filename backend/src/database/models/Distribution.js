@@ -65,13 +65,13 @@ class Distribution extends Model {
       as: 'beneficiary',
     });
 
-    // 3. A Distribuição pertence a uma Campanha (FK: campaign_id) ou não
+    // a distribuição pertence a uma campanha ou não
     this.belongsTo(models.Campaign, {
       foreignKey: 'campaignId',
       as: 'campaign',
     });
 
-    // 4. A Distribuição tem MUITOS Itens de Distribuição (1:N)
+    // a distribuição tem muitos itens de distribuição
     this.hasMany(models.DistributionItem, {
       foreignKey: 'distributionId',
       as: 'items',

@@ -32,8 +32,8 @@ class DonorIndividual extends Model {
         underscored: true,
 
         // id: false é desnecessário aqui, pois definimos a PK explicitamente (donorId)
-        // Se a PK for uma FK, o auto-increment deve ser evitado (como já está na migration)
-        // O Sequelize entende que donorId é a PK
+        // se a PK for uma FK, o auto-increment deve ser evitado (como já está na migration)
+        // Sequelize entende que donorId é a PK
       },
     );
   }

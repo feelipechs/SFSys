@@ -48,7 +48,7 @@ class BeneficiaryService {
       }
     }
 
-    // Validação de CEP
+    // validação de CEP
     if (data.cep) {
       const cleanCEP = data.cep.replace(/\D/g, '');
       if (cleanCEP.length !== 8) {
@@ -58,13 +58,13 @@ class BeneficiaryService {
   }
 
   async _createOrFindAddress(addressData, transaction) {
-    // Usa o AddressService para criar ou buscar o endereço
+    // usa o AddressService para criar ou buscar o endereço
     const address = await this.addressService.createOrFind(addressData);
     return address;
   }
 
   async create(data) {
-    // Validação de campos obrigatórios
+    // validação de campos obrigatórios
     if (
       !data.responsibleName ||
       !data.responsibleCpf ||
@@ -79,7 +79,7 @@ class BeneficiaryService {
 
     this._validateData(data);
 
-    // Validação de unicidade (checa se o CPF já existe no banco)
+    // validação de unicidade (checa se o CPF já existe no banco)
     const existingBeneficiary = await this.Beneficiary.findOne({
       where: { responsibleCpf: data.responsibleCpf },
     });
@@ -93,7 +93,7 @@ class BeneficiaryService {
     const transaction = await this.sequelize.transaction();
 
     try {
-      // Cria ou busca o endereço
+      // cria ou busca o endereço
       const address = await this._createOrFindAddress(
         {
           cep: data.cep,
@@ -103,7 +103,7 @@ class BeneficiaryService {
         transaction,
       );
 
-      // Cria o beneficiário
+      // cria o beneficiário
       const creationData = {
         responsibleName: data.responsibleName,
         responsibleCpf: data.responsibleCpf,
@@ -118,7 +118,7 @@ class BeneficiaryService {
 
       await transaction.commit();
 
-      // Retorna o beneficiário com o endereço incluído
+      // retorna o beneficiário com o endereço incluído
       return await this.findById(newBeneficiary.id);
     } catch (error) {
       await transaction.rollback();
@@ -198,7 +198,7 @@ class BeneficiaryService {
   }
 
   async update(id, data) {
-    // Validação de payload vazio
+    // validação de payload vazio
     if (Object.keys(data).length === 0) {
       throw new BadRequestError(
         'Nenhum dado de atualização válido foi fornecido.',
@@ -209,7 +209,7 @@ class BeneficiaryService {
 
     this._validateData(data);
 
-    // Validação de unicidade de CPF (se o CPF estiver sendo alterado)
+    // validação de unicidade de CPF (se o CPF estiver sendo alterado)
     if (
       data.responsibleCpf &&
       data.responsibleCpf !== beneficiary.responsibleCpf
@@ -228,7 +228,7 @@ class BeneficiaryService {
     const transaction = await this.sequelize.transaction();
 
     try {
-      // Se houver mudança de endereço (CEP, número ou complemento)
+      // se houver mudança de endereço (CEP, número ou complemento)
       if (
         data.cep ||
         data.number !== undefined ||
@@ -251,11 +251,11 @@ class BeneficiaryService {
           transaction,
         );
 
-        // Atualiza o addressId do beneficiário
+        // atualiza o addressId do beneficiário
         data.addressId = newAddress.id;
       }
 
-      // Remove campos de endereço do objeto data antes de atualizar o beneficiário
+      // remove campos de endereço do objeto data antes de atualizar o beneficiário
       const { cep, number, complement, ...beneficiaryData } = data;
 
       await beneficiary.update(beneficiaryData, { transaction });
@@ -272,10 +272,10 @@ class BeneficiaryService {
   async delete(id) {
     const transaction = await this.sequelize.transaction();
     try {
-      // Reusa findById (para a checagem 404)
+      // reusa findById (para a checagem 404)
       const beneficiary = await this.findById(id);
 
-      // Checagem de histórico: o beneficiário não pode ser excluído se tiver distribuições associadas
+      // checagem de histórico: o beneficiário não pode ser excluído se tiver distribuições associadas
       const hasDistributions = await this.Distribution.count({
         where: { beneficiaryId: id },
         transaction,
@@ -287,7 +287,7 @@ class BeneficiaryService {
         );
       }
 
-      // Se for seguro, procede com a exclusão
+      // se for seguro, procede com a exclusão
       await this.Beneficiary.destroy({
         where: { id },
         transaction,
