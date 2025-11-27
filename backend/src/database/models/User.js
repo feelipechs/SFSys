@@ -1,10 +1,9 @@
 import { DataTypes, Model } from 'sequelize';
-import { hashPassword } from '../../utils/security.js';
-import bcrypt from 'bcryptjs';
+import { hashPassword, comparePassword } from '../../utils/security.js';
 
 class User extends Model {
   async comparePassword(candidatePassword) {
-    return bcrypt.compare(candidatePassword, this.password);
+    return comparePassword(candidatePassword, this.password);
   }
 
   static init(sequelize) {
@@ -22,7 +21,7 @@ class User extends Model {
           unique: true,
         },
         password: {
-          type: DataTypes.STRING(60),
+          type: DataTypes.STRING(255),
           allowNull: false,
         },
         name: {
@@ -45,11 +44,9 @@ class User extends Model {
         underscored: true,
         defaultScope: {
           attributes: {
-            exclude: ['password'], // exclui a senha de consultas em outros lugares
+            exclude: ['password'],
           },
         },
-
-        // criptografar senha (bcrypt atualmente)
         hooks: {
           beforeCreate: async (user) => {
             if (user.password) {
@@ -66,18 +63,15 @@ class User extends Model {
     );
   }
 
-  // associações
   static associate(models) {
     this.hasMany(models.Donation, {
       foreignKey: 'responsibleUserId',
       as: 'responsibleDonations',
     });
-
     this.hasMany(models.Distribution, {
       foreignKey: 'responsibleUserId',
       as: 'deliveredDistributions',
     });
-
     this.hasMany(models.Notification, {
       foreignKey: 'userId',
       as: 'notifications',

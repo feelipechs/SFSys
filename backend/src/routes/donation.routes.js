@@ -1,6 +1,6 @@
 import express from 'express';
 import db from '../database/index.js';
-import ProductService from '../services/ProductService.js';
+import StockService from '../services/StockService.js';
 import DonationController from '../controllers/DonationController.js';
 import DonationService from '../services/DonationService.js';
 import { authenticate } from '../middlewares/AuthMiddleware.js';
@@ -80,7 +80,7 @@ import { authenticate } from '../middlewares/AuthMiddleware.js';
  *         id:
  *           type: integer
  *           example: 1
- *         productId:
+ *         stockId:
  *           type: integer
  *           example: 10
  *         quantity:
@@ -93,10 +93,10 @@ import { authenticate } from '../middlewares/AuthMiddleware.js';
  *     DonationItemInput:
  *       type: object
  *       required:
- *         - productId
+ *         - stockId
  *         - quantity
  *       properties:
- *         productId:
+ *         stockId:
  *           type: integer
  *           example: 10
  *         quantity:
@@ -106,8 +106,8 @@ import { authenticate } from '../middlewares/AuthMiddleware.js';
 
 const router = express.Router();
 
-const productServiceInstance = new ProductService(db);
-const donationServiceInstance = new DonationService(db, productServiceInstance);
+const stockServiceInstance = new StockService(db);
+const donationServiceInstance = new DonationService(db, stockServiceInstance);
 const donationControllerInstance = new DonationController(
   donationServiceInstance,
 );

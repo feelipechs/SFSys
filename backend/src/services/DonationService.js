@@ -61,7 +61,6 @@ class DonationService {
 
       // mapeamento de 'items' para 'itemsToCreate' e injeção do ID
       const itemsToCreate = items.map((item) => ({
-        // usa 'itemId' se este for o nome que vem do frontend (ItemRepeater), e mapea para 'product_id' ou 'productId' que o Sequelize espera
         productId: item.productId,
         quantity: item.quantity,
         validity: item.validity === '' ? null : item.validity,
@@ -73,10 +72,9 @@ class DonationService {
         transaction,
       });
 
-      // usa o método centralizado do ProductService (INCREMENT)
+      // usa o método centralizado do StockService (INCREMENT)
       const stockUpdates = itemsToCreate.map((item) => {
         return this.stockService.incrementStock(
-          // usar 'item.productId' (que foi definido no mapeamento acima)
           item.productId,
           item.quantity,
           transaction,
@@ -108,30 +106,25 @@ class DonationService {
         ['updated_at', 'updatedAt'],
       ],
       include: [
-        // 1. INCLUSÃO DO DOADOR
         {
           association: 'donor',
-          attributes: ['id', 'name', 'type', 'phone'], // Apenas campos essenciais do Doador
+          attributes: ['id', 'name', 'type', 'phone'],
         },
-        // 2. INCLUSÃO DO USUÁRIO RESPONSÁVEL
         {
           association: 'responsibleUser',
           attributes: ['id', 'name', 'role'],
         },
-        // 3. INCLUSÃO DA CAMPANHA
         {
           association: 'campaign',
-          attributes: ['id', 'name', 'startDate', 'endDate'], // Apenas campos essenciais da Campanha
+          attributes: ['id', 'name', 'startDate', 'endDate'],
         },
-        // 4. INCLUSÃO DOS ITENS DA DOAÇÃO (DONATION_ITEM)
         {
           association: 'items',
-          attributes: ['id', 'quantity', 'validity', 'productId'], // Apenas campos essenciais do Item
-          // INCLUSÃO ANINHADA: Trazendo o Produto associado a CADA Item
+          attributes: ['id', 'quantity', 'validity', 'productId'],
           include: [
             {
-              association: 'product', // Nome do alias na model DonationItem
-              attributes: ['id', 'name', 'unitOfMeasurement', 'currentStock'], // Apenas dados essenciais do Produto
+              association: 'product',
+              attributes: ['id', 'name', 'unitOfMeasurement', 'currentStock'],
             },
           ],
         },
@@ -228,8 +221,7 @@ class DonationService {
       await donation.update(donationBaseData);
       return donation;
     } catch (error) {
-      // se houver erros de validação do Sequelize (ex: formato de data, campo ausente),
-      // ele será capturado aqui e lançado de volta ao controller.
+      // se houver erros de validação do Sequelize (ex: formato de data, campo ausente), ele será capturado aqui e lançado de volta ao controller
       throw error;
     }
   }
@@ -247,8 +239,8 @@ class DonationService {
 
       const itemsToRevert = donation.items;
 
-      // usa o método centralizado do ProductService (DECREMENT)
-      // o método decrementStock já faz a checagem de saldo e o bloqueio da linha.
+      // usa o método centralizado do StockService (DECREMENT)
+      // o método decrementStock já faz a checagem de saldo e o bloqueio da linha
       const stockUpdates = itemsToRevert.map((item) => {
         return this.stockService.decrementStock(
           item.productId, // id do Produto

@@ -1,12 +1,12 @@
 # Tutorial de Configuração: SFSys Frontend
 
-Este guia detalha os passos necessários para configurar e rodar o SFSys Backend localmente.
+Este guia detalha os passos necessários para configurar e rodar o SFSys frontend localmente.
 
 ## Pré-requisitos
 
 Certifique-se de que os seguintes programas estão instalados no seu sistema:
 
-    Node.js e NPM (Versão 18+ ou 20+).
+    Node.js e NPM (Versão 22+).
 
     Git (Para clonar o repositório).
 

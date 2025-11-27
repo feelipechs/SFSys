@@ -38,7 +38,7 @@ class ProductService {
       const newProduct = await this.Product.create(productBaseData);
       return newProduct;
     } catch (error) {
-      // captura de erro de unicidade (código omitido por brevidade, mas deve ser mantido)
+      // captura de erro de unicidade
       if (
         error.name === 'SequelizeUniqueConstraintError' ||
         (error.parent && error.parent.code === '1062')

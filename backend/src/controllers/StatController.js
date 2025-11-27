@@ -36,7 +36,7 @@ class StatController {
 
       const days = req.query.days ? parseInt(req.query.days, 10) : 90;
 
-      // 3. PAssa o parâmetro 'days' para o service
+      // passa o parâmetro 'days' para o service
       const trendData = await this.service.getDailyActivityTrend(days);
 
       return res.status(200).json(trendData);

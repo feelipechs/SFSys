@@ -34,13 +34,6 @@ export function ProfileForm({ formId, onClose }) {
     ? '...'
     : stats?.registeredDistributions || 0;
 
-  // inicialização do form
-  // const form = useForm({
-  //   defaultValues: authUser || { name: '', email: '', password: '', role: '' },
-  //   mode: 'onBlur',
-  // });
-  // ProfileForm.jsx
-
   const form = useForm({
     defaultValues: {
       // usa o objeto authUser (se não for null/undefined)

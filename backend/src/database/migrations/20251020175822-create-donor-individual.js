@@ -5,7 +5,7 @@ export async function up(queryInterface, Sequelize) {
       type: Sequelize.INTEGER,
       primaryKey: true,
       allowNull: false,
-      references: { model: 'donor', key: 'id' }, // CHAVE ESTRANGEIRA
+      references: { model: 'donor', key: 'id' }, // fk
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE',
     },

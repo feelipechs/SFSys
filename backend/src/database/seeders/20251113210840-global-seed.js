@@ -1,5 +1,4 @@
 import { hashPassword } from '../../utils/security.js';
-import bcrypt from 'bcryptjs'; // mantive caso queira fallback, mas usamos hashPassword
 
 /**
  * Seed global (ES Modules) — versão atualizada com:

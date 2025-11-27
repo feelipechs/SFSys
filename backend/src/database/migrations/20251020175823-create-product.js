@@ -17,7 +17,7 @@ export async function up(queryInterface, Sequelize) {
     current_stock: {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: false,
-      defaultValue: 0.0, // É uma boa prática inicializar estoques
+      defaultValue: 0.0,
     },
     category: {
       type: Sequelize.ENUM('food', 'clothing', 'hygiene', 'others'),

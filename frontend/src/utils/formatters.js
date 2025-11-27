@@ -188,7 +188,7 @@ export const formatCityState = (address) => {
 
   return parts.join(' - ');
 };
-
+// GAMBIARRA PRA USAR NAS NOTIFICAÇÕES
 /**
  * Corrige a exibição da hora da notificação subtraindo 3 horas (offset de Brasília)
  * do valor UTC que foi incorretamente salvo (Ex: 13:39Z deve ser exibido como 10:39).

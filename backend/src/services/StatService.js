@@ -23,16 +23,16 @@ class StatService {
   }
 
   async getGlobalStats() {
-    // 1. Total de Doações Registradas (Todas)
+    // total de doações registradas
     const totalDonations = await this.Donation.count({});
 
-    // 2. Total de Distribuições Registradas (Todas)
+    // total de distribuições registradas
     const totalDistributions = await this.Distribution.count({});
 
-    // 3. Total de Usuários (Todos)
+    // total de usuários (Todos)
     const totalUsers = await this.User.count({});
 
-    // 4. Total de Famílias Atendidas (IDs de Beneficiários ÚNICOS)
+    // total de famílias atendidas (id's de beneficiários únicos)
     const totalFamiliesAttended = await this.Distribution.count({
       distinct: true,
       col: 'beneficiaryId',
@@ -77,7 +77,7 @@ class StatService {
   _mergeDailyActivity(donations, distributions, startDate, endDate) {
     const map = {};
 
-    // 1. Gera todas as datas no intervalo (e inicializa com zero)
+    // gera todas as datas no intervalo (e inicializa com zero)
     const dateRange = this._generateDateRange(startDate, endDate);
 
     dateRange.forEach((date) => {
@@ -88,14 +88,14 @@ class StatService {
       };
     });
 
-    // 2. Mescla os dados de Doações (apenas atualiza a contagem)
+    // mescla os dados de doações (apenas atualiza a contagem)
     donations.forEach((d) => {
       if (map[d.date]) {
         map[d.date].donations = parseInt(d.count, 10);
       }
     });
 
-    // 3. Mescla os dados de Distribuições (apenas atualiza a contagem)
+    // mescla os dados de distribuições (apenas atualiza a contagem)
     distributions.forEach((di) => {
       if (map[di.date]) {
         map[di.date].distributions = parseInt(di.count, 10);

@@ -53,7 +53,7 @@ class DistributionService {
         transaction,
       });
 
-      // usando o método centralizado do ProductService (DECREMENT)
+      // usando o método centralizado do StockService (DECREMENT)
       // decrementStock vai checar o saldo e decrementar a linha, tudo dentro da transação
       const stockUpdates = itemsToInsert.map((item) => {
         return this.stockService.decrementStock(
@@ -208,7 +208,7 @@ class DistributionService {
       // reposição de estoque (incremento)
       const itemsToRestore = distribution.items;
 
-      // usando o método centralizado do ProductService (INCREMENT)
+      // usando o método centralizado do StockService (INCREMENT)
       const stockUpdates = itemsToRestore.map((item) => {
         return this.stockService.incrementStock(
           item.productId,

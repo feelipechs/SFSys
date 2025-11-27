@@ -1,3 +1,5 @@
+import { BadRequestError, NotFoundError } from '../utils/errorUtils.js';
+
 class StockService {
   constructor(models) {
     if (!models || !models.Product) {
@@ -55,7 +57,7 @@ class StockService {
 
     if (product.currentStock < quantity) {
       throw new BadRequestError(
-        `Estoque insuficiente para o Produto ${product.name}, com ID ${productId}. Disponível: ${product.currentStock}.`,
+        `Não é possível excluir esta doação, pois o estoque do Produto "${product.name}" já foi consumido (${product.currentStock} disponíveis). O registro deve ser mantido para fins de auditoria.`,
       );
     }
 

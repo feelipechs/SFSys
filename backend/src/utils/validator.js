@@ -1,26 +1,25 @@
-// Importação das bibliotecas externas para validação algorítmica de documentos
 import { cpf, cnpj } from 'cpf-cnpj-validator';
 
-// 1. REGEX E CONSTANTES
+// regex e consts
 
-// Regex para e-mail (robusta, baseada em RFC 5322 simplificada)
+// regex para e-mail (robusta, baseada em RFC 5322 simplificada)
 const EMAIL_REGEX =
   /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i;
 
-// Regex para validar a sequência numérica do telefone (10 a 13 dígitos brutos)
+// regex para validar a sequência numérica do telefone (10 a 13 dígitos brutos)
 // 10-11 dígitos (DDD + Número) ou 12-13 dígitos (55 + DDD + Número)
 const PHONE_RAW_REGEX = /^\d{10,13}$/;
 
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_MAX_LENGTH = 128;
-const PASSWORD_LOWERCASE_REGEX = /(?=.*[a-z])/; // Pelo menos uma minúscula
-const PASSWORD_UPPERCASE_REGEX = /(?=.*[A-Z])/; // Pelo menos uma maiúscula
-const PASSWORD_NUMBER_REGEX = /(?=.*\d)/; // Pelo menos um dígito
-const PASSWORD_SYMBOL_REGEX = /(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`])/; // Pelo menos um símbolo
+const PASSWORD_LOWERCASE_REGEX = /(?=.*[a-z])/; // pelo menos uma minúscula
+const PASSWORD_UPPERCASE_REGEX = /(?=.*[A-Z])/; // pelo menos uma maiúscula
+const PASSWORD_NUMBER_REGEX = /(?=.*\d)/; // pelo menos um dígito
+const PASSWORD_SYMBOL_REGEX = /(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`])/; // pelo menos um símbolo
 
-// 2. CLASSE DE VALIDAÇÃO
+// classes de validação
 export class DataValidator {
-  // --- Validação de Formato Simples (Email/Telefone) ---
+  // validação de formato simples (email/telefone)
 
   /**
    * Valida o formato do email.
@@ -28,7 +27,7 @@ export class DataValidator {
    * @returns {boolean}
    */
   static isValidEmail(email) {
-    if (!email) return true; // Permite que o Service verifique se é obrigatório
+    if (!email) return true; // permite que o service verifique se é obrigatório
     return EMAIL_REGEX.test(email.trim());
   }
 
@@ -41,15 +40,15 @@ export class DataValidator {
   static isValidPhone(phone) {
     if (!phone) return true;
 
-    // Remove toda a formatação (parênteses, espaços, hífens)
+    // remove toda a formatação (parênteses, espaços, hífens)
     const rawNumber = phone.replace(/\D/g, '');
 
-    // Checa se o número de dígitos está entre 10 e 13
+    // checa se o número de dígitos está entre 10 e 13
     if (!PHONE_RAW_REGEX.test(rawNumber)) {
       return false;
     }
 
-    // Se o número tiver 12 ou 13 dígitos, o DDI '55' deve ser o prefixo
+    // se o número tiver 12 ou 13 dígitos, o DDI '55' deve ser o prefixo
     if (rawNumber.length > 11 && !rawNumber.startsWith('55')) {
       return false;
     }
@@ -57,7 +56,7 @@ export class DataValidator {
     return true;
   }
 
-  // --- Validação de Documentos (Algorítmica) ---
+  // validação de documentos (algorítmica)
 
   /**
    * Valida CPF (Formato e Dígito Verificador).
@@ -77,7 +76,7 @@ export class DataValidator {
    */
   static isValidCNPJ(cnpjNumber) {
     if (!cnpjNumber) return false;
-    // A biblioteca cuida da limpeza da string e do cálculo algorítmico
+    // a biblioteca cuida da limpeza da string e do cálculo algorítmico
     return cnpj.isValid(cnpjNumber);
   }
 
@@ -88,39 +87,39 @@ export class DataValidator {
    * @returns {boolean} True se a senha é válida (ou vazia e opcional), false caso contrário.
    */
   static isValidPassword(passwordValue, isRequired = true) {
-    // 1. Lidar com campos vazios
+    // lidar com campos vazios
     if (!passwordValue || passwordValue.trim() === '') {
-      return !isRequired; // Retorna true se NÃO for obrigatório, ou false se for.
+      return !isRequired; // retorna true se não for obrigatório, ou false se for
     }
 
     const password = passwordValue.trim();
 
-    // 2. Comprimento Mínimo
+    // comprimento mínimo
     if (password.length < PASSWORD_MIN_LENGTH) {
       return false;
     }
 
-    // 3. Comprimento Máximo
+    // comprimento máximo
     if (password.length > PASSWORD_MAX_LENGTH) {
       return false;
     }
 
-    // 4. Letra Minúscula
+    // letra minúscula
     if (!PASSWORD_LOWERCASE_REGEX.test(password)) {
       return false;
     }
 
-    // 5. Letra Maiúscula
+    // letra maiúscula
     if (!PASSWORD_UPPERCASE_REGEX.test(password)) {
       return false;
     }
 
-    // 6. Número
+    // número
     if (!PASSWORD_NUMBER_REGEX.test(password)) {
       return false;
     }
 
-    // 7. Símbolo
+    // símbolo
     if (!PASSWORD_SYMBOL_REGEX.test(password)) {
       return false;
     }
