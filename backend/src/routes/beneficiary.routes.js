@@ -4,6 +4,7 @@ import AddressService from '../services/AddressService.js';
 import BeneficiaryService from '../services/BeneficiaryService.js';
 import BeneficiaryController from '../controllers/BeneficiaryController.js';
 import { authenticate, authorize } from '../middlewares/AuthMiddleware.js';
+import { validateBeneficiaryData } from '../middlewares/BeneficiaryValidationMiddleware.js';
 
 /**
  * @swagger
@@ -111,7 +112,7 @@ router.use(authenticate);
  *       400:
  *         description: Dados inválidos ou campos obrigatórios ausentes.
  */
-router.post('/', beneficiaryControllerInstance.create);
+router.post('/', validateBeneficiaryData, beneficiaryControllerInstance.create);
 
 /**
  * @swagger
@@ -199,7 +200,11 @@ router.get('/:id', beneficiaryControllerInstance.findById);
  *       404:
  *         description: Beneficiário não encontrado.
  */
-router.put('/:id', beneficiaryControllerInstance.update);
+router.put(
+  '/:id',
+  validateBeneficiaryData,
+  beneficiaryControllerInstance.update,
+);
 
 /**
  * @swagger

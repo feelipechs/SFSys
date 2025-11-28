@@ -3,6 +3,7 @@ import db from '../database/index.js';
 import UserController from '../controllers/UserController.js';
 import UserService from '../services/UserService.js';
 import { authenticate, authorize } from '../middlewares/AuthMiddleware.js';
+import { validateUserData } from '../middlewares/UserValidationMiddleware.js';
 
 /**
  * @swagger
@@ -152,7 +153,7 @@ router.get('/me', userControllerInstance.getProfile);
  *             schema:
  *               $ref: '#/components/schemas/UserPublic'
  */
-router.put('/me', userControllerInstance.updateProfile);
+router.put('/me', validateUserData, userControllerInstance.updateProfile);
 
 /**
  * @swagger
@@ -199,6 +200,7 @@ router.get('/me/stats', userControllerInstance.getStats);
 router.post(
   '/',
   authorize(['admin', 'manager']),
+  validateUserData,
   userControllerInstance.create,
 );
 
@@ -282,6 +284,7 @@ router.get('/:id', userControllerInstance.findById);
 router.put(
   '/:id',
   authorize(['admin', 'manager']),
+  validateUserData,
   userControllerInstance.update,
 );
 

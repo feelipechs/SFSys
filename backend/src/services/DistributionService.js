@@ -1,4 +1,4 @@
-import { BadRequestError, NotFoundError } from '../utils/errorUtils.js';
+import { NotFoundError } from '../utils/errorUtils.js';
 
 class DistributionService {
   constructor(models, stockService) {
@@ -29,12 +29,6 @@ class DistributionService {
     const transaction = await this.sequelize.transaction();
 
     try {
-      if (!items || items.length === 0) {
-        throw new BadRequestError(
-          'A distribuição deve conter pelo menos um item.',
-        );
-      }
-
       const newDistribution = await this.Distribution.create(
         distributionBaseData,
         { transaction },
@@ -167,27 +161,10 @@ class DistributionService {
   }
 
   async update(id, data) {
-    // filtragem: remove o array 'items' do payload para proibir sua atualização direta
-    const { items, ...distributionBaseData } = data;
+    const { items, ...distributionBaseData } = data; // items será ignorado
 
-    // validação: checa se há algum dado para atualizar no cabeçalho
-    if (Object.keys(distributionBaseData).length === 0) {
-      throw new BadRequestError(
-        'Nenhum campo válido fornecido para atualização do cabeçalho da distribuição.',
-      );
-    }
-
-    // busca e atualiza
     const distribution = await this.findById(id);
 
-    if (data.items) {
-      // lança o erro se 'items' estiver presente (não importa se é array vazio ou não)
-      throw new BadRequestError(
-        'Não é permitido atualizar a lista de itens (produtos e quantidades) de uma doação existente. Apenas dados do cabeçalho (observação, data e campanha) podem ser modificados.',
-      );
-    }
-
-    // tualiza apenas os campos do cabeçalho (data, observação, etc.)
     await distribution.update(distributionBaseData);
 
     return distribution;

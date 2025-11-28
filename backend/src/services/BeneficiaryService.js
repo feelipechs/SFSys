@@ -1,5 +1,5 @@
 import { BadRequestError, NotFoundError } from '../utils/errorUtils.js';
-import { DataValidator } from '../utils/validator.js';
+import { BeneficiarySpecification } from '../specifications/BeneficiarySpecification.js';
 
 class BeneficiaryService {
   constructor(models, addressService) {
@@ -26,74 +26,25 @@ class BeneficiaryService {
     this.Distribution = models.Distribution;
     this.sequelize = models.sequelize;
     this.addressService = addressService;
-  }
-
-  _validateData(data) {
-    if (data.responsibleCpf && !DataValidator.isValidCPF(data.responsibleCpf)) {
-      throw new BadRequestError(
-        'CPF inválido ou não passou na checagem algorítmica.',
-      );
-    }
-
-    if (
-      data.familyMembersCount !== undefined &&
-      data.familyMembersCount !== null
-    ) {
-      const count = Number(data.familyMembersCount);
-
-      if (isNaN(count) || count < 1 || !Number.isInteger(count)) {
-        throw new BadRequestError(
-          'O Número de Membros da Família deve ser um número inteiro, positivo e no mínimo 1 (um).',
-        );
-      }
-    }
-
-    // validação de CEP
-    if (data.cep) {
-      const cleanCEP = data.cep.replace(/\D/g, '');
-      if (cleanCEP.length !== 8) {
-        throw new BadRequestError('CEP inválido. Deve conter 8 dígitos.');
-      }
-    }
+    this.specification = new BeneficiarySpecification(models);
   }
 
   async _createOrFindAddress(addressData, transaction) {
     // usa o AddressService para criar ou buscar o endereço
-    const address = await this.addressService.createOrFind(addressData);
+    const address = await this.addressService.createOrFind(
+      addressData,
+      transaction,
+    );
     return address;
   }
 
   async create(data) {
-    // validação de campos obrigatórios
-    if (
-      !data.responsibleName ||
-      !data.responsibleCpf ||
-      !data.registrationDate ||
-      !data.cep ||
-      !data.familyMembersCount
-    ) {
-      throw new BadRequestError(
-        'Os campos Nome do Responsável, CPF do Responsável, Data de Cadastro, CEP e Número de Membros da Família são obrigatórios.',
-      );
-    }
-
-    this._validateData(data);
-
-    // validação de unicidade (checa se o CPF já existe no banco)
-    const existingBeneficiary = await this.Beneficiary.findOne({
-      where: { responsibleCpf: data.responsibleCpf },
-    });
-
-    if (existingBeneficiary) {
-      throw new BadRequestError(
-        'Já existe um beneficiário cadastrado com este CPF. Verifique a unicidade.',
-      );
-    }
+    await this.specification.checkCpfUniqueness(data.responsibleCpf);
 
     const transaction = await this.sequelize.transaction();
 
     try {
-      // cria ou busca o endereço
+      // cria ou busca o endereço (AddressService)
       const address = await this._createOrFindAddress(
         {
           cep: data.cep,
@@ -207,34 +158,22 @@ class BeneficiaryService {
 
     const beneficiary = await this.findById(id);
 
-    this._validateData(data);
-
-    // validação de unicidade de CPF (se o CPF estiver sendo alterado)
     if (
       data.responsibleCpf &&
       data.responsibleCpf !== beneficiary.responsibleCpf
     ) {
-      const existingBeneficiary = await this.Beneficiary.findOne({
-        where: { responsibleCpf: data.responsibleCpf },
-      });
-
-      if (existingBeneficiary) {
-        throw new BadRequestError(
-          'O novo CPF informado já está em uso por outro beneficiário.',
-        );
-      }
+      await this.specification.checkCpfUniqueness(data.responsibleCpf, id);
     }
 
     const transaction = await this.sequelize.transaction();
 
     try {
-      // se houver mudança de endereço (CEP, número ou complemento)
-      if (
-        data.cep ||
-        data.number !== undefined ||
-        data.complement !== undefined
-      ) {
-        const addressData = {
+      const hasAddressFieldsInPayload =
+        data.cep || data.number !== undefined || data.complement !== undefined;
+
+      if (hasAddressFieldsInPayload) {
+        // mescla o endereço atual com o payload. O valor atual serve como fallback
+        const addressDataPayload = {
           cep: data.cep || beneficiary.address.cep,
           number:
             data.number !== undefined
@@ -247,7 +186,7 @@ class BeneficiaryService {
         };
 
         const newAddress = await this._createOrFindAddress(
-          addressData,
+          addressDataPayload,
           transaction,
         );
 
@@ -255,7 +194,7 @@ class BeneficiaryService {
         data.addressId = newAddress.id;
       }
 
-      // remove campos de endereço do objeto data antes de atualizar o beneficiário
+      // remove campos de endereço (cep, number, complement) do objeto data antes de atualizar o beneficiário
       const { cep, number, complement, ...beneficiaryData } = data;
 
       await beneficiary.update(beneficiaryData, { transaction });
@@ -273,7 +212,7 @@ class BeneficiaryService {
     const transaction = await this.sequelize.transaction();
     try {
       // reusa findById (para a checagem 404)
-      const beneficiary = await this.findById(id);
+      await this.findById(id);
 
       // checagem de histórico: o beneficiário não pode ser excluído se tiver distribuições associadas
       const hasDistributions = await this.Distribution.count({

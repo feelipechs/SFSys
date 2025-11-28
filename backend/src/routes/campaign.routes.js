@@ -3,6 +3,7 @@ import db from '../database/index.js';
 import CampaignController from '../controllers/CampaignController.js';
 import CampaignService from '../services/CampaignService.js';
 import { authenticate, authorize } from '../middlewares/AuthMiddleware.js';
+import { validateCampaignData } from '../middlewares/CampaignValidationMiddleware.js';
 
 /**
  * @swagger
@@ -109,6 +110,7 @@ router.use(authenticate);
 router.post(
   '/',
   authorize(['admin', 'manager']),
+  validateCampaignData,
   campaignControllerInstance.create,
 );
 
@@ -199,6 +201,7 @@ router.get('/:id', campaignControllerInstance.findById);
 router.put(
   '/:id',
   authorize(['admin', 'manager']),
+  validateCampaignData,
   campaignControllerInstance.update,
 );
 

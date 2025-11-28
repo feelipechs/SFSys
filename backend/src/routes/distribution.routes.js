@@ -4,6 +4,7 @@ import StockService from '../services/StockService.js';
 import DistributionController from '../controllers/DistributionController.js';
 import DistributionService from '../services/DistributionService.js';
 import { authenticate } from '../middlewares/AuthMiddleware.js';
+import { validateDistributionPayload } from '../middlewares/DistributionValidationMiddleware.js';
 
 const router = express.Router();
 
@@ -115,7 +116,11 @@ router.use(authenticate);
  *       400:
  *         description: Dados inválidos.
  */
-router.post('/', distributionControllerInstance.create);
+router.post(
+  '/',
+  validateDistributionPayload,
+  distributionControllerInstance.create,
+);
 
 /**
  * @swagger
@@ -201,7 +206,11 @@ router.get('/:id', distributionControllerInstance.findById);
  *       404:
  *         description: Distribuição não encontrada.
  */
-router.put('/:id', distributionControllerInstance.update);
+router.put(
+  '/:id',
+  validateDistributionPayload,
+  distributionControllerInstance.update,
+);
 
 /**
  * @swagger

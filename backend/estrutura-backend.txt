@@ -15,6 +15,12 @@ backend/
 │   ├── services/            # Lógica de Negócio (Onde vai a complexidade)
 │   │   └── DonorService.js
 │   │
+│   ├── specifications/      # Regras de negócio que consultam o DB
+│   │   └── DonorSpecification.js
+│   │ 
+│   ├── middlewares/         # Validações de formato/estática
+│   │   └── DonorValidationMiddleware.js
+│   │
 │   ├── routes/              # Mapeamento de rotas
 │   │   └── donor.routes.js
 │   │   └── index.js         # Agregador de rotas simples

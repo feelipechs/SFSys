@@ -49,13 +49,6 @@ export function ProfileForm({ formId, onClose }) {
 
   const { control, handleSubmit } = form;
 
-  // // carrega dados no formulário
-  // React.useEffect(() => {
-  //   if (authUser) {
-  //     form.reset(authUser);
-  //   }
-  // }, [authUser, form.reset]);
-
   // funções de controle de estado
   const handleEdit = () => setIsEditing(true);
 
