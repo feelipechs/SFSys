@@ -3,6 +3,10 @@ import db from '../database/index.js';
 import DonorController from '../controllers/DonorController.js';
 import DonorService from '../services/DonorService.js';
 import { authenticate } from '../middlewares/AuthMiddleware.js';
+import {
+  validateDonorFormat,
+  validateMinimumAge,
+} from '../middlewares/DonorValidationMiddleware.js';
 
 /**
  * @swagger
@@ -150,7 +154,12 @@ router.use(authenticate);
  *       401:
  *         description: Não autorizado.
  */
-router.post('/', donorControllerInstance.create);
+router.post(
+  '/',
+  validateDonorFormat,
+  validateMinimumAge,
+  donorControllerInstance.create,
+);
 
 /**
  * @swagger
@@ -250,7 +259,12 @@ router.get('/:id', donorControllerInstance.findById);
  *       401:
  *         description: Não autorizado.
  */
-router.put('/:id', donorControllerInstance.update);
+router.put(
+  '/:id',
+  validateDonorFormat,
+  validateMinimumAge,
+  donorControllerInstance.update,
+);
 
 /**
  * @swagger

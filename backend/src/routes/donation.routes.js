@@ -4,6 +4,7 @@ import StockService from '../services/StockService.js';
 import DonationController from '../controllers/DonationController.js';
 import DonationService from '../services/DonationService.js';
 import { authenticate } from '../middlewares/AuthMiddleware.js';
+import { validateDonationPayload } from '../middlewares/DonationValidationMiddleware.js';
 
 /**
  * @swagger
@@ -140,7 +141,7 @@ router.use(authenticate);
  *       401:
  *         description: Não autorizado.
  */
-router.post('/', donationControllerInstance.create);
+router.post('/', validateDonationPayload, donationControllerInstance.create);
 
 /**
  * @swagger
@@ -250,7 +251,7 @@ router.get('/:id', donationControllerInstance.findById);
  *       401:
  *         description: Não autorizado.
  */
-router.put('/:id', donationControllerInstance.update);
+router.put('/:id', validateDonationPayload, donationControllerInstance.update);
 
 /**
  * @swagger
