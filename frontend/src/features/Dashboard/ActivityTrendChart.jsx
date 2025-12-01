@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/card';
 import {
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
@@ -33,15 +35,13 @@ const chartConfig = {
   activity: {
     label: 'Atividades',
   },
-
   donations: {
     label: 'Doações',
-    color: 'hsl(var(--primary))',
+    color: 'var(--chart-1)',
   },
-
   distributions: {
     label: 'Distribuições',
-    color: 'hsl(var(--secondary))',
+    color: 'var(--chart-2)',
   },
 };
 
@@ -117,12 +117,12 @@ export function ActivityTrendChart() {
                 <stop
                   offset="5%"
                   stopColor="var(--color-donations)"
-                  stopOpacity={1.0}
+                  stopOpacity={0.6}
                 />
                 <stop
                   offset="95%"
                   stopColor="var(--color-donations)"
-                  stopOpacity={0.1}
+                  stopOpacity={0.05}
                 />
               </linearGradient>
               <linearGradient
@@ -135,12 +135,12 @@ export function ActivityTrendChart() {
                 <stop
                   offset="5%"
                   stopColor="var(--color-distributions)"
-                  stopOpacity={0.8}
+                  stopOpacity={0.6}
                 />
                 <stop
                   offset="95%"
                   stopColor="var(--color-distributions)"
-                  stopOpacity={0.1}
+                  stopOpacity={0.05}
                 />
               </linearGradient>
             </defs>
@@ -180,15 +180,16 @@ export function ActivityTrendChart() {
               type="natural"
               fill="url(#fillDonations)"
               stroke="var(--color-donations)"
-              stackId="a"
+              strokeWidth={2}
             />
             <Area
               dataKey="distributions"
               type="natural"
               fill="url(#fillDistributions)"
               stroke="var(--color-distributions)"
-              stackId="a"
+              strokeWidth={2}
             />
+            <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>
         </ChartContainer>
       </CardContent>

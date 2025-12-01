@@ -116,6 +116,12 @@ Rodar Seeders (Inserir Admin, etc.)
 "seed": npm run seed
 ```
 
+Rodar seed específica (dev)
+
+```
+NODE_ENV=development npx sequelize-cli db:seed --seed <nome-da-seed>
+```
+
 Reverter Seeders (Remover Admin, etc.)
 
 ```

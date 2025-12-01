@@ -37,8 +37,8 @@ const mapStatsToCards = (stats) => [
   },
   {
     title: 'Famílias Ajudadas',
-    value: stats.totalFamiliesAttended
-      ? stats.totalFamiliesAttended.toLocaleString('pt-BR')
+    value: stats.totalBeneficiaries
+      ? stats.totalBeneficiaries.toLocaleString('pt-BR')
       : '0',
     description: 'Número total de beneficiários únicos (ID único).',
     icon: MdFamilyRestroom,

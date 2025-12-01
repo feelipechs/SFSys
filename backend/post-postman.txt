@@ -1,31 +1,36 @@
 usuario:
 {
     "email": "gerente@exemplo.com",
-    "password": "123",
-    "name": "gerente",
+    "password": "@Senha123",
+    "name": "Gerente",
     "role": "manager"
 }
 
 campanha:
 {
-    "name": "campanha de arrecadação de alimentos",
+    "name": "Campanha de Arrecadação de Alimentos",
     "startDate": "2025-11-01",
-    "endDate": "2025-11-30"
-    "status": "inProgress"
+    "endDate": "2026-01-31",
+    "status": "inProgress",
+    "category": "food"
 }
 
 produto:
 {
-    "name": "arroz",
-    "unitOfMeasurement": "kg"
+    "name": "Arroz",
+    "unitOfMeasurement": "kg",
+    "category": "food"
 }
 
 beneficiário:
 {
-    "responsibleName": "john doe",
-    "responsibleCpf": "13254000099",
-    "address": "rua lorem ipsum, 123",
-    "familyMembersCount": 4
+    "responsibleName": "John Doe",
+    "responsibleCpf": "55761499045",
+    "familyMembersCount": 2,
+    "registrationDate": "2025-11-20",
+    "cep": "69313012",
+    "number": "107",
+    "complement": "Apto 12"
 }
 
 doador pf:
