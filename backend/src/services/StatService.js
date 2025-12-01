@@ -7,16 +7,18 @@ class StatService {
       !models.User ||
       !models.Donation ||
       !models.Distribution ||
+      !models.Beneficiary ||
       !models.sequelize
     ) {
       throw new Error(
-        'Os modelos (User, Donation, Distribution) e a instância do Sequelize são obrigatórios para inicializar o Service.',
+        'Os modelos (User, Donation, Distribution, Beneficiary) e a instância do Sequelize são obrigatórios para inicializar o Service.',
       );
     }
 
     this.User = models.User;
     this.Donation = models.Donation;
     this.Distribution = models.Distribution;
+    this.Beneficiary = models.Beneficiary;
     this.sequelize = models.sequelize;
 
     this.Op = Op;
@@ -33,16 +35,17 @@ class StatService {
     const totalUsers = await this.User.count({});
 
     // total de famílias atendidas (id's de beneficiários únicos)
-    const totalFamiliesAttended = await this.Distribution.count({
-      distinct: true,
-      col: 'beneficiaryId',
-    });
+    // const totalFamiliesAttended = await this.Distribution.count({
+    //   distinct: true,
+    //   col: 'beneficiaryId',
+    // });
+    const totalBeneficiaries = await this.Beneficiary.count({});
 
     return {
       totalDonations,
       totalDistributions,
       totalUsers,
-      totalFamiliesAttended,
+      totalBeneficiaries,
     };
   }
 
