@@ -14,7 +14,7 @@ export function SiteHeader() {
         />
         <h1 className="text-base font-medium">Painel</h1>
         <div className="ml-auto flex items-center gap-2">
-          Tema: <ModeToggle />
+          <ModeToggle />
           <Separator
             orientation="vertical"
             className="mx-2 data-[orientation=vertical]:h-4"
