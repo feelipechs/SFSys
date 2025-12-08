@@ -111,7 +111,7 @@ export function ActivityTrendChart() {
           config={chartConfig}
           className="aspect-auto h-[250px] w-full"
         >
-          <AreaChart data={filteredData}>
+          <AreaChart data={filteredData} stackOffset="none">
             <defs>
               <linearGradient id="fillDonations" x1="0" y1="0" x2="0" y2="1">
                 <stop
@@ -177,14 +177,16 @@ export function ActivityTrendChart() {
             />
             <Area
               dataKey="donations"
-              type="natural"
+              // type="natural"
+              type="monotone"
               fill="url(#fillDonations)"
               stroke="var(--color-donations)"
               strokeWidth={2}
             />
             <Area
               dataKey="distributions"
-              type="natural"
+              // type="natural"
+              type="monotone"
               fill="url(#fillDistributions)"
               stroke="var(--color-distributions)"
               strokeWidth={2}
